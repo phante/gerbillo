@@ -4,6 +4,6 @@ Ogni Foto è identificata dal `pid` di Coppermine, e le foto nuove proseguono la
 
 ## Consequences
 
-- L'esportazione di G1 produce fin da subito la tabella percorso + file + variante → pid.
+- L'Importazione conserva nel YAML di ogni Foto il percorso Coppermine (`filepath` e `filename`). I redirect dei file e la ricerca degli Originali si ricavano da lì, senza una tabella separata da tenere allineata. Questo dato di provenienza resta anche dopo lo Switch.
 - Gli Originali restano fuori da git. Le Varianti (WebP/AVIF) sono generate con libvips da un comando idempotente che crea solo ciò che manca.
 - Nessuna garanzia per i siti esterni che fanno hotlink diretto.

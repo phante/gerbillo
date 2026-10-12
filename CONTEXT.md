@@ -61,7 +61,7 @@ Il momento in cui una foto analogica è stata digitalizzata.
 Il momento in cui la Foto è entrata nella gallery.
 
 **Autore**:
-Chi ha scattato la Foto.
+Chi ha scattato la Foto: una persona o un ente, non necessariamente un utente del forum.
 _Avoid_: uploader (chi carica può non essere l'Autore: vedi Contributore)
 
 **Contributore**:
@@ -126,8 +126,8 @@ Contenitori di Coppermine. Esistono solo come input della Mappatura, non nel mod
 Un Album di Coppermine nelle *User galleries*, legato a un Contributore e non a un'Entità. Il suo destino nel modello è da decidere guardando i dati di G1.
 
 **Importazione**:
-L'esecuzione, ripetibile, che porta le Foto da Coppermine a Gerbillo.
-_Avoid_: sync, migrazione (la Migrazione è il processo complessivo)
+L'esecuzione, ripetibile, che porta le Foto da Coppermine a Gerbillo. Ogni esecuzione rigenera da zero i dati importati, che non contengono mai lavoro editoriale: quello sta nel Livello di arricchimento, e la Foto pubblicata nasce dalla loro unione.
+_Avoid_: sync, esportazione, migrazione (la Migrazione è il processo complessivo)
 
 **Mappatura**:
 La corrispondenza tra un Album di Coppermine e le Entità o i Temi di Gerbillo.
