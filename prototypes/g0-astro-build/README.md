@@ -4,7 +4,7 @@ Domanda (issue #8, ADR 0001): la Gallery pubblica in Astro + Svelte regge la dim
 dell'archivio entro ~5 minuti di build e con memoria compatibile con il server Lightsail?
 
 ```sh
-./bench.sh [N=25000] [CPU=2] [MEM=2g]   # richiede podman
+./bench.sh [N=25000] [CPU=2] [MEM=2g] [SWAP=MEM]   # richiede podman; SWAP = memoria+swap totale
 ```
 
 Il sito generato è volutamente realistico ma minimo: pagina per Foto (con isola Svelte
@@ -22,13 +22,23 @@ Il container ha swap disattivato. `picco_MB` è `memory.peak` del cgroup (includ
 | 1   | 768 MB  | —                         | OOM (137)  | —       | —      |
 | 1   | 768 MB  | --max-old-space-size=512  | OOM (137)  | —       | —      |
 | 2   | 512 MB  | —                         | OOM (137)  | —       | —      |
+| 1   | 1100 MB | — (disponibile sul server) | ok        | 22      | 26.144 |
+| 1   | 900 MB  | — (swap 2 GB)             | ok         | 27      | 26.144 |
+| 1   | 768 MB  | — (swap 2 GB)             | OOM (137)  | —       | —      |
 
-## Verdetto
+Lo swap del container probabilmente non ha effetto: la VM podman non ha swap propria.
 
-- **Tempo: gate superato con ampio margine** (~20 s contro 5 min). Anche una CPU del server
-  2–3 volte più lenta resta sotto il minuto.
-- **Memoria: serve ~1 GB libero durante la build.** Sotto i 768 MB il processo viene
-  ucciso; limitare l'heap V8 non aiuta, quindi la memoria non è old-space JS.
-- Su un piano Lightsail da 2 GB condiviso con forum, MySQL e Backend il margine è stretto;
-  su 1 GB la build sul server non è praticabile. Alternativa: build fuori dal server
-  (CI o macchina del manutentore) e rsync di `dist/` (solo HTML, le Varianti stanno fuori).
+## Server reale (Lightsail)
+
+2 vCPU (1 core fisico in hyperthreading, Xeon Platinum 8259CL 2.5 GHz), 1905 MB di RAM,
+~1174 MB disponibili, swap 2 GB di cui ~728 MB già in uso.
+
+## Verdetto: G0 superato, con margine di memoria stretto
+
+- **Tempo: superato** con ampio margine (~20–27 s sul Mac). Il core Xeon è più lento:
+  stima 1 minuto circa, comunque lontano dai 5 minuti.
+- **Memoria: compatibile ma stretta.** La build serve fra 768 e 900 MB, con picco ~1050 MB
+  quando ce n'è. Sul server ne sono disponibili ~1170, e lo swap è già usato. Durante la build
+  il forum e MySQL possono finire in swap. Limitare l'heap V8 non aiuta.
+- Da decidere nelle fasi successive: build sul server in orari tranquilli (`nice`), oppure
+  build fuori dal server (CI o macchina del manutentore) e rsync di `dist/`.
