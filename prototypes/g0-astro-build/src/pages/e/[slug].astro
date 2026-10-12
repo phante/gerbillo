@@ -1,12 +1,12 @@
 ---
-import { getCollection } from 'astro:content';
+import { indice } from '../../lib/dati.mjs';
 import Base from '../../layouts/Base.astro';
 import Griglia from '../../components/Griglia.astro';
 
 export async function getStaticPaths() {
   const perEntita = new Map();
-  for (const f of await getCollection('foto'))
-    for (const s of f.data.entita) perEntita.set(s, [...(perEntita.get(s) ?? []), f]);
+  for (const r of indice())
+    for (const s of r[2]) perEntita.has(s) ? perEntita.get(s).push(r) : perEntita.set(s, [r]);
   return [...perEntita].map(([slug, foto]) => ({ params: { slug }, props: { foto } }));
 }
 const { foto } = Astro.props;

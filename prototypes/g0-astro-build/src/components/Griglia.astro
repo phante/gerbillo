@@ -1,8 +1,9 @@
 ---
+// foto: righe dell'indice [pid, titolo, ...]
 const { foto } = Astro.props;
 ---
 <ul>
-  {foto.map((f) => (
-    <li><a href={`/gallery/f/${f.data.pid}/`}><img src={`/gallery/f/${f.data.pid}/miniatura.webp`} alt={f.data.titolo} loading="lazy" width="200" height="150" /></a></li>
+  {foto.map(([pid, titolo]) => (
+    <li><a href={`/gallery/f/${pid}/`}><img src={`/gallery/f/${pid}/miniatura.webp`} alt={titolo} loading="lazy" width="200" height="150" /></a></li>
   ))}
 </ul>

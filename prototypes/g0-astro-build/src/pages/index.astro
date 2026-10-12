@@ -1,9 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import { indice } from '../lib/dati.mjs';
 
-const foto = await getCollection('foto');
-const temi = [...new Set(foto.flatMap((f) => f.data.temi))];
+// ponytail: nei blocchi Foto la home viene rigenerata vuota e poi sovrascritta dal blocco indici
+const foto = indice();
+const temi = [...new Set(foto.flatMap((r) => r[3]))];
 ---
 <Base titolo="Gallery">
   <h1>{foto.length} foto</h1>

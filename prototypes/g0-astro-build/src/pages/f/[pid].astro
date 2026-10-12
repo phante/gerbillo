@@ -1,11 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
+import { fotoDelBlocco } from '../../lib/dati.mjs';
 import Base from '../../layouts/Base.astro';
 import CopiaForum from '../../components/CopiaForum.svelte';
 
 export async function getStaticPaths() {
-  const foto = await getCollection('foto');
-  return foto.map((f) => ({ params: { pid: String(f.data.pid) }, props: { f: f.data } }));
+  return fotoDelBlocco().map((f) => ({ params: { pid: String(f.pid) }, props: { f } }));
 }
 const { f } = Astro.props;
 ---

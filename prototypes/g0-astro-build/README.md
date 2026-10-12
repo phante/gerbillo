@@ -4,6 +4,7 @@ Domanda (issue #8, ADR 0001): la Gallery pubblica in Astro + Svelte regge la dim
 dell'archivio entro ~5 minuti di build e con memoria compatibile con il server Lightsail?
 
 ```sh
+./profile.sh [N] [MEM] ["./build-blocchi.sh K"]   # build a blocchi, memoria anon vs page cache
 ./bench.sh [N=25000] [CPU=2] [MEM=2g] [SWAP=MEM]   # richiede podman; SWAP = memoria+swap totale
 ```
 
@@ -42,3 +43,28 @@ Lo swap del container probabilmente non ha effetto: la VM podman non ha swap pro
   il forum e MySQL possono finire in swap. Limitare l'heap V8 non aiuta.
 - Da decidere nelle fasi successive: build sul server in orari tranquilli (`nice`), oppure
   build fuori dal server (CI o macchina del manutentore) e rsync di `dist/`.
+
+## Seconda iterazione: build a blocchi (memoria limitata)
+
+La build unica cresce linearmente: ~340 MB fissi + ~20 MB ogni 1000 Foto
+(anon: 5k 476 MB, 25k 733 MB, 50k 1291 MB). Prima o poi il limite fisico arriva.
+
+`build-blocchi.sh` toglie le content collections:
+
+1. `indice.mjs` legge i YAML uno alla volta e scrive `indice.json` (pid, titolo, Entità, Temi, Autore).
+2. N esecuzioni di `astro build` con `BLOCCO=da-a`: ognuna legge solo i propri K YAML e genera le pagine Foto.
+3. Un'esecuzione `BLOCCO=indici` genera home, Entità, Temi e `ricerca.json` dall'indice leggero.
+4. Unione delle cartelle `dist-*` in `dist/`.
+
+| Foto    | K    | Limite | Esito | Secondi | anon max |
+|---------|------|--------|-------|---------|----------|
+| 25.000  | 5000 | 2 GB   | ok    | 30      | 354 MB   |
+| 25.000  | 1000 | 2 GB   | ok    | 57      | 323 MB   |
+| 50.000  | 5000 | 2 GB   | ok    | 55      | 353 MB   |
+| 50.000  | 2000 | 512 MB | ok    | 84      | 316 MB   |
+| 100.000 | 2000 | 512 MB | ok    | 165     | 378 MB   |
+
+La memoria non dipende più dal numero di Foto, salvo l'indice leggero (~60 MB in più fra 25k e 100k).
+Il prezzo è il tempo: ~1,6 s ogni 1000 Foto sul Mac, quindi 2–3 volte tanto sul server.
+Con i blocchi si può anche rigenerare solo il blocco toccato da una Pubblicazione più gli indici
+(non provato).

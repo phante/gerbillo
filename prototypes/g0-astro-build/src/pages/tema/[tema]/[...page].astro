@@ -1,13 +1,13 @@
 ---
-import { getCollection } from 'astro:content';
+import { indice } from '../../../lib/dati.mjs';
 import Base from '../../../layouts/Base.astro';
 import Griglia from '../../../components/Griglia.astro';
 
 export async function getStaticPaths({ paginate }) {
-  const foto = await getCollection('foto');
-  const temi = [...new Set(foto.flatMap((f) => f.data.temi))];
+  const foto = indice();
+  const temi = [...new Set(foto.flatMap((r) => r[3]))];
   return temi.flatMap((tema) =>
-    paginate(foto.filter((f) => f.data.temi.includes(tema)), { params: { tema }, pageSize: 100 }));
+    paginate(foto.filter((r) => r[3].includes(tema)), { params: { tema }, pageSize: 100 }));
 }
 const { page } = Astro.props;
 ---
