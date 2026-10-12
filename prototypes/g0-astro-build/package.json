@@ -1,0 +1,16 @@
+{
+  "name": "prototype-g0-astro-build",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "node gen.mjs",
+    "build": "astro build",
+    "bench": "./bench.sh"
+  },
+  "dependencies": {
+    "@astrojs/svelte": "9.0.1",
+    "astro": "7.3.8",
+    "svelte": "5.57.2",
+    "yaml": "2.9.1"
+  }
+}

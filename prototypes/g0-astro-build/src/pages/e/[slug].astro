@@ -1,0 +1,18 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Griglia from '../../components/Griglia.astro';
+
+export async function getStaticPaths() {
+  const perEntita = new Map();
+  for (const f of await getCollection('foto'))
+    for (const s of f.data.entita) perEntita.set(s, [...(perEntita.get(s) ?? []), f]);
+  return [...perEntita].map(([slug, foto]) => ({ params: { slug }, props: { foto } }));
+}
+const { foto } = Astro.props;
+const { slug } = Astro.params;
+---
+<Base titolo={slug}>
+  <h1>{slug} ({foto.length} foto)</h1>
+  <Griglia foto={foto} />
+</Base>

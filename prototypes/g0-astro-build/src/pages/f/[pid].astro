@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CopiaForum from '../../components/CopiaForum.svelte';
+
+export async function getStaticPaths() {
+  const foto = await getCollection('foto');
+  return foto.map((f) => ({ params: { pid: String(f.data.pid) }, props: { f: f.data } }));
+}
+const { f } = Astro.props;
+---
+<Base titolo={f.titolo}>
+  <h1>{f.titolo}</h1>
+  <img src={`/gallery/f/${f.pid}/schermo.webp`} alt={f.titolo} width={f.larghezza} height={f.altezza} />
+  <p>{f.descrizione}</p>
+  <dl>
+    <dt>Entità</dt><dd>{f.entita.map((s) => <a href={`/gallery/e/${s}/`}>{s} </a>)}</dd>
+    {f.impianto && <><dt>Impianto</dt><dd>{f.impianto}</dd></>}
+    <dt>Temi</dt><dd>{f.temi.join(', ')}</dd>
+    <dt>Datazione</dt><dd>{f.datazione.valore} ({f.datazione.precisione})</dd>
+    <dt>Autore</dt><dd>{f.autore}</dd>
+    {f.fonte && <><dt>Fonte</dt><dd>{f.fonte}</dd></>}
+  </dl>
+  <CopiaForum client:visible pid={f.pid} />
+  <a href={`https://www.progettodighe.it/forum/?foto=${f.pid}`}>Discuti nel forum</a>
+</Base>

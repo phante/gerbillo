@@ -1,0 +1,11 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const foto = await getCollection('foto');
+const temi = [...new Set(foto.flatMap((f) => f.data.temi))];
+---
+<Base titolo="Gallery">
+  <h1>{foto.length} foto</h1>
+  <ul>{temi.map((t) => <li><a href={`/gallery/tema/${encodeURIComponent(t)}/`}>{t}</a></li>)}</ul>
+</Base>

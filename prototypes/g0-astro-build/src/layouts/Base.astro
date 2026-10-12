@@ -1,0 +1,10 @@
+---
+const { titolo } = Astro.props;
+---
+<html lang="it">
+  <head><meta charset="utf-8" /><title>{titolo} · Gerbillo</title></head>
+  <body>
+    <nav><a href="/gallery/">Gerbillo</a></nav>
+    <main><slot /></main>
+  </body>
+</html>
