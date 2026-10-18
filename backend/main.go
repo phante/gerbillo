@@ -58,8 +58,9 @@ func nuovaPassword() {
 	scadenza = time.Now().Add(durataPassword)
 	p := password
 	mu.Unlock()
-	msg := fmt.Sprintf("Gerbillo dev %s@%s\nutente: gerbillo\npassword: %s\nscade: %s",
-		branch, commit, p, scadenza.In(roma).Format("02/01 15:04"))
+	// <code>: su Telegram un tocco copia il testo. base64url non ha caratteri HTML.
+	msg := fmt.Sprintf("Gerbillo dev %s@%s\nutente: <code>gerbillo</code>\npassword: <code>%s</code>\nscade: %s",
+		template.HTMLEscapeString(branch), commit, p, scadenza.In(roma).Format("02/01 15:04"))
 	if err := telegram(msg); err != nil {
 		// ponytail: senza Telegram (in locale) la password va nel log del container.
 		log.Printf("telegram: %v; password: %s", err, p)
@@ -72,7 +73,7 @@ func telegram(testo string) error {
 		return fmt.Errorf("TELEGRAM_TOKEN o TELEGRAM_CHAT_ID mancanti")
 	}
 	r, err := http.PostForm("https://api.telegram.org/bot"+tok+"/sendMessage",
-		url.Values{"chat_id": {chat}, "text": {testo}})
+		url.Values{"chat_id": {chat}, "text": {testo}, "parse_mode": {"HTML"}})
 	if err != nil {
 		return err
 	}
