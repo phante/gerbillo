@@ -124,7 +124,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	mostra(w, "Gerbillo: anteprima dev", "Gallery pubblica in arrivo.\nAdmin: admin/")
+	mostra(w, "Gerbillo: anteprima dev", "Gallery pubblica in arrivo (prova remota).\nAdmin: admin/")
 }
 
 func admin(w http.ResponseWriter, r *http.Request) {
