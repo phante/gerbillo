@@ -9,6 +9,11 @@ Come si sviluppa Gerbillo senza computer: sessioni cloud di Claude Code, avviate
 - **Claude fa merge su `main`** quando glielo chiedi. Una sessione alla volta. Ogni push su qualunque branch pubblica l'anteprima, e vince l'ultimo push.
 - **Upload attivo sull'anteprima.** Lo protegge la password usa e getta, che arriva su Telegram.
 
+## Come lavorare con Elvis
+
+- **Ogni misura di sicurezza va motivata da un rischio concreto.** Niente blocchi né protezioni a priori su dati anonimizzati o di test. La prudenza vale per il server di produzione e per le credenziali vere.
+- **Risposte concise, in italiano.** Dal telefono, quando serve un'azione sua, chiedi un punto alla volta.
+
 ## Cosa c'è nella sessione cloud
 
 - Il repo, `CLAUDE.md`, `.claude/settings.json`. **Non ci sono** skill e plugin dell'utente, né `~/.claude`.
