@@ -55,7 +55,9 @@ sudo install -m 644 /tmp/gerbillo-dev.service /tmp/gerbillo-dev.timer /etc/syste
 sudo install -m 600 /dev/null /etc/gerbillo-dev.env
 sudoedit /etc/gerbillo-dev.env          # TELEGRAM_TOKEN=…  TELEGRAM_CHAT_ID=21449581
 sudo install -m 644 /tmp/nginx-gerbillo.conf /etc/nginx/snippets/gerbillo.conf
-# nel server block di dev.progettodighe.it:  include snippets/gerbillo.conf;
+# in /etc/nginx/sites-available/dev.progettodighe.it, nel server block 443 di
+# dev.progettodighe.it, accanto a "include snippets/location-acme-challenge.conf;":
+#   include snippets/gerbillo.conf;
 sudo nginx -t && sudo systemctl reload nginx
 sudo systemctl daemon-reload && sudo systemctl enable --now gerbillo-dev.timer
 ```
