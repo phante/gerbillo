@@ -82,7 +82,7 @@ Il sito Hugo di ProgettoDighe, fonte di verità delle Entità.
 _Avoid_: sito Hugo, sito statico
 
 **Gallery pubblica**:
-Il sito statico che mostra le Foto ai visitatori.
+Il sito statico che mostra le Foto ai visitatori, generato dal binario Go (ADR 0012).
 _Avoid_: frontend, sito gallery
 
 **Backend**:
@@ -96,7 +96,7 @@ Il file prodotto dal Sito principale che elenca le Entità per la gallery.
 Il file prodotto dalla gallery che elenca le Foto per Entità, usato dal Sito principale.
 
 **Repository dei contenuti**:
-Il repository git, separato dal codice, che contiene i metadati pubblicati delle Foto.
+Il repository git solo locale sul server, separato dal codice, che contiene i metadati pubblicati delle Foto (ADR 0004).
 
 ### Flusso editoriale
 
@@ -109,7 +109,7 @@ Un amministratore o moderatore del forum, autorizzato ad approvare, rifiutare e 
 _Avoid_: admin, revisore
 
 **Pubblicazione**:
-Il passaggio di una Proposta a Foto, con scrittura dei metadati nel Repository dei contenuti.
+Il passaggio di una Proposta a Foto: commit dei metadati nel Repository dei contenuti e rigenerazione della Gallery pubblica.
 
 **Copia per il forum**:
 Il BBCode generato per una Foto: miniatura cliccabile verso la pagina della Foto.
