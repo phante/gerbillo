@@ -17,12 +17,15 @@ import (
 	"strings"
 	"sync"
 	"time"
+	_ "time/tzdata" // l'immagine distroless non ha i fusi orari
 )
 
 // Impostati in build con -ldflags "-X main.branch=… -X main.commit=…".
 var branch, commit = "locale", "sconosciuto"
 
 const durataPassword = 24 * time.Hour
+
+var roma, _ = time.LoadLocation("Europe/Rome")
 
 var (
 	mu       sync.Mutex
@@ -56,7 +59,7 @@ func nuovaPassword() {
 	p := password
 	mu.Unlock()
 	msg := fmt.Sprintf("Gerbillo dev %s@%s\nutente: gerbillo\npassword: %s\nscade: %s",
-		branch, commit, p, scadenza.Format("02/01 15:04"))
+		branch, commit, p, scadenza.In(roma).Format("02/01 15:04"))
 	if err := telegram(msg); err != nil {
 		// ponytail: senza Telegram (in locale) la password va nel log del container.
 		log.Printf("telegram: %v; password: %s", err, p)
@@ -107,6 +110,7 @@ var pagina = template.Must(template.New("p").Parse(`<!doctype html>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <meta name="robots" content="noindex">
 <title>Gerbillo dev</title>
+<style>pre{white-space:pre-wrap}</style>
 <p style="font:12px monospace;background:#fe0;padding:4px">{{.Branch}} @ {{.Commit}}</p>
 <h1>{{.Titolo}}</h1>
 <pre>{{.Corpo}}</pre>`))
@@ -133,7 +137,7 @@ func stato(w http.ResponseWriter, r *http.Request) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	var b strings.Builder
-	fmt.Fprintf(&b, "avvio: %s (%s fa)\n", avvio.Format(time.RFC3339), time.Since(avvio).Round(time.Second))
+	fmt.Fprintf(&b, "avvio: %s (%s fa)\n", avvio.In(roma).Format(time.RFC3339), time.Since(avvio).Round(time.Second))
 	fmt.Fprintf(&b, "go: heap %d MiB, sys %d MiB, goroutine %d\n", m.HeapAlloc>>20, m.Sys>>20, runtime.NumGoroutine())
 	for _, f := range []string{"memory.current", "memory.peak", "memory.max"} {
 		v, _ := os.ReadFile("/sys/fs/cgroup/" + f)
