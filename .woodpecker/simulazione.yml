@@ -1,0 +1,25 @@
+# Pipeline di simulazione: prova webhook, clone, secret e Telegram.
+# Non builda e non pubblica nulla: la build sta su GitHub Actions (ADR 0011),
+# perché il server di produzione ha 1,9 GiB di RAM.
+when:
+  - event: push
+    branch: main
+  - event: manual
+
+steps:
+  - name: info
+    image: golang:1.27-alpine
+    commands:
+      - echo "branch $CI_COMMIT_BRANCH commit $CI_COMMIT_SHA"
+      - go version
+  - name: notify
+    image: alpine:latest
+    environment:
+      TELEGRAM_TOKEN:
+        from_secret: TELEGRAM_TOKEN
+    when:
+      - status: [success, failure]
+    commands:
+      - apk add --no-cache curl
+      - 'curl -s -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" -d chat_id=21449581 --data-urlencode text="gerbillo — simulazione Woodpecker $CI_PIPELINE_STATUS ($CI_COMMIT_BRANCH)"'
+    failure: ignore

@@ -1,0 +1,68 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.2277267367848,
+          46.3361291521956
+        ]
+      },
+      "id": "pontesei"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Pontesei"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.229639, 46.334862]
+      },
+      "id": "centrale-pontesei"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale della Gardona"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.308459, 46.295684]
+      },
+      "id": "centrale-gardona"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Vodo di Cadore – Pontesei – Vajont"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.240379, 46.417876],
+          [12.241173, 46.41613],
+          [12.241184, 46.416123],
+          [12.229832, 46.334992],
+          [12.233791, 46.332647],
+          [12.238426, 46.32352],
+          [12.257137, 46.315399],
+          [12.27735, 46.311249],
+          [12.30576, 46.297996],
+          [12.308818, 46.29641],
+          [12.313485, 46.294186],
+          [12.328457, 46.268316]
+        ]
+      },
+      "id": "condotta-vodo-pontesei-vajont"
+    }
+  ]
+}

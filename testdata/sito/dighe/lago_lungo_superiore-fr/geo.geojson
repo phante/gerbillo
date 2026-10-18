@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "Lago Lungo Superiore"
+      },
+      "geometry": {
+        "coordinates": [
+          7.453199575190155,
+          44.05765284105834
+        ],
+        "type": "Point"
+      },
+      "id": "lago_lungo_superiore-fr"
+    }
+  ]
+}

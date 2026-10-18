@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "diga" },
+      "geometry": { "type": "Point", "coordinates": [10.4299311, 46.0482284] },
+      "id": "lago-d-arno"
+    }
+  ]
+}

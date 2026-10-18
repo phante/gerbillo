@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "della Muta"
+      },
+      "geometry": {
+        "coordinates": [
+          7.443702853468238,
+          44.05106042307679
+        ],
+        "type": "Point"
+      },
+      "id": "della_muta-fr"
+    }
+  ]
+}

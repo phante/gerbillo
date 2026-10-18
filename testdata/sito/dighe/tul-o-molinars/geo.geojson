@@ -1,0 +1,62 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "type": "Diga",
+                "name": "Diga del Tul"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    12.89561,
+                    46.216928
+                ]
+            },
+            "id": "tul-o-molinars"
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "type": "centrale",
+                "name": "Centrale di Molinars"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    12.896495,
+                    46.216185
+                ]
+            },
+            "id": "molinars"
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "type": "condotta"
+            },
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        12.895589,
+                        46.216853
+                    ],
+                    [
+                        12.89582,
+                        46.216735
+                    ],
+                    [
+                        12.896029,
+                        46.216738
+                    ],
+                    [
+                        12.896367,
+                        46.216356
+                    ]
+                ]
+            }
+        }
+    ]
+}

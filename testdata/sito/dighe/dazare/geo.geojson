@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.4548018094661,
+          45.8686961171017
+        ]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale Ponte Caffaro 2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.52591680268253,
+          45.826538856778086
+        ]
+      },
+      "id": "centrale-ponte-caffaro-2"
+    }
+  ]
+}

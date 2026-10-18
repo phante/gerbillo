@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "diga", "name": "Gana" },
+      "geometry": { "type": "Point", "coordinates": [10.4867935, 46.1033889] },
+      "id": "diga-gana"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "diga", "name": "Dosazzo" },
+      "geometry": { "type": "Point", "coordinates": [10.4777491, 46.1141445] },
+      "id": "diga-dosazzo"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "diga", "name": "Macesso" },
+      "geometry": { "type": "Point", "coordinates": [10.4616451, 46.1100686] },
+      "id": "diga-macesso"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "diga" },
+      "geometry": { "type": "Point", "coordinates": [10.4717517, 46.1102323] },
+      "id": "lago-salarno"
+    }
+  ]
+}

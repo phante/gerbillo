@@ -1,0 +1,220 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.39865,
+          46.55106
+        ]
+      },
+      "id": "val-dauna"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale Sant'Antonio",
+        "gestore": "Eisackwerk s.r.l.",
+        "turbine_tipo": "Pelton asse verticale",
+        "turbine_numero": 2,
+        "potenza": 72,
+        "anno": 2020
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.35834,
+          46.514269
+        ]
+      },
+      "id": "centrale-santantonio"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Opera di presa torrente Talvera",
+        "gestore": "Eisackwerk s.r.l."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.364026,
+          46.623284
+        ]
+      },
+      "id": "presa-talvera"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa sullo scarico della Centrale di Sarentino"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.37510776342603,
+          46.620538090293394
+        ]
+      },
+      "id": "presa-sarentino"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pontecanale",
+        "name": "Ponte Canale sul Rio Danza"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.391265005127515,
+          46.60791421005369
+        ]
+      },
+      "id": "pontecanale-rio-danza"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa sul Rio Danza"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.396636597516647,
+          46.609369106157374
+        ]
+      },
+      "id": "presa-rio-danza"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Opera di presa Rio Madonnina"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.396728,
+          46.600939
+        ]
+      },
+      "id": "presa-rio-madonnina"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Sarentino",
+        "gestore": "Alperia",
+        "potenza": "22 MW"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.374600652042517,
+          46.6213605566376
+        ]
+      },
+      "id": "centrale-sarentino"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "bacino",
+        "name": "Bacino di Corvara",
+        "gestore": "Alperia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.351221924802758,
+          46.73793718011666
+        ]
+      },
+      "id": "bacino-corvara"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "bacino",
+        "name": "Bacino di Valdurna",
+        "gestore": "Alperia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.397769091779992,
+          46.68491780609463
+        ]
+      },
+      "id": "bacino-valdurna"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Galleria a pelo libero dal Talvera"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [11.399678, 46.55087],
+          [11.400869, 46.55156],
+          [11.399474, 46.554316],
+          [11.391816, 46.557591],
+          [11.386772, 46.574232],
+          [11.387365, 46.576002],
+          [11.389253, 46.577536],
+          [11.39586, 46.581341],
+          [11.396589, 46.583082],
+          [11.393543, 46.588804],
+          [11.395731, 46.600364],
+          [11.391533745520936, 46.60767857209896],
+          [11.391205425281704, 46.60807338444219],
+          [11.3895476251102, 46.609663445721],
+          [11.381102, 46.614515],
+          [11.378442, 46.614722],
+          [11.377284, 46.616136],
+          [11.377627, 46.617168],
+          [11.375388, 46.620197],
+          [11.374594, 46.621427],
+          [11.37262, 46.620853],
+          [11.370463, 46.621251],
+          [11.367395, 46.622621],
+          [11.364026, 46.623284]
+        ]
+      },
+      "id": "galleria-talvera"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta forzata Val d'Auna – Sant'Antonio"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [11.399002, 46.551309],
+          [11.399678, 46.55087],
+          [11.392908, 46.52983],
+          [11.371879, 46.512393],
+          [11.365914, 46.511876],
+          [11.35834, 46.514269]
+        ]
+      },
+      "id": "condotta-valdauna-santantonio"
+    }
+  ]
+}

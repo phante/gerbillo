@@ -1,0 +1,204 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "San Valentino"
+      },
+      "geometry": {
+        "coordinates": [
+          10.534663625510461,
+          46.774018496345036
+        ],
+        "type": "Point"
+      },
+      "id": "san_valentino-bz"
+    },
+        {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "nome": "Opera di presa e scarico di fondo"
+      },
+      "geometry": {
+        "coordinates": [
+          10.528686414957747,
+          46.780113958151844
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            10.528660703974339,
+            46.78010302752432
+          ],
+          [
+            10.526878455374458,
+            46.77909644133895
+          ],
+          [
+            10.526814697329897,
+            46.768473584108044
+          ],
+          [
+            10.531233720184957,
+            46.7634138696271
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "nome": "presa sul rio Puni"
+      },
+      "geometry": {
+        "coordinates": [
+          10.575538030334371,
+          46.719802959459
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "nome": "probabile presa dell'impianto di sollevamento"
+      },
+      "geometry": {
+        "coordinates": [
+          10.527456449671519,
+          46.7537295075727
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "nome": "Glorenza"
+      },
+      "geometry": {
+        "coordinates": [
+          10.575637476224756,
+          46.67409275532765
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "ponte-canale"
+      },
+      "geometry": {
+        "coordinates": [
+          10.531598682013566,
+          46.76455603687481
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            10.530114314351152,
+            46.76476382099048
+          ],
+          [
+            10.543422751910626,
+            46.76265109117037
+          ],
+          [
+            10.573194206246537,
+            46.71693366164236
+          ],
+          [
+            10.582431429117982,
+            46.679782754200886
+          ],
+          [
+            10.575716912777011,
+            46.67424489103155
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            10.531133219463186,
+            46.76458489588708
+          ],
+          [
+            10.530146810863684,
+            46.76379773064804
+          ],
+          [
+            10.527387019806696,
+            46.753797211765345
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            10.575617707313285,
+            46.71971591917546
+          ],
+          [
+            10.573195670187005,
+            46.71689512925795
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "nome": "presa sul rio Saldadura"
+      },
+      "geometry": {
+        "coordinates": [
+          10.632849488493491,
+          46.70269396641456
+        ],
+        "type": "Point"
+      },
+      "id": 12
+    }
+  ]
+}

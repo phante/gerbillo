@@ -1,0 +1,19 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.1990064,
+          44.3103808
+        ]
+      },
+      "id": "osiglietta"
+    }
+  ]
+}

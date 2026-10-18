@@ -1,0 +1,103 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "name": "Carboj o Arancio"
+      },
+      "geometry": {
+        "coordinates": [
+          13.0647801322371,
+          37.6257499125191
+        ],
+        "type": "Point"
+      },
+      "id": "carboj"
+    },
+        {
+      "type": "Feature",
+      "properties": {
+        "type": "presa"
+      },
+      "geometry": {
+        "coordinates": [
+          13.065815254949996,
+          37.62604682993667
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "presa dell'impianto di sollevamento irriguo"
+      },
+      "geometry": {
+        "coordinates": [
+          13.068271778098477,
+          37.63231495400184
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "condotta forzata, posizione stimata"},
+      "geometry": {
+        "coordinates": [
+          [
+            13.065753814539846,
+            37.62604367831628
+          ],
+          [
+            13.066845103816675,
+            37.61943558728128
+          ],
+          [
+            13.063033668520838,
+            37.613779547014644
+          ],
+          [
+            13.046125919557596,
+            37.608161893310395
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "centrale ENEL?"
+      },
+      "geometry": {
+        "coordinates": [
+          13.045891414651152,
+          37.60807696105374
+        ],
+        "type": "Point"
+      }
+    },
+
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "name": "Garcia"
+      },
+      "geometry": {
+        "coordinates": [
+          13.108631741054893,
+          37.787328503805185
+        ],
+        "type": "Point"
+      }
+    }
+  ]
+}

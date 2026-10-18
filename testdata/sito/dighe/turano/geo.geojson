@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "diga", "name": "Diga del Turàno" },
+      "geometry": { "type": "Point", "coordinates": [12.9401986, 42.2318332] },
+      "id": "turano"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "Collegamento Turano-Salto" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.9421759, 42.2328214],
+          [13.0214918, 42.2802379],
+          [13.022511, 42.2792298],
+          [13.0235249, 42.2793251]
+        ]
+      },
+      "id": "condotta-48184l"
+    }
+  ]
+}

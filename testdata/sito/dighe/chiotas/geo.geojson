@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chiotas",
+        "type": "diga"
+      },
+      "geometry": {
+        "coordinates": [
+          7.333180270677303,
+          44.168873818671756
+        ],
+        "type": "Point"
+      },
+      "id": "chiotas"
+    }
+  ]
+}

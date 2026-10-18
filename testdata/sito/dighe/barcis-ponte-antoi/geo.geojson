@@ -1,0 +1,19 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "type": "diga"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    12.575436191482,
+                    46.1878199905798
+                ]
+            },
+            "id": "barcis-ponte-antoi"
+        }
+    ]
+}

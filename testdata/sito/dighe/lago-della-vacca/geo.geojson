@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.4419201518812,
+          45.952508559573
+        ]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Gaver"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.458915879986591,
+          45.93685703657013
+        ]
+      },
+      "id": "centrale-gaver"
+    }
+  ]
+}

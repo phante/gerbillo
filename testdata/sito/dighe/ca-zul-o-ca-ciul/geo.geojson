@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.714862, 46.291199]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Valina"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.697609252895688, 46.26589973861155]
+      },
+      "id": "centrale-valina"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Ca' Zul – Ca' Selva"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.714572, 46.291421],
+          [12.714583, 46.290932],
+          [12.71116, 46.286261],
+          [12.709594, 46.282873],
+          [12.705667, 46.27614],
+          [12.703629, 46.273767],
+          [12.70129, 46.270459],
+          [12.69762268023029, 46.26592771290569]
+        ]
+      },
+      "id": "condotta-ca-zul-ca-selva"
+    }
+  ]
+}

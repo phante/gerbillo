@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "diga" },
+      "geometry": { "type": "Point", "coordinates": [10.3477854, 46.0446961] },
+      "id": "sellero"
+    }
+  ]
+}

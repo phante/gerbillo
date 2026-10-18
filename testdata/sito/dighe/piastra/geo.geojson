@@ -1,0 +1,20 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Piastra",
+          "type": "Diga"
+        },
+        "geometry": {
+          "coordinates": [
+            7.388667752638014,
+            44.226574357610986
+          ],
+          "type": "Point"
+        },
+        "id": "piastra"
+      }
+    ]
+  }

@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "Lago Verde/Lac Vert"
+      },
+      "geometry": {
+        "coordinates": [
+          7.447164038428468,
+          44.10862309853721
+        ],
+        "type": "Point"
+      },
+      "id": "lago_verde-fr"
+    }
+  ]
+}

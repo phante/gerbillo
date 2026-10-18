@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "diga" },
+      "geometry": { "type": "Point", "coordinates": [11.0420107, 44.1349217] },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Centrale di Suviana" },
+      "geometry": { "type": "Point", "coordinates": [11.0404242, 44.1355771] },
+      "id": "centrale-suviana"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [11.0051304, 44.117189],
+          [11.0402727, 44.1190491]
+        ]
+      },
+      "id": "condotta-2s573r"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "name": "Molino del pallone",
+        "capacitainvaso": 0.08
+      },
+      "geometry": { "type": "Point", "coordinates": [10.9693015, 44.1071981] },
+      "id": "diga-molino-del-pallone"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.9699425, 44.1075159],
+          [10.9708786, 44.1088197],
+          [11.004138, 44.1141888]
+        ]
+      },
+      "id": "condotta-3z315s"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "diga", "name": "Pavana" },
+      "geometry": { "type": "Point", "coordinates": [11.0029592, 44.1185427] },
+      "id": "pavana"
+    }
+  ]
+}

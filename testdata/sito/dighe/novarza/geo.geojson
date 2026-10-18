@@ -1,0 +1,37 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.766875,
+          46.460787
+        ]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale Novarza – Sauris"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.766467, 46.460832],
+          [12.7562, 46.452435],
+          [12.754033, 46.452554],
+          [12.745836, 46.451179],
+          [12.733326, 46.453381]
+        ]
+      },
+      "id": "canale-novarza-sauris"
+    }
+  ]
+}

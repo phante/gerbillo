@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "Lago Nero/Lac Noir"
+      },
+      "geometry": {
+        "coordinates": [
+          7.441719244231365,
+          44.10357747253366
+        ],
+        "type": "Point"
+      },
+      "id": "lago_nero-fr"
+    }
+  ]
+}

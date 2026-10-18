@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "Lago Agnel/Lac de l'Agnel"
+      },
+      "geometry": {
+        "coordinates": [
+          7.443633811315948,
+          44.12311946282776
+        ],
+        "type": "Point"
+      },
+      "id": "lago_agnel-fr"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "Lago del Basto/Lac du Basto"
+      },
+      "geometry": {
+        "coordinates": [
+          7.4394441934894076,
+          44.09701459754689
+        ],
+        "type": "Point"
+      },
+      "id": "lago_del_basto-fr"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "delle Mesce o des Mesces",
+        "type": "diga"
+      },
+      "geometry": {
+        "coordinates": [
+          7.52689593574965,
+          44.06898047923991
+        ],
+        "type": "Point"
+      }, 
+      "id": "des-mesches"
+    }
+  ]
+}

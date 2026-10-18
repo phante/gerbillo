@@ -1,0 +1,159 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.984041,
+          46.380731
+        ]
+      },
+      "id": "ambiesta"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa di Caprizzi"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.784653,
+          46.376544
+        ]
+      },
+      "id": "presa-caprizzi"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa sul Degano"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.87058,
+          46.475382
+        ]
+      },
+      "id": "presa-degano"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa sul Vinadia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.962708,
+          46.428185
+        ]
+      },
+      "id": "presa-vinadia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Ampezzo – Ambiesta"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.784084, 46.42766],
+          [12.785543, 46.426351],
+          [12.785093, 46.425737],
+          [12.784824, 46.4165],
+          [12.790017, 46.410168],
+          [12.791991, 46.406617],
+          [12.796776, 46.401483],
+          [12.803965, 46.38951],
+          [12.809629, 46.384892],
+          [12.83231, 46.376632],
+          [12.863789, 46.381636],
+          [12.891426, 46.39028],
+          [12.913914, 46.394661],
+          [12.930522, 46.392174],
+          [12.945671, 46.39543],
+          [12.963899, 46.386691],
+          [12.965004, 46.384019]
+        ]
+      },
+      "id": "condotta-ampezzo-ambiesta"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Caprizzi – Ampezzo"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.784535, 46.37641],
+          [12.78484, 46.376488],
+          [12.78506, 46.376991],
+          [12.785409, 46.377032],
+          [12.785881, 46.37678],
+          [12.785967, 46.376085],
+          [12.795103, 46.376662],
+          [12.802935, 46.380126],
+          [12.809629, 46.384892]
+        ]
+      },
+      "id": "condotta-caprizzi-ampezzo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Degano – Ampezzo"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.870634, 46.476305],
+          [12.879238, 46.470911],
+          [12.888765, 46.453825],
+          [12.886147, 46.442855],
+          [12.904258, 46.432504],
+          [12.922497, 46.423423],
+          [12.947474, 46.414429],
+          [12.949662, 46.412964],
+          [12.94816, 46.410775],
+          [12.946444, 46.405463],
+          [12.947602, 46.402237],
+          [12.945671, 46.39543]
+        ]
+      },
+      "id": "condotta-degano-ampezzo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Vinadia – Degano"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.962708, 46.428185],
+          [12.959619, 46.42363],
+          [12.96052, 46.419044],
+          [12.956142, 46.417624],
+          [12.949662, 46.412964]
+        ]
+      },
+      "id": "condotta-vinadia-degano"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "type": "diga",
+                "name": "del Cellina"
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    12.596993,
+                    46.187645
+                ]
+            },
+            "id": "barcis-o-del-cellina"
+        }
+    ]
+}

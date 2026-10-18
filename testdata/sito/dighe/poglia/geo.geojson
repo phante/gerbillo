@@ -1,0 +1,37 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "presa", "name": "Sonico" },
+      "geometry": { "type": "Point", "coordinates": [10.3409028, 46.1684932] },
+      "id": "presa-sonico"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "canale", "name": "Sonico - Poglia" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.340935, 46.1689093],
+          [10.342598, 46.1706033],
+          [10.3476298, 46.1708188],
+          [10.3499794, 46.1627122],
+          [10.3494644, 46.1596209],
+          [10.3526402, 46.1486177],
+          [10.3492928, 46.1364302],
+          [10.3401947, 46.1225111],
+          [10.3538525, 46.0831289],
+          [10.3672743, 46.0730892]
+        ]
+      },
+      "id": "canale-sonico-poglia"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "diga" },
+      "geometry": { "type": "Point", "coordinates": [10.3666681, 46.0731227] },
+      "id": "poglia"
+    }
+  ]
+}

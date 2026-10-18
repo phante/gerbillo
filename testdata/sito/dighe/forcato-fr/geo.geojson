@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "Forcato"
+      },
+      "geometry": {
+        "coordinates": [
+          7.45126748332558,
+          44.05551545352532
+        ],
+        "type": "Point"
+      },
+      "id": "forcato-fr"
+    }
+  ]
+}

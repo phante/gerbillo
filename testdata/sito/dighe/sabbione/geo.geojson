@@ -1,0 +1,19 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.34617958302009,
+          46.4233845861128
+        ]
+      },
+      "id": "main"
+    }
+  ]
+}

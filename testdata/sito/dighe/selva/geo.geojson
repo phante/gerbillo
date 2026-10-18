@@ -1,0 +1,32 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "diga" },
+      "geometry": { "type": "Point", "coordinates": [13.9643545, 41.6056112] },
+      "id": "selva"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa" },
+      "geometry": { "type": "Point", "coordinates": [13.9912874, 41.6058965] },
+      "id": "presa-407157"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "canale" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.9740086, 41.6083994],
+          [13.9748347, 41.6092337],
+          [13.9757574, 41.6094343],
+          [13.990944, 41.6055716],
+          [13.9912096, 41.605704]
+        ]
+      },
+      "id": "canale-3d1h0m"
+    }
+  ]
+}

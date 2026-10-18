@@ -1,0 +1,20 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "diga",
+        "nome": "Diga del Salto"
+      },
+      "geometry": {
+        "coordinates": [
+          13.025100023856282,
+          42.2802942969121
+        ],
+        "type": "Point"
+      },
+      "id": "salto"
+    }
+  ]
+}

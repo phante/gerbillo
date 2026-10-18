@@ -1,0 +1,8 @@
+[Unit]
+Description=Aggiorna l'anteprima dev di Gerbillo (ADR 0011)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/gerbillo-dev-aggiorna.sh
