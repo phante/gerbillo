@@ -77,11 +77,6 @@ dt { color: var(--tenue); }
 dd { margin: 0; overflow-wrap: anywhere; }
 .esterno { font-size: 14px; margin-left: 4px; }
 .forum { margin: 24px 0; display: grid; gap: 6px; }
-.forum label { color: var(--tenue); font-size: 14px; }
-.forum textarea {
-  width: 100%; font: 13px/1.4 ui-monospace, monospace; padding: 8px; resize: none;
-  background: var(--carta); color: var(--testo); border: 1px solid var(--linea); border-radius: 6px;
-}
 .forum button {
   justify-self: start; padding: 8px 18px; font: inherit; color: #fff; background: var(--accento);
   border: 0; border-radius: 6px; cursor: pointer;

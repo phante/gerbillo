@@ -71,9 +71,7 @@
     {{if .Tags}}<dt>Tag</dt><dd>{{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}</dd>{{end}}
   </dl>
   <div class="forum">
-    <label for="bbcode">Copia per il forum</label>
-    <textarea id="bbcode" readonly rows="2">{{.BBCode}}</textarea>
-    <button type="button" id="copia">Copia</button>
+    <button type="button" id="copia" data-bbcode="{{.BBCode}}">Copia per il forum</button>
   </div>
 </div>
 {{end}}
@@ -81,7 +79,6 @@
 (function(){
   var prev={{if .Indietro}}"{{.Indietro}}"{{else}}null{{end}}, next={{if .Avanti}}"{{.Avanti}}"{{else}}null{{end}};
   document.addEventListener("keydown",function(e){
-    if(e.target.tagName==="TEXTAREA")return;
     if(e.key==="ArrowLeft"&&prev)location.href=prev;
     if(e.key==="ArrowRight"&&next)location.href=next;
   });
@@ -92,12 +89,15 @@
     if(dx>60&&prev)location.href=prev;
     if(dx<-60&&next)location.href=next;
   });
-  var b=document.getElementById("copia"),t=document.getElementById("bbcode");
+  // Il BBCode non si mostra: il pulsante lo copia e basta.
+  var b=document.getElementById("copia"),testo=b.textContent;
+  var fatto=function(){b.textContent="Copiato";setTimeout(function(){b.textContent=testo},1500)};
+  var vecchio=function(){
+    var t=document.createElement("textarea");t.value=b.dataset.bbcode;t.style.position="fixed";t.style.opacity="0";
+    document.body.appendChild(t);t.select();document.execCommand("copy");t.remove();fatto();
+  };
   b.addEventListener("click",function(){
-    t.select();
-    var fatto=function(){b.textContent="Copiato";setTimeout(function(){b.textContent="Copia"},1500)};
-    if(navigator.clipboard)navigator.clipboard.writeText(t.value).then(fatto,function(){document.execCommand("copy");fatto()});
-    else{document.execCommand("copy");fatto()}
+    if(navigator.clipboard)navigator.clipboard.writeText(b.dataset.bbcode).then(fatto,vecchio);else vecchio();
   });
 })();
 </script>
