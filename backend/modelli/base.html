@@ -1,0 +1,104 @@
+{{define "testa"}}<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Titolo}} · Gallery ProgettoDighe</title>
+<link rel="stylesheet" href="{{.Base}}statico/stile.css">
+{{if .Indietro}}<link rel="prev" href="{{.Indietro}}">{{end}}{{if .Avanti}}<link rel="next" href="{{.Avanti}}">{{end}}
+</head>
+<body>
+{{if .Striscia}}<p class="striscia">{{.Striscia}}</p>{{end}}
+<header class="testata">
+  <a class="marchio" href="{{.Base}}">Gallery <span>ProgettoDighe</span></a>
+  <nav><a href="{{.Base}}contributori/">Contributori</a> <a href="{{.Base}}altre/">Da classificare</a></nav>
+</header>
+<main>
+{{if .Briciole}}<nav class="briciole">{{range .Briciole}}<a href="{{.URL}}">{{.Testo}}</a> › {{end}}</nav>{{end}}
+<h1>{{.Titolo}}</h1>
+{{end}}
+
+{{define "piede"}}
+</main>
+<footer class="piede">Foto della community di ProgettoDighe, con la stessa licenza del sito.</footer>
+</body>
+</html>
+{{end}}
+
+{{define "griglia"}}{{template "testa" .}}
+{{with .Corpo}}
+{{if .Sottotitolo}}<p class="sotto">{{.Sottotitolo}}</p>{{end}}
+{{range .Link}}<p class="sotto"><a href="{{.URL}}">{{.Testo}}</a></p>{{end}}
+<ul class="griglia">
+{{range .Foto}}<li><a href="{{.URL}}"><img src="{{.Mini}}" alt="{{.Titolo}}" loading="lazy" decoding="async"><span>{{.Titolo}}</span></a></li>
+{{end}}</ul>
+{{if or .Indietro .Avanti}}<nav class="pagine">{{if .Indietro}}<a href="{{.Indietro}}">‹ Precedenti</a>{{end}} <span>Pagina {{.Pagina}} di {{.Pagine}}</span> {{if .Avanti}}<a href="{{.Avanti}}">Successive ›</a>{{end}}</nav>{{end}}
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{define "elenco"}}{{template "testa" .}}
+{{with .Corpo}}
+{{if .Sottotitolo}}<p class="sotto">{{.Sottotitolo}}</p>{{end}}
+{{range .Gruppi}}
+{{if .Nome}}<h2>{{.Nome}}</h2>{{end}}
+{{range .Sottogruppi}}
+{{if .Nome}}<h3>{{.Nome}}</h3>{{end}}
+<ul class="voci">
+{{range .Voci}}<li><a href="{{.URL}}">{{if .Mini}}<img src="{{.Mini}}" alt="" loading="lazy" decoding="async">{{end}}<span>{{.Testo}}</span> <small>{{.N}}</small></a></li>
+{{end}}</ul>
+{{end}}
+{{end}}
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{define "foto"}}{{template "testa" .}}
+{{with .Corpo}}
+<figure class="visore">
+  {{if .Schermo}}<a href="{{.Schermo}}"><img src="{{.Schermo}}" alt="{{.Alt}}" width="{{.Larghezza}}" height="{{.Altezza}}"></a>
+  {{else}}<a class="documento" href="{{.Originale}}"><img src="{{.Mini}}" alt="" width="160" height="160"><span>Apri il documento ({{.Formato}})</span></a>{{end}}
+  {{if $.Indietro}}<a class="freccia indietro" href="{{$.Indietro}}" aria-label="Foto precedente">‹</a>{{end}}
+  {{if $.Avanti}}<a class="freccia avanti" href="{{$.Avanti}}" aria-label="Foto successiva">›</a>{{end}}
+</figure>
+<div class="scheda">
+  {{if .Description}}<p class="descrizione">{{.Description}}</p>{{end}}
+  <dl>
+    {{if .Slug}}<dt>Ritrae</dt><dd>{{range $i, $e := .Slug}}{{if $i}}, {{end}}<a href="{{$e.URL}}">{{$e.Testo}}</a>{{if $e.Sito}} <a class="esterno" href="{{$e.Sito}}">pagina sul sito</a>{{end}}{{end}}</dd>{{end}}
+    {{if .Authors}}<dt>Autore</dt><dd>{{.Authors}}</dd>{{end}}
+    {{if .Datazione}}<dt>Datazione</dt><dd>{{.Datazione}}</dd>{{end}}
+    {{if .Luogo}}<dt>Luogo</dt><dd>{{.Luogo}}</dd>{{end}}
+    {{if .Contributore}}<dt>Caricata da</dt><dd><a href="{{.Contributore.URL}}">{{.Contributore.Testo}}</a></dd>{{end}}
+    <dt>Caricata il</dt><dd>{{.Caricata}}</dd>
+    {{if .Tags}}<dt>Tag</dt><dd>{{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}</dd>{{end}}
+  </dl>
+  <div class="forum">
+    <label for="bbcode">Copia per il forum</label>
+    <textarea id="bbcode" readonly rows="2">{{.BBCode}}</textarea>
+    <button type="button" id="copia">Copia</button>
+  </div>
+</div>
+{{end}}
+<script>
+(function(){
+  var prev={{if .Indietro}}"{{.Indietro}}"{{else}}null{{end}}, next={{if .Avanti}}"{{.Avanti}}"{{else}}null{{end}};
+  document.addEventListener("keydown",function(e){
+    if(e.target.tagName==="TEXTAREA")return;
+    if(e.key==="ArrowLeft"&&prev)location.href=prev;
+    if(e.key==="ArrowRight"&&next)location.href=next;
+  });
+  var x0=null,v=document.querySelector(".visore");
+  v.addEventListener("touchstart",function(e){x0=e.touches[0].clientX},{passive:true});
+  v.addEventListener("touchend",function(e){
+    if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;
+    if(dx>60&&prev)location.href=prev;
+    if(dx<-60&&next)location.href=next;
+  });
+  var b=document.getElementById("copia"),t=document.getElementById("bbcode");
+  b.addEventListener("click",function(){
+    t.select();
+    var fatto=function(){b.textContent="Copiato";setTimeout(function(){b.textContent="Copia"},1500)};
+    if(navigator.clipboard)navigator.clipboard.writeText(t.value).then(fatto,function(){document.execCommand("copy");fatto()});
+    else{document.execCommand("copy");fatto()}
+  });
+})();
+</script>
+{{template "piede" .}}{{end}}

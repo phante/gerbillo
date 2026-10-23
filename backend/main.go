@@ -2,7 +2,7 @@
 // Sottocomandi: serve, l'anteprima dev (ADR 0011) con un admin protetto da una
 // password usa e getta inviata via Telegram; importa, l'Importazione da Coppermine (#9);
 // mappa, la Mappatura degli album (#10); indice-entita, l'Indice delle Entità provvisorio.
-// varianti, le Varianti WebP (#11).
+// varianti, le Varianti WebP (#11); build, la Gallery pubblica (#12).
 package main
 
 import (
@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -37,7 +38,7 @@ var (
 )
 
 func main() {
-	comandi := map[string]func([]string) error{"importa": importa, "mappa": mappa, "indice-entita": indiceEntita, "varianti": generaVarianti}
+	comandi := map[string]func([]string) error{"importa": importa, "mappa": mappa, "indice-entita": indiceEntita, "varianti": generaVarianti, "build": build}
 	if len(os.Args) >= 2 && comandi[os.Args[1]] != nil {
 		if err := comandi[os.Args[1]](os.Args[2:]); err != nil {
 			log.Fatal(err)
@@ -45,11 +46,16 @@ func main() {
 		return
 	}
 	if len(os.Args) < 2 || os.Args[1] != "serve" {
-		fmt.Fprintln(os.Stderr, "uso: gerbillo serve | importa | mappa | indice-entita | varianti")
+		fmt.Fprintln(os.Stderr, "uso: gerbillo serve | importa | mappa | indice-entita | varianti | build")
 		os.Exit(2)
 	}
 	nuovaPassword()
-	http.HandleFunc("/", home)
+	// Nell'anteprima la Gallery pubblica generata in CI sta in /dist (ADR 0011, 0012).
+	if dist := envOr("GERBILLO_DIST", "/dist"); esiste(filepath.Join(dist, "index.html")) {
+		http.Handle("/", http.FileServer(http.Dir(dist)))
+	} else {
+		http.HandleFunc("/", home)
+	}
 	http.HandleFunc("/admin/", soloModeratore(admin))
 	http.HandleFunc("/admin/stato", soloModeratore(stato))
 	addr := envOr("GERBILLO_ADDR", ":8080")
@@ -159,6 +165,11 @@ func stato(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(&b, "\nhost:\n%s", host)
 	mostra(w, "Gerbillo: stato", b.String())
+}
+
+func esiste(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
 }
 
 func envOr(k, d string) string {

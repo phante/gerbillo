@@ -30,6 +30,7 @@ type configImporta struct {
 		Utente    string
 		Password  string
 		Socket    string // socket locale sul server; con [ssh] è quello remoto
+		Indirizzo string // host:porta TCP al posto del socket (MySQL di GitHub Actions per l'anteprima)
 		DBGallery string `toml:"db_gallery"`
 		DBForum   string `toml:"db_forum"`
 	}
@@ -64,6 +65,9 @@ func importa(args []string) error {
 	}
 	cfg := mysql.NewConfig()
 	cfg.User, cfg.Passwd, cfg.Net, cfg.Addr = c.MySQL.Utente, c.MySQL.Password, "unix", sock
+	if c.MySQL.Indirizzo != "" {
+		cfg.Net, cfg.Addr = "tcp", c.MySQL.Indirizzo
+	}
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		return err

@@ -9,5 +9,7 @@ RUN CGO_ENABLED=0 go build -trimpath -tags nodynamic \
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /gerbillo /gerbillo
+# La Gallery pubblica la genera il workflow prima del build (scripts/anteprima-gallery.sh).
+COPY dist/ /dist/
 EXPOSE 8080
 ENTRYPOINT ["/gerbillo", "serve"]

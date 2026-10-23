@@ -13,8 +13,27 @@ concurrency:
 jobs:
   immagine:
     runs-on: ubuntu-latest
+    # MySQL con i dati di test, per generare la Gallery pubblica dell'anteprima (#12).
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports: ["3306:3306"]
+        options: --health-cmd "mysqladmin ping -h 127.0.0.1" --health-interval 5s --health-timeout 5s --health-retries 30
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: gallery
+        run: |
+          gunzip -c testdata/coppermine.sql.gz | mysql -h 127.0.0.1 -u root
+          mysql -h 127.0.0.1 -u root -e "CREATE USER 'gerbillo_ro'@'%' IDENTIFIED BY 'gerbillo';
+            GRANT SELECT ON progettodighe_it_gallery.* TO 'gerbillo_ro'@'%';
+            GRANT SELECT ON progettodighe_it_forum.* TO 'gerbillo_ro'@'%';"
+          scripts/anteprima-gallery.sh 127.0.0.1:3306 "${{ github.ref_name }} @ $(echo ${{ github.sha }} | cut -c1-7)"
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -22,6 +41,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
+          context: . # la cartella di lavoro, per includere dist/ generata qui sopra
           push: true
           tags: ghcr.io/phante/gerbillo:dev
           build-args: |
