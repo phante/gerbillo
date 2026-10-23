@@ -37,6 +37,9 @@ type opzioniBuild struct {
 	pubblico string // URL assoluto della Gallery, per la Copia per il forum
 	sito     string // URL del Sito principale
 	striscia string // testo della striscia gialla dell'anteprima
+	// anteprima: URL dei file statici senza estensione. Il vhost di dev intercetta .css e
+	// .svg prima di /gerbillo/; gerbillo serve li risolve (fino al ^~ nello snippet nginx).
+	anteprima bool
 }
 
 func build(args []string) error {
@@ -50,6 +53,7 @@ func build(args []string) error {
 	fs.StringVar(&o.pubblico, "pubblico", "https://progettodighe.it/gallery/", "URL pubblico della Gallery")
 	fs.StringVar(&o.sito, "sito", "https://progettodighe.it/", "URL del Sito principale")
 	fs.StringVar(&o.striscia, "striscia", "", "striscia dell'anteprima")
+	fs.BoolVar(&o.anteprima, "anteprima", false, "URL dei file statici senza estensione (anteprima dev)")
 	fs.Parse(args)
 	var c configImporta
 	if _, err := toml.DecodeFile(*conf, &c); err != nil {
@@ -104,9 +108,9 @@ type contestoFoto struct {
 }
 
 type paginaSito struct {
-	Titolo, Base, Striscia, Indietro, Avanti string
-	Briciole                                 []voce
-	Corpo                                    any
+	Titolo, Base, Striscia, Indietro, Avanti, CSS string
+	Briciole                                      []voce
+	Corpo                                         any
 }
 
 type voce struct {
@@ -157,7 +161,7 @@ func (b *builder) url(parti ...string) string {
 }
 
 func (b *builder) scrivi(modello string, p paginaSito, parti ...string) error {
-	p.Base, p.Striscia = b.base, b.striscia
+	p.Base, p.Striscia, p.CSS = b.base, b.striscia, b.statico("stile.css")
 	dir := filepath.Join(append([]string{b.dir}, parti...)...)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
@@ -171,10 +175,17 @@ func (b *builder) scrivi(modello string, p paginaSito, parti ...string) error {
 	return pagine.ExecuteTemplate(f, modello, p)
 }
 
+func (b *builder) statico(nome string) string {
+	if b.anteprima {
+		nome = strings.TrimSuffix(nome, path.Ext(nome))
+	}
+	return b.base + "statico/" + nome
+}
+
 func (b *builder) mini(f *fotoPubblicata) string {
 	switch {
 	case f.Formato != "immagine":
-		return b.base + "statico/documento.svg"
+		return b.statico("documento.svg")
 	case b.media != "":
 		return b.media + f.Coppermine.Filepath + "thumb_" + f.Coppermine.Filename
 	}

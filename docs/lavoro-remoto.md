@@ -75,3 +75,5 @@ Verifica:
 Il package `ghcr.io/phante/gerbillo` deve essere **pubblico**, altrimenti il server non riesce a scaricarlo: GitHub → Packages → gerbillo → Package settings → Change visibility.
 
 Al rientro: riportare in Ansible (`progettodighe-server`) la `location`, le unit e l'env file.
+
+Al rientro, anche: applicare `location ^~ /gerbillo/` di `server/nginx-gerbillo.conf` (23/10/2026). Senza `^~` le location a regex del vhost intercettano `.css`, `.svg` e `.json` della Gallery; finché manca, l'anteprima usa `gerbillo build -anteprima`.

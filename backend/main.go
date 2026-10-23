@@ -52,7 +52,7 @@ func main() {
 	nuovaPassword()
 	// Nell'anteprima la Gallery pubblica generata in CI sta in /dist (ADR 0011, 0012).
 	if dist := envOr("GERBILLO_DIST", "/dist"); esiste(filepath.Join(dist, "index.html")) {
-		http.Handle("/", http.FileServer(http.Dir(dist)))
+		http.Handle("/", staticiSenzaEstensione(dist, http.FileServer(http.Dir(dist))))
 	} else {
 		http.HandleFunc("/", home)
 	}
@@ -165,6 +165,21 @@ func stato(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(&b, "\nhost:\n%s", host)
 	mostra(w, "Gerbillo: stato", b.String())
+}
+
+// staticiSenzaEstensione serve /statico/stile come /statico/stile.css (build -anteprima).
+func staticiSenzaEstensione(dist string, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/statico/") && filepath.Ext(r.URL.Path) == "" {
+			for _, ext := range []string{".css", ".svg"} {
+				if p := filepath.Join(dist, filepath.FromSlash(r.URL.Path)+ext); esiste(p) {
+					http.ServeFile(w, r, p)
+					return
+				}
+			}
+		}
+		h.ServeHTTP(w, r)
+	})
 }
 
 func esiste(p string) bool {

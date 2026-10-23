@@ -25,4 +25,4 @@ g indice-entita -sito testdata/sito > "$lavoro/indice.json"
 g mappa -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -manuali dati/mappature-manuali.yaml
 # Nell'anteprima nginx serve la Gallery sotto /gerbillo/ e toglie il prefisso.
 g build -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -dist dist \
-  -base /gerbillo/ -media https://progettodighe.it/gallery/albums/ -striscia "$striscia"
+  -base /gerbillo/ -anteprima -media https://progettodighe.it/gallery/albums/ -striscia "$striscia"
