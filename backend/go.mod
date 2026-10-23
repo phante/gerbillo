@@ -8,4 +8,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require filippo.io/edwards25519 v1.2.0 // indirect
+require (
+	filippo.io/edwards25519 v1.2.0 // indirect
+	github.com/ebitengine/purego v0.10.1 // indirect
+	github.com/gen2brain/webp v0.6.4 // indirect
+	golang.org/x/image v0.47.0 // indirect
+)
