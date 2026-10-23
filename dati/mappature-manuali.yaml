@@ -1,0 +1,163 @@
+# Mappature manuali decise in chat (G2, #10). Stesso formato di arricchimento/mappature.yaml:
+# al rientro si applicano al Repository dei contenuti sul server.
+album:
+    33:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Verzasca
+        origine: manuale
+    38:
+        coppermine: Dighe - Dams / Italia / Veneto / S. Caterina di Auronzo (BL)
+        origine: manuale
+        slug:
+        - dighe/santa-caterina
+    40:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Grande Dixence
+        origine: manuale
+        slug:
+        - dighe/grande-dixience
+    52:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Emosson
+        origine: manuale
+    53:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Mauvoisin
+        origine: manuale
+    54:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Zeuzier
+        origine: manuale
+    57:
+        coppermine: Dighe - Dams / ... resto del mondo / altre - other
+        origine: manuale
+    85:
+        coppermine: Dighe - Dams / ... resto del mondo / Slovenia / altre - other
+        origine: manuale
+    100:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Luzzone
+        origine: manuale
+    101:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Hongrin
+        origine: manuale
+    103:
+        coppermine: Dighe - Dams / ... resto del mondo / Croazia
+        origine: manuale
+    106:
+        coppermine: Dighe - Dams / Italia / Lombardia / Val Camonica Sistema del Poglia
+            / Arno-Campellio-Isola
+        origine: manuale
+        slug:
+        - dighe/lago-d-arno
+        tags:
+        - campellio
+        - poglia
+        - da-separare
+    114:
+        coppermine: Dighe - Dams / Italia / Lombardia / Val Camonica Sistema Avio
+            / Vasca e centrale di Edolo
+        origine: manuale
+        slug:
+        - dighe/vasca-di-edolo
+        tags:
+        - da-separare
+    116:
+        coppermine: Dighe - Dams / Austria - Österreich / Kaprun
+        origine: manuale
+    124:
+        coppermine: Dighe - Dams / Austria - Österreich / Wiestal
+        origine: manuale
+    125:
+        coppermine: Dighe - Dams / Austria - Österreich / Strubklamm - Salzburg
+        origine: manuale
+    131:
+        coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Aiba
+        origine: manuale
+    137:
+        coppermine: Dighe - Dams / ... resto del mondo / Cina
+        origine: manuale
+    140:
+        coppermine: Dighe - Dams / Austria - Österreich / Außerfern
+        origine: manuale
+    141:
+        coppermine: Dighe - Dams / Austria - Österreich / KW-Gruppe Mayrhofen
+        origine: manuale
+    143:
+        coppermine: Dighe - Dams / Austria - Österreich / altre
+        origine: manuale
+    144:
+        coppermine: Dighe - Dams / ... resto del mondo / Turchia
+        origine: manuale
+    147:
+        coppermine: Dighe - Dams / ... resto del mondo / Giappone
+        origine: manuale
+    169:
+        coppermine: Dighe - Dams / ... resto del mondo / Congo - Inga
+        origine: manuale
+    180:
+        coppermine: Dighe - Dams / ... resto del mondo / USA / Matilija
+        origine: manuale
+    191:
+        coppermine: Dighe - Dams / ... resto del mondo / USA / Hoover
+        origine: manuale
+    196:
+        coppermine: Dighe - Dams / ... resto del mondo / Venezuela - Presa El Guapo
+        origine: manuale
+    212:
+        coppermine: Dighe - Dams / ... resto del mondo / Grecia - Leros
+        origine: manuale
+    265:
+        coppermine: Dighe - Dams / Francia / Moncenisio
+        origine: manuale
+    339:
+        coppermine: Dighe - Dams / Austria - Österreich / Schlegeis
+        origine: manuale
+    561:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Santa Maria
+        origine: manuale
+    562:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Räterischbode
+        origine: manuale
+    563:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Seuferegg
+        origine: manuale
+    564:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Spitallamm
+        origine: manuale
+    568:
+        coppermine: Dighe - Dams / ... resto del mondo / Repubblica di Macedonia
+        origine: manuale
+    606:
+        coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Che Avce
+        origine: manuale
+    766:
+        coppermine: Dighe - Dams / ... resto del mondo / Norvegia
+        origine: manuale
+    771:
+        coppermine: Dighe - Dams / Francia / La Gittaz
+        origine: manuale
+    772:
+        coppermine: Dighe - Dams / Francia / Roselend
+        origine: manuale
+    773:
+        coppermine: Dighe - Dams / Francia / St. Guerin
+        origine: manuale
+    774:
+        coppermine: Dighe - Dams / Francia / Vari
+        origine: manuale
+    796:
+        coppermine: Dighe - Dams / Austria - Österreich / Malta-Kolnbrein
+        origine: manuale
+    797:
+        coppermine: Dighe - Dams / Austria - Österreich / Reisseck
+        origine: manuale
+    798:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Albigna
+        origine: manuale
+    871:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Lago Bianco Sud
+        origine: manuale
+    894:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Griessee
+        origine: manuale
+    899:
+        coppermine: Dighe - Dams / ... resto del mondo / USA / St. Francis
+        origine: manuale
+    965:
+        coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Orden
+        origine: manuale
