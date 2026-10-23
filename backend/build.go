@@ -156,7 +156,10 @@ type corpoGriglia struct {
 	Mappa            *mappaDiga      // idem (#27)
 }
 
-type mappaDiga struct{ Centro, GeoJSON string }
+type mappaDiga struct {
+	Centro, GeoJSON string
+	Zoom            int
+}
 
 type corpoElenco struct {
 	Sottotitolo string
@@ -362,8 +365,8 @@ func (b *builder) radice(aid int) int {
 
 // griglie scrive un elenco di Foto in pagine da perPagina: la prima in parti/, le altre in parti/<n>/.
 func (b *builder) mappaDiga(s string, per map[string][]*fotoPubblicata, slugs []string) *mappaDiga {
-	if c, g := b.geojsonDiga(s, per, slugs); g != "" {
-		return &mappaDiga{c, g}
+	if c, g, z := b.geojsonDiga(s, per, slugs); g != "" {
+		return &mappaDiga{c, g, z}
 	}
 	return nil
 }

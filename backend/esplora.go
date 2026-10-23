@@ -186,11 +186,11 @@ func km(lat1, lon1, lat2, lon2 float64) float64 {
 // sito (modelli/sito/mappa.js): la diga stessa, che porta alla sua pagina sul sito,
 // e le dighe con foto dello stesso impianto o entro raggioKm, che portano ai loro
 // album. Vuota se la diga non ha coordinate.
-func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, slugs []string) (centro string, geo string) {
+func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, slugs []string) (centro, geo string, zoom int) {
 	e := b.c.entita[s]
 	c := e.Geolocation.Coords
 	if c == nil {
-		return "", ""
+		return "", "", 0
 	}
 	type proprieta struct {
 		Type string `json:"type"`
@@ -230,7 +230,24 @@ func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, 
 			fs = append(fs, punto(o, "", o.Title+" · "+strconv.Itoa(len(perEntita[x]))+" foto", b.url(x)))
 		}
 	}
+	// Le mappe d'articolo del sito non adattano l'inquadratura ai punti: lo zoom lo
+	// sceglie la pagina. Il più stretto che, con la diga al centro, li mostra tutti.
+	dlat, dlon := 0.002, 0.002
+	for _, f := range fs[1:] {
+		dlat = max(dlat, math.Abs(f.Geometry.Coordinates[1]-c.Latitudine))
+		dlon = max(dlon, math.Abs(f.Geometry.Coordinates[0]-c.Longitudine))
+	}
+	zoom = zoomPer(dlat, dlon, c.Latitudine)
 	g, _ := json.Marshal(map[string]any{"type": "FeatureCollection", "features": fs})
 	ctr, _ := json.Marshal([2]float64{c.Latitudine, c.Longitudine})
-	return string(ctr), string(g)
+	return string(ctr), string(g), zoom
+}
+
+// zoomPer è lo zoom Leaflet a cui ±dlat e ±dlon gradi attorno al centro stanno in una
+// mappa di circa 300×260 pixel (la più piccola, su telefono), fra 8 e 15.
+func zoomPer(dlat, dlon, lat float64) int {
+	const largo, alto = 300.0, 260.0
+	zx := math.Log2(largo * 360 / (256 * 2 * dlon))
+	zy := math.Log2(alto * 360 / (256 * 2 * dlat / math.Cos(lat*math.Pi/180)))
+	return max(8, min(15, int(math.Floor(min(zx, zy)))))
 }

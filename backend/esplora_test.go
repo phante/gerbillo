@@ -83,7 +83,10 @@ func TestIntorno(t *testing.T) {
 	if _, ok := nomi["dighe/agaro"]; ok {
 		t.Error("la diga stessa fra quelle intorno")
 	}
-	centro, geo := b.geojsonDiga("dighe/agaro", per, slugs)
+	centro, geo, zoom := b.geojsonDiga("dighe/agaro", per, slugs)
+	if zoom < 8 || zoom > 12 {
+		t.Errorf("zoom %d: deve contenere codelago, 8 km a ovest", zoom)
+	}
 	if centro != "[46.29,8.3]" {
 		t.Errorf("centro %s", centro)
 	}
