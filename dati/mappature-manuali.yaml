@@ -85,6 +85,14 @@ album:
     127:
         coppermine: Dighe - Dams / Italia / Friuli Venezia-Giulia / Debellis (UD)
         origine: manuale
+    130:
+        coppermine: Dighe - Dams / Italia / Liguria / Pian Sapeio e Giacopiane (GE)
+        origine: manuale
+        slug:
+        - dighe/pian-sapejo
+        - dighe/giacopiane
+        tags:
+        - da-separare
     131:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Aiba
         origine: manuale
@@ -106,6 +114,14 @@ album:
     147:
         coppermine: Dighe - Dams / ... resto del mondo / Giappone
         origine: manuale
+    155:
+        coppermine: Dighe - Dams / Italia / Piemonte / Sabbioni
+        origine: manuale
+        slug:
+        - dighe/sabbione
+        tags:
+        - toce
+        - sabbione
     161:
         coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Val Contrin
         origine: manuale
@@ -150,9 +166,27 @@ album:
     305:
         coppermine: Dighe - Dams / Italia / Lazio / Tivoli (RM)
         origine: manuale
+    308:
+        coppermine: Dighe - Dams / Italia / Lombardia / San Giacomo (SO)
+        origine: manuale
+        slug:
+        - dighe/san-giacomo-di-fraele
     309:
         coppermine: Dighe - Dams / Italia / Piemonte / Pont Ventoux
         origine: manuale
+    313:
+        coppermine: Dighe - Dams / Italia / Emilia Romagna / Brasimone (BO)
+        origine: manuale
+        slug:
+        - dighe/scalere-brasimone
+    318:
+        coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / San Valentino
+            alla Mutta ( Lago di Resia )
+        origine: manuale
+        slug:
+        - dighe/san_valentino-bz
+        tags:
+        - resia
     339:
         coppermine: Dighe - Dams / Austria - Österreich / Schlegeis
         origine: manuale
@@ -163,9 +197,21 @@ album:
         - dighe/vagli-prima-fase
         tags:
         - vagli
+    411:
+        coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Delle Piazze (Pinè)
+        origine: manuale
+        slug:
+        - dighe/lago-delle-piazze
     433:
         coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Selva dei Molini
         origine: manuale
+    437:
+        coppermine: Dighe - Dams / Italia / Veneto / Stua (valle di Canzoi) (BL)
+        origine: manuale
+        slug:
+        - dighe/la-stua-o-val-canzoi
+        tags:
+        - la stua o val canzoi
     480:
         coppermine: Dighe - Dams / Italia / Piemonte / Devero (Codelago)
         origine: manuale
@@ -173,6 +219,11 @@ album:
         - dighe/codelago
         tags:
         - da-separare
+    481:
+        coppermine: Dighe - Dams / Italia / Sardegna / Santa Chiara del Tirso (OR)
+        origine: manuale
+        slug:
+        - dighe/santa-chiara-dula-o-del-tirso
     514:
         coppermine: Dighe - Dams / Italia / Toscana / Bagnone
         origine: manuale
@@ -197,12 +248,22 @@ album:
     606:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Che Avce
         origine: manuale
+    613:
+        coppermine: Dighe - Dams / Italia / Toscana / Vicaglia
+        origine: manuale
+        slug:
+        - dighe/vicaglia-silano
     746:
         coppermine: Dighe - Dams / Italia / Lazio / Pertuso (RM)
         origine: manuale
     751:
         coppermine: Dighe - Dams / Italia / Lazio / Roviano (RM)
         origine: manuale
+    752:
+        coppermine: Dighe - Dams / Italia / Lazio / S. Cosimato (RM)
+        origine: manuale
+        slug:
+        - dighe/san-cosimato
     753:
         coppermine: Dighe - Dams / Italia / Lazio / Simbrivio (RM)
         origine: manuale
@@ -233,6 +294,11 @@ album:
     803:
         coppermine: Dighe - Dams / Italia / Piemonte / Robbio
         origine: manuale
+    866:
+        coppermine: Dighe - Dams / Italia / Piemonte / Busin Inferiore
+        origine: manuale
+        slug:
+        - dighe/busin
     871:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Lago Bianco Sud
         origine: manuale
