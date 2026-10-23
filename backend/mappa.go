@@ -20,7 +20,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const cidDighe = 2
+const (
+	cidDighe     = 2
+	cidPersonali = 10000 // gli album delle User galleries hanno categoria 10000 + owner
+)
 
 const (
 	automatica = "automatica" // proposta dal confronto dei nomi
@@ -140,11 +143,12 @@ type voceRapporto struct {
 }
 
 type rapportoMappature struct {
-	album, foto                              int
-	autoAlbum, autoFoto, eredAlbum, eredFoto int
-	manAlbum, manFoto                        int
-	daFare, ambigui                          []voceRapporto
-	sconosciuti                              []string // "album 12: dighe/xxx"
+	album, foto                                      int
+	autoAlbum, autoFoto, eredAlbum, eredFoto         int
+	manAlbum, manFoto                                int
+	daFare, ambigui                                  []voceRapporto
+	sconosciuti                                      []string // "album 12: dighe/xxx"
+	persAlbum, persFoto, persAutoAlbum, persAutoFoto int
 }
 
 // abbina produce le Mappature: le righe manuali restano, le altre si rigenerano.
@@ -216,6 +220,22 @@ func abbina(cpg albumCoppermine, idx []entita, vecchie fileMappature) (fileMappa
 		return nil
 	}
 	for aid, a := range cpg.Album {
+		if a.Categoria >= cidPersonali {
+			// Album personale (#2): solo abbinamenti certi; senza, la Foto resta senza slug.
+			desc := fmt.Sprintf("User galleries / %d / %s", a.Categoria-cidPersonali, a.Title)
+			rap.persAlbum++
+			rap.persFoto += a.Foto
+			if v := vecchie.Album[aid]; v != nil && v.Origine == manuale {
+				v.Coppermine = desc
+				out.Album[aid] = v
+				controlla(fmt.Sprintf("album %d", aid), v)
+			} else if s, certo := trova(a.Title, nil, chiavi); certo && len(s) == 1 {
+				out.Album[aid] = &mappatura{Coppermine: desc, Origine: automatica, Slug: s}
+				rap.persAutoAlbum++
+				rap.persAutoFoto += a.Foto
+			}
+			continue
+		}
 		if radice(a.Categoria) != cidDighe {
 			continue
 		}
@@ -399,6 +419,8 @@ func (r *rapportoMappature) markdown() []byte {
 	}
 	p("| ambigui | %d | %d |\n", len(r.ambigui), nf(r.ambigui))
 	p("| da fare | %d | %d |\n\n", len(r.daFare), nf(r.daFare))
+	p("Album personali (#2): %d, con %d Foto; abbinati in automatico %d (%d Foto). Gli altri restano senza slug.\n\n",
+		r.persAlbum, r.persFoto, r.persAutoAlbum, r.persAutoFoto)
 	if len(r.sconosciuti) > 0 {
 		p("## Slug sconosciuti nelle righe manuali\n\n")
 		for _, s := range r.sconosciuti {

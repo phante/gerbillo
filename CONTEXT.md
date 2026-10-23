@@ -78,7 +78,7 @@ _Avoid_: uploader, utente
 Da dove proviene la Foto quando non è opera di chi la carica (archivio, pubblicazione, ente).
 
 **Vista**:
-Un modo generato di navigare le Foto: per albero (regione → diga → Categoria), per periodo, per mappa, per Tag o Categoria. Nessuna Vista è la struttura reale dei dati.
+Un modo generato di navigare le Foto: per albero (regione → diga → Categoria), per periodo, per mappa, per Tag o Categoria, per Contributore. Nessuna Vista è la struttura reale dei dati.
 _Avoid_: gerarchia, album
 
 ### Sistemi
@@ -129,7 +129,7 @@ La gallery attuale, fonte primaria delle Foto finché resta attiva.
 Contenitori di Coppermine. Esistono solo come input della Mappatura, non nel modello di Gerbillo. Da non confondere con la Categoria di Gerbillo.
 
 **Album personale**:
-Un Album di Coppermine nelle *User galleries*, legato a un Contributore e non a un'Entità. Il suo destino nel modello è da decidere guardando i dati di G1.
+Un Album di Coppermine nelle *User galleries*, legato a un Contributore e non a un'Entità. Come gli altri Album sparisce come contenitore ed entra nella Mappatura; le Foto di ogni Contributore si trovano nella Vista per Contributore (#2).
 
 **Importazione**:
 L'esecuzione, ripetibile, che porta le Foto da Coppermine a Gerbillo. Ogni esecuzione rigenera da zero i dati importati, che non contengono mai lavoro editoriale: quello sta nel Livello di arricchimento, e la Foto pubblicata nasce dalla loro unione.
