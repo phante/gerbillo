@@ -112,11 +112,11 @@ func tunnel(host, remoto string) (string, func(), error) {
 // rigaFoto contiene i byte grezzi delle colonne ammesse di cpg1410_pictures.
 // Mai IP né guest_token: le colonne lette sono solo queste.
 type rigaFoto struct {
-	pid, aid, larghezza, altezza, hits, owner int
-	ctime                                     int64
-	filepath, filename                        []byte
-	titolo, descrizione, keywords             []byte
-	user1, user2, user3                       []byte
+	pid, aid, larghezza, altezza, owner int
+	ctime                               int64
+	filepath, filename                  []byte
+	titolo, descrizione, keywords       []byte
+	user1, user2, user3                 []byte
 }
 
 type datiCoppermine struct {
@@ -128,7 +128,7 @@ type datiCoppermine struct {
 func leggiCoppermine(db *sql.DB, gallery, forum string) (*datiCoppermine, error) {
 	d := &datiCoppermine{exif: map[int]string{}, utenti: map[int]string{}}
 	// BINARY: i byte così come sono, senza conversioni del driver (latin1 con UTF-8 dentro).
-	r, err := db.Query(`SELECT pid, aid, pwidth, pheight, hits, owner_id, ctime,
+	r, err := db.Query(`SELECT pid, aid, pwidth, pheight, owner_id, ctime,
 		BINARY filepath, BINARY filename, BINARY title, BINARY caption, BINARY keywords,
 		BINARY user1, BINARY user2, BINARY user3
 		FROM ` + gallery + `.cpg1410_pictures ORDER BY pid`)
@@ -137,7 +137,7 @@ func leggiCoppermine(db *sql.DB, gallery, forum string) (*datiCoppermine, error)
 	}
 	for r.Next() {
 		var f rigaFoto
-		if err := r.Scan(&f.pid, &f.aid, &f.larghezza, &f.altezza, &f.hits, &f.owner, &f.ctime,
+		if err := r.Scan(&f.pid, &f.aid, &f.larghezza, &f.altezza, &f.owner, &f.ctime,
 			&f.filepath, &f.filename, &f.titolo, &f.descrizione, &f.keywords,
 			&f.user1, &f.user2, &f.user3); err != nil {
 			return nil, err
@@ -247,7 +247,8 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 			"larghezza": f.larghezza,
 			"altezza":   f.altezza,
 		}
-		cpg := map[string]any{"aid": f.aid, "hits": f.hits}
+		// Niente hits: cambia a ogni visita e sporcherebbe il diff di ogni Importazione.
+		cpg := map[string]any{"aid": f.aid}
 		metti := func(m map[string]any, k, v string) {
 			if v != "" {
 				m[k] = v

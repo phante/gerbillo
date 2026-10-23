@@ -69,7 +69,6 @@ coppermine:
     data_exif: 2005:06:03 11:31:56
     filename: a.JPG
     filepath: userpics/10025/
-    hits: 0
 formato: immagine
 larghezza: 800
 pid: 1
