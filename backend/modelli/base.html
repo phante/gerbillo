@@ -59,8 +59,7 @@
       <a class="link dim black-70 ph2" href="{{.Sito}}privacy/">Privacy</a>
     </div>
     <p class="dib ph2 link dim black-70">
-      Eccetto dove indicato, i contenuti sono licenziati <a class="link black-80 b" href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>.
-      Le foto della Gallery hanno la stessa licenza.
+      Eccetto dove indicato, i contenuti sono licenziati <a class="link black-80 b" href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>
       <span class="nowrap ml2">
         <img class="v-mid h1" src="{{statico "cc.svg"}}" alt="CC" loading="lazy">
         <img class="v-mid h1" src="{{statico "by.svg"}}" alt="BY" loading="lazy">
@@ -142,6 +141,12 @@ document.addEventListener("click",function(e){
     <div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "send-mail"}}</span><small class="ttu tracked black-70">Caricata:</small>
       <span class="black-70 ml1 fw5">{{.Caricata}}{{with .Contributore}} da <a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{.URL}}">{{.Testo}}</a>{{end}}</span></div>
     {{if .Tags}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "hashtag"}}</span><small class="ttu tracked black-70">Tag:</small><span class="black-70 ml1">{{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}</span></div>{{end}}
+    <div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "cc"}}</span><small class="ttu tracked black-70">Licenza:</small>
+      <span class="black-70 ml1 fw5">{{if .Licenza.URL}}<a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{.Licenza.URL}}">{{.Licenza.Testo}}</a>{{else}}{{.Licenza.Testo}}{{end}}</span></div>
+    <div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "doc-svgrepo-com"}}</span><small class="ttu tracked black-70">Link:</small>
+      <button class="prdi-copy-btn black-70 ph1 br1 hover-bg-yellow transition-all" type="button" data-copy-url="{{.Link}}" aria-label="Copia il link della foto negli appunti">
+        <span class="prdi-copy-label">{{.LinkBreve}}</span><span class="prdi-copy-tip" aria-live="polite">Copiato!</span>
+      </button></div>
     {{if .SulSito}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "link"}}</span><small class="ttu tracked black-70">Sul sito:</small>
       <div class="black-70">{{range $i, $e := .SulSito}}{{if $i}} | {{end}}<a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{$e.URL}}">{{$e.Testo}}</a>{{end}}</div></div>{{end}}
   </div>
@@ -163,6 +168,19 @@ document.addEventListener("click",function(e){
     if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;
     if(dx>60&&prev)location.href=prev;
     if(dx<-60&&next)location.href=next;
+  });
+  // Copia del link, come copy-url.js del sito (con ripiego per i browser senza clipboard).
+  var copia=function(testo,ok,ko){
+    if(navigator.clipboard)return navigator.clipboard.writeText(testo).then(ok,ko);
+    var t=document.createElement("textarea");t.value=testo;t.style.position="fixed";t.style.opacity="0";
+    document.body.appendChild(t);t.select();var r=document.execCommand("copy");t.remove();(r?ok:ko)();
+  };
+  document.querySelectorAll(".prdi-copy-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var tip=btn.querySelector(".prdi-copy-tip");
+      var mostra=function(m){tip.textContent=m;btn.classList.add("copied");clearTimeout(btn._t);btn._t=setTimeout(function(){btn.classList.remove("copied")},2000)};
+      copia(btn.dataset.copyUrl,function(){mostra("Copiato!")},function(){mostra("Copia non riuscita")});
+    });
   });
   // Il BBCode non si mostra: il pulsante lo copia e basta.
   var b=document.getElementById("copia"),s=document.getElementById("copia-testo"),testo=s.textContent;

@@ -27,7 +27,7 @@ Una versione derivata dell'Originale (miniatura, versione a schermo, ecc.), serv
 _Avoid_: thumb, normal (termini Coppermine)
 
 **Licenza**:
-La licenza sotto cui ogni Foto è pubblicata: unica, obbligatoria e uguale a quella del sito principale.
+La licenza sotto cui ogni Foto è pubblicata, mostrata nei suoi metadati. Se chi carica non ne sceglie un'altra da un elenco chiuso, è quella del Sito principale (CC BY-SA 4.0, ADR 0010).
 
 ### Classificazione
 

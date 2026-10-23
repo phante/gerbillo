@@ -41,7 +41,7 @@ album:
 	for pid, y := range foto {
 		scrivi("importazione/foto/"+pid+".yaml", y)
 	}
-	scrivi("arricchimento/foto/1.yaml", "datazione: 195X\nauthors: [Ente]\n")
+	scrivi("arricchimento/foto/1.yaml", "datazione: 195X\nauthors: [Ente]\nlicenza: CC-BY-4.0\n")
 	indice = filepath.Join(dir, "indice.json")
 	scrivi("indice.json", `[{"slug":"dighe/vajont","title":"Vajont","geolocation":{"stato":"Italia","regione":"Friuli-Venezia Giulia"}}]`)
 	return dir, indice
@@ -95,10 +95,15 @@ func TestBuild(t *testing.T) {
 		"[url=https://progettodighe.it/gallery/f/1/][img]https://progettodighe.it/gallery/f/1/mini.webp[/img][/url]",
 		`href="/g/f/2/"`, // successiva nello stesso elenco (Vajont)
 		"195X", "27/12/2006", `href="/g/contributori/25/"`,
+		`href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0`, // scelta per la Foto
+		`data-copy-url="https://progettodighe.it/gallery/f/1/"`,
 	} {
 		if !strings.Contains(foto1, atteso) {
 			t.Errorf("f/1 senza %q", atteso)
 		}
+	}
+	if !strings.Contains(leggi("f/3/index.html"), `by-sa/4.0/">CC BY-SA 4.0</a>`) { // nei metadati, non nel footer
+		t.Error("licenza predefinita assente")
 	}
 	if strings.Contains(leggi("f/3/index.html"), "da-separare") {
 		t.Error("tag interno pubblicato")

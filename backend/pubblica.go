@@ -23,6 +23,7 @@ type fotoPubblicata struct {
 	Date         string
 	Authors      []string
 	Datazione    string
+	Licenza      string // identificativo SPDX; vuota = quella del sito (ADR 0010)
 	Slug         []string
 	Tags         []string
 	Categories   []string
@@ -133,9 +134,23 @@ func (c *contenuti) mappaturaAlbum(aid int, m fileMappature) *mappatura {
 	return nil
 }
 
+// licenzaSito è la Licenza predefinita delle Foto, la stessa del Sito principale.
+const licenzaSito = "CC-BY-SA-4.0"
+
+// licenze sono quelle che chi carica potrà scegliere (ADR 0010 rivisto): nome e testo.
+var licenze = map[string]struct{ nome, url string }{
+	"CC-BY-SA-4.0":    {"CC BY-SA 4.0", "https://creativecommons.org/licenses/by-sa/4.0/"},
+	"CC-BY-4.0":       {"CC BY 4.0", "https://creativecommons.org/licenses/by/4.0/"},
+	"CC-BY-NC-SA-4.0": {"CC BY-NC-SA 4.0", "https://creativecommons.org/licenses/by-nc-sa/4.0/"},
+	"CC0-1.0":         {"CC0 1.0", "https://creativecommons.org/publicdomain/zero/1.0/"},
+}
+
 // completa valida gli slug ed eredita dalla prima Entità i campi geografici mancanti.
 // Le coords no: il Punto geografico mancante lo sostituisce la Vista per mappa.
 func (c *contenuti) completa(f *fotoPubblicata) {
+	if f.Licenza == "" {
+		f.Licenza = licenzaSito
+	}
 	var validi []string
 	for _, s := range f.Slug {
 		if c.entita[s] == nil {

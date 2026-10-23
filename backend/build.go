@@ -174,6 +174,8 @@ type corpoFoto struct {
 	BBCode                                           string
 	Larghezza, Altezza                               int
 	Dighe, SulSito                                   []voce
+	Licenza                                          voce
+	Link, LinkBreve                                  string
 	Contributore                                     *voce
 	Tags                                             []string
 }
@@ -412,6 +414,12 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 		Datazione: f.Datazione, Luogo: f.Coppermine.Luogo, Tags: f.tagPubblici(),
 		BBCode: fmt.Sprintf("[url=%sf/%s/][img]%sf/%s/mini.webp[/img][/url]", b.pubblico, pid, b.pubblico, pid),
 	}
+	c.Licenza = voce{Testo: f.Licenza}
+	if l, ok := licenze[f.Licenza]; ok {
+		c.Licenza = voce{URL: l.url, Testo: l.nome}
+	}
+	c.Link = b.pubblico + "f/" + pid + "/"
+	c.LinkBreve = strings.TrimPrefix(c.Link, "https://")
 	if c.Alt == "" {
 		c.Alt = f.Title
 	}
