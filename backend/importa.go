@@ -77,12 +77,19 @@ func importa(args []string) error {
 	if err := scrivi(c.Contenuti, foto, rap); err != nil {
 		return err
 	}
+	b, err := yaml.Marshal(righe.album)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(c.Contenuti, "importazione", "album.yaml"), b, 0o644); err != nil {
+		return err
+	}
 	if len(foto) != len(righe.foto) {
 		return fmt.Errorf("gate: %d YAML per %d righe", len(foto), len(righe.foto))
 	}
 	fmt.Printf("importate %d foto: %d scritte, %d sparite, %d non decodificate, %d mojibake\n",
 		len(foto), rap.scritte, len(rap.spariti), len(rap.nonDecodificati), len(rap.mojibake))
-	return registra(c.Contenuti, rap)
+	return registra(c.Contenuti, "importazione", fmt.Sprintf("importazione: %d foto, %d scritte, %d sparite", rap.totale, rap.scritte, len(rap.spariti)))
 }
 
 // tunnel inoltra il socket MySQL del server su un socket locale con ssh -L.
@@ -123,6 +130,24 @@ type datiCoppermine struct {
 	foto   []rigaFoto
 	exif   map[int]string // pid → DateTimeOriginal
 	utenti map[int]string // user_id → username
+	album  albumCoppermine
+}
+
+// albumCoppermine è il contenuto di importazione/album.yaml: l'input della Mappatura (G2).
+type albumCoppermine struct {
+	Album     map[int]albumYAML     `yaml:"album"`
+	Categorie map[int]categoriaYAML `yaml:"categorie"`
+}
+
+type albumYAML struct {
+	Categoria int    `yaml:"categoria"` // da 10000 in su: User galleries (10000 + owner)
+	Foto      int    `yaml:"foto"`
+	Title     string `yaml:"title"`
+}
+
+type categoriaYAML struct {
+	Nome   string `yaml:"nome"`
+	Parent int    `yaml:"parent"`
 }
 
 func leggiCoppermine(db *sql.DB, gallery, forum string) (*datiCoppermine, error) {
@@ -176,7 +201,48 @@ func leggiCoppermine(db *sql.DB, gallery, forum string) (*datiCoppermine, error)
 		}
 		d.utenti[id] = html.UnescapeString(nome) // phpBB salva lo username escapato
 	}
-	return d, r.Err()
+	if err := r.Err(); err != nil {
+		return nil, err
+	}
+	return d, leggiAlbum(db, gallery, d)
+}
+
+func leggiAlbum(db *sql.DB, gallery string, d *datiCoppermine) error {
+	d.album = albumCoppermine{Album: map[int]albumYAML{}, Categorie: map[int]categoriaYAML{}}
+	foto := map[int]int{}
+	for _, f := range d.foto {
+		foto[f.aid]++
+	}
+	r, err := db.Query(`SELECT aid, category, BINARY title FROM ` + gallery + `.cpg1410_albums`)
+	if err != nil {
+		return err
+	}
+	for r.Next() {
+		var aid, cat int
+		var t []byte
+		if err := r.Scan(&aid, &cat, &t); err != nil {
+			return err
+		}
+		titolo, _ := decodifica(t)
+		d.album.Album[aid] = albumYAML{cat, foto[aid], titolo}
+	}
+	if err := r.Err(); err != nil {
+		return err
+	}
+	r, err = db.Query(`SELECT cid, parent, BINARY name FROM ` + gallery + `.cpg1410_categories`)
+	if err != nil {
+		return err
+	}
+	for r.Next() {
+		var cid, parent int
+		var n []byte
+		if err := r.Scan(&cid, &parent, &n); err != nil {
+			return err
+		}
+		nome, _ := decodifica(n)
+		d.album.Categorie[cid] = categoriaYAML{nome, parent}
+	}
+	return r.Err()
 }
 
 // exifData è un array PHP serializzato e piatto. Se ne legge solo DateTimeOriginal:
@@ -394,8 +460,8 @@ func unisci(v []int) string {
 	return strings.Join(s, ", ")
 }
 
-// registra fa il commit dell'Importazione nel Repository dei contenuti, che è solo locale.
-func registra(dir string, r *rapporto) error {
+// registra fa il commit di percorso nel Repository dei contenuti, che è solo locale.
+func registra(dir, percorso, msg string) error {
 	git := func(a ...string) *exec.Cmd {
 		c := exec.Command("git", append([]string{"-C", dir, "-c", "user.name=gerbillo", "-c", "user.email=gerbillo@localhost"}, a...)...)
 		c.Stderr = os.Stderr
@@ -406,13 +472,12 @@ func registra(dir string, r *rapporto) error {
 			return err
 		}
 	}
-	if err := git("add", "-A", "importazione").Run(); err != nil {
+	if err := git("add", "-A", percorso).Run(); err != nil {
 		return err
 	}
 	if git("diff", "--cached", "--quiet").Run() == nil {
 		fmt.Println("nessun cambiamento da registrare")
 		return nil
 	}
-	msg := fmt.Sprintf("importazione: %d foto, %d scritte, %d sparite", r.totale, r.scritte, len(r.spariti))
 	return git("commit", "-q", "-m", msg).Run()
 }
