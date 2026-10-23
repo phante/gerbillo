@@ -14,7 +14,6 @@
 {{if .Indietro}}<link rel="prev" href="{{.Indietro}}">{{end}}{{if .Avanti}}<link rel="next" href="{{.Avanti}}">{{end}}
 </head>
 <body class="sans-serif bg-near-white black-80">
-{{if .Striscia}}<p class="striscia ma0">{{.Striscia}}</p>{{end}}
 <header class="pd-map-header">
   <a class="pd-map-brand link black-80" href="{{.Sito}}" title="Home">
     <img src="{{statico "PDLogo.svg"}}" alt="ProgettoDighe" width="34" height="34">
@@ -67,6 +66,7 @@
       </span>
     </p>
   </div>
+  {{if .Striscia}}<div class="tc mt3 f7 black-30">[ANTEPRIMA] {{.Striscia}}</div>{{end}}
 </footer>
 <script>
 // Menu a comparsa su mobile, come nella mappa del sito (main.js).
@@ -232,9 +232,13 @@ document.addEventListener("click",function(e){
   var box=document.getElementById("bussola"),ris=document.getElementById("risultati"),esito=document.getElementById("esito"),altre=document.getElementById("altre");
   function passa(x,salta){for(var k in scelte){if(k!==salta&&x[k]!==scelte[k])return false}return true}
   function el(tag,cls,testo){var e=document.createElement(tag);if(cls)e.className=cls;if(testo!=null)e.textContent=testo;return e}
+  // Pillole come i filtri preimpostati della ricerca del sito (search.css).
   function chip(testo,n,attiva,click){
-    var b=el("button","f6 mr1 mb1 ph2 pv1 br2 ba pointer "+(attiva?"white bg-dark-gray b--dark-gray":"black-80 bg-white b--black-20 hover-bg-lightest-blue"));
-    b.type="button";b.textContent=testo+(n!=null?" · "+n:"")+(attiva?"  ×":"");b.onclick=click;return b;
+    var b=el("button","search-filter-btn mr1 mb1"+(attiva?" is-active":""),testo);
+    b.type="button";b.onclick=click;
+    if(n!=null)b.appendChild(el("span","search-count",String(n)));
+    if(attiva){b.appendChild(el("span","ml2","×"));b.setAttribute("aria-label",testo+": togli il filtro")}
+    return b;
   }
   function disegna(){
     box.innerHTML="";
@@ -242,12 +246,12 @@ document.addEventListener("click",function(e){
       var k=f[0],riga=el("div","mb2"),conta={};
       riga.appendChild(el("span","db dib-ns w4-ns mb1 f6 ttu tracked black-60 v-mid",f[1]));
       dighe.forEach(function(x){if(x[k]&&passa(x,k))conta[x[k]]=(conta[x[k]]||0)+1});
-      if(scelte[k]){riga.appendChild(chip(scelte[k],null,true,function(){delete scelte[k];quante=12;disegna()}));box.appendChild(riga);return}
+      if(scelte[k]){riga.appendChild(chip(scelte[k],dighe.filter(function(x){return passa(x)}).length,true,function(){delete scelte[k];quante=12;disegna()}));box.appendChild(riga);return}
       var valori=Object.keys(conta).sort(function(a,b){return k==="q"?a.localeCompare(b):conta[b]-conta[a]});
       if(!valori.length){return}
       var vis=aperte[k]?valori:valori.slice(0,MAX);
       vis.forEach(function(v){riga.appendChild(chip(v,conta[v],false,function(){scelte[k]=v;quante=12;disegna()}))});
-      if(valori.length>MAX)riga.appendChild(chip(aperte[k]?"meno":"altre "+(valori.length-MAX),null,false,function(){aperte[k]=!aperte[k];disegna()}));
+      if(valori.length>MAX)riga.appendChild(chip(aperte[k]?"Meno":"Altre",aperte[k]?null:valori.length-MAX,false,function(){aperte[k]=!aperte[k];disegna()}));
       box.appendChild(riga);
     });
     var r=dighe.filter(function(x){return passa(x)});

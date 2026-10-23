@@ -51,7 +51,7 @@ var menu = []struct{ testo, percorso string }{
 
 // fileSito sono le copie dei file del Sito principale unite in statico/stile.css,
 // nell'ordine degli @import di main.css; poi le regole proprie della Gallery.
-var fileSito = []string{"sito/tachyons.css", "sito/map.css", "sito/main.css", "stile.css"}
+var fileSito = []string{"sito/tachyons.css", "sito/map.css", "sito/search.css", "sito/main.css", "stile.css"}
 
 const perPagina = 240
 
@@ -60,7 +60,7 @@ type opzioniBuild struct {
 	media    string // "" = Varianti; altrimenti URL di albums/ di Coppermine (anteprima)
 	pubblico string // URL assoluto della Gallery, per la Copia per il forum
 	sito     string // URL del Sito principale
-	striscia string // testo della striscia gialla dell'anteprima
+	striscia string // branch e commit dell'anteprima, in fondo al footer
 	// anteprima: URL dei file statici senza estensione. Il vhost di dev intercetta .css e
 	// .svg prima di /gerbillo/; gerbillo serve li risolve (fino al ^~ nello snippet nginx).
 	anteprima bool

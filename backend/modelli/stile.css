@@ -1,6 +1,5 @@
 /* Regole proprie della Gallery, aggiunte dopo tachyons.css, main.css e map.css
    del Sito principale (modelli/sito/, #25). */
-.striscia { padding: 4px 16px; background: #fe0; color: #000; font: 12px monospace; }
 .pre-line { white-space: pre-line; }
 .visore img { max-width: 100%; max-height: 80vh; width: auto; }
 .freccia {

@@ -7,7 +7,7 @@ se il sito non risponde (#25).
 
 | Qui | Nel tema del sito |
 |---|---|
-| `tachyons.css`, `main.css`, `map.css` | `assets/asset/css/` |
+| `tachyons.css`, `main.css`, `map.css`, `search.css` | `assets/asset/css/` |
 | `PDLogo.svg` | `static/asset/brand/` |
 | `icone/cc.svg`, `by.svg`, `sa.svg` | `static/asset/brand/cc/` |
 | `icone/<nome>.svg` | `layouts/_partials/svg/simbols/` |

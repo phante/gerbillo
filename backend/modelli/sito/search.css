@@ -1,0 +1,231 @@
+/* ============================================================
+   SISTEMA DI RICERCA COMPLETO - VERSIONE "BALANCED HERO"
+   ============================================================ */
+
+/* 1. CONTAINER E STRUTTURA */
+.search-wrapper {
+  width: 100%;
+}
+
+.search-input-group {
+  position: relative;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+/* 2. L'INPUT (Bilanciato) */
+#search-input {
+  min-height: 3.5rem;
+  padding-left: 3.5rem !important;
+  padding-right: 3rem !important;
+  /* Rimuoviamo pv3 di Tachyons via CSS per controllo totale */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 3.5rem; /* Centra il testo verticalmente nell'altezza totale */
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f6f6f6;
+}
+
+#search-input:focus {
+  border-color: #357edd;
+  outline: 2px solid #357edd;
+  outline-offset: 2px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* 3. ICONE (Lente e Spinner) */
+.search-input-group .absolute.left-0 {
+  height: 3.5rem;
+  top: 0;
+  display: flex;
+  align-items: center; /* Centramento verticale flex */
+  pointer-events: none;
+}
+
+#search-icon, 
+.search-loader-spinner {
+  width: 1.25rem;  /* Dimensione corretta per f4 */
+  height: 1.25rem;
+    display: block;
+}
+
+#search-icon, 
+#search-loader {
+  position: relative;
+  left: 0;
+  top: 0;
+  transform: none;
+  z-index: 5;
+  margin: 0;
+}
+
+/* LOGICA DI SCAMBIO ICONE */
+#search-loader { display: none !important; }
+.is-loading #search-icon { display: none !important; }
+.is-loading #search-loader { display: flex !important; }
+
+#search-icon { 
+  display: block !important; 
+}
+
+/* Animazione dello Spinner */
+.search-loader-spinner {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #357edd;
+  border-radius: 50%;
+  animation: search-spin 0.8s linear infinite;
+}
+
+@keyframes search-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 4. LISTA RISULTATI (Floating Dropdown) */
+.search-results-list {
+  display: none; /* Gestito da JS */
+  position: absolute;
+  top: calc(100% + 10px); /* Distacco elegante */
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 999;
+  max-height: 60vh;
+  overflow-y: auto;
+  background-color: white;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-top: 3px solid #333; /* Richiamo ai badge scuri */
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+/* 5. SINGOLO RISULTATO */
+.search-result-item {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-link {
+  display: block;
+  padding: 1rem 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s ease;
+}
+
+.search-result-link:hover {
+  background-color: #f9f9f9;
+}
+
+/* Badge Sezione (Blocco Scuro) */
+.search-section-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  background-color: #333; 
+  color: white;
+  display: inline-block;
+  border-radius: 2px;
+}
+
+/* Keyword Evidenziata */
+.search-mark {
+  background-color: #fff9c4;
+  padding: 0 2px;
+  border-radius: 1px;
+  font-weight: 600;
+  color: #000;
+}
+
+/* Snippet di testo */
+.search-snippet {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.4;
+  margin-top: 0.4rem;
+}
+
+/* 6. PULSANTE CANCELLA (X) */
+#search-clear {
+  position: absolute;
+  right: 1rem;
+  top: 1.75rem; /* Metà esatta dell'altezza input (3.5 / 2) */
+  transform: translateY(-50%);
+  z-index: 10;
+  display: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  color: #bbb;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+#search-clear:hover {
+  color: #333;
+}
+
+/* 7. META INFO RISULTATI */
+#search-meta {
+  font-style: italic;
+  color: #777;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+  /* Assicura che non sposti i risultati floating */
+}
+
+/* 8. PULSANTI FILTRO */
+.search-filter-btn {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.4rem 0.8rem;
+  background-color: #f4f4f4;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 20px; /* Forma a pillola più moderna */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-filter-btn.is-active {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.search-filter-btn:hover:not(.is-active) {
+  background-color: #e0e0e0;
+}
+
+/* Stile per il numeretto dentro il bottone */
+.search-count {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  font-size: 0.65rem;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+/* Quando il bottone è attivo, il contatore diventa più leggibile */
+.search-filter-btn.is-active .search-count {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  opacity: 1;
+}
+
+/* Il pulsante nativo dei campi type="search" duplicherebbe #search-clear. */
+#search-input::-webkit-search-cancel-button { display: none; }
