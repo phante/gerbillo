@@ -1,0 +1,182 @@
+package main
+
+// Esplorazione della Gallery (prototipo, #25): la Bussola della home, che restringe
+// le dighe per Dove, Quando, Come e Per cosa senza elenchi lunghi, e «Esplora
+// intorno» nella pagina della diga, che porta agli album collegati: stesso
+// impianto (map_ids), vicine (coords), simili (tipologia ed epoca).
+
+import (
+	"cmp"
+	"math"
+	"slices"
+	"strconv"
+	"strings"
+)
+
+// famiglia riduce le 23 tipologie della scheda diga a poche famiglie leggibili.
+func famiglia(tipologia string) string {
+	t := strings.ToLower(tipologia)
+	switch {
+	case t == "":
+		return ""
+	case strings.Contains(t, "traversa"):
+		return "Traverse"
+	case strings.Contains(t, "speroni") || strings.Contains(t, "contrafforti"):
+		return "Contrafforti e speroni"
+	case strings.Contains(t, "arco") || strings.Contains(t, "cupola"):
+		return "Arco e cupola"
+	case strings.Contains(t, "gravità") || strings.Contains(t, "blocchi") || strings.Contains(t, "muratura"):
+		return "Gravità"
+	case strings.Contains(t, "terra") || strings.Contains(t, "pietrame"):
+		return "Terra e pietrame"
+	}
+	return "Altro"
+}
+
+// decennio legge le prime quattro cifre di anno («1957», «1900-06»).
+func decennio(anno string) string {
+	if len(anno) < 4 {
+		return ""
+	}
+	a, err := strconv.Atoi(anno[:4])
+	if err != nil {
+		return ""
+	}
+	if a < 1910 {
+		return "Prima del 1910"
+	}
+	return "Anni " + strconv.Itoa(a/10*10)
+}
+
+func dove(e *entita) string {
+	if e.Geolocation.Stato != "" && e.Geolocation.Stato != "Italia" {
+		return e.Geolocation.Stato
+	}
+	return e.Geolocation.Regione
+}
+
+func usoPrincipale(e *entita) string {
+	if e.Diga != nil && len(e.Diga.Uso) > 0 {
+		return e.Diga.Uso[0]
+	}
+	return ""
+}
+
+// voceBussola è una diga con foto nel JSON della home.
+type voceBussola struct {
+	URL    string `json:"u"`
+	Titolo string `json:"t"`
+	Mini   string `json:"m"`
+	N      int    `json:"n"`
+	Dove   string `json:"d,omitempty"`
+	Quando string `json:"q,omitempty"`
+	Come   string `json:"c,omitempty"`
+	Uso    string `json:"p,omitempty"`
+}
+
+func (b *builder) vociBussola(perEntita map[string][]*fotoPubblicata, slugs []string) []voceBussola {
+	var v []voceBussola
+	for _, s := range slugs {
+		e, fs := b.c.entita[s], perEntita[s]
+		x := voceBussola{URL: b.url(s), Titolo: e.Title, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e), Uso: usoPrincipale(e)}
+		if e.Diga != nil {
+			x.Quando, x.Come = decennio(e.Diga.Anno), famiglia(e.Diga.Tipologia)
+		}
+		v = append(v, x)
+	}
+	// Prima le dighe con più foto: sono l'anteprima della Bussola.
+	slices.SortStableFunc(v, func(a, b voceBussola) int { return b.N - a.N })
+	return v
+}
+
+type gruppoEsplora struct {
+	Nome string
+	Voci []voce
+}
+
+const (
+	maxIntorno = 6
+	raggioKm   = 30.0
+)
+
+// intorno calcola gli album collegati a una diga, fra quelle che hanno foto.
+func (b *builder) intorno(s string, perEntita map[string][]*fotoPubblicata, slugs []string) []gruppoEsplora {
+	e := b.c.entita[s]
+	visti := map[string]bool{s: true}
+	scheda := func(x string) voce {
+		f := perEntita[x]
+		return voce{URL: b.url(x), Testo: b.c.entita[x].Title, Mini: b.mini(f[0]), N: len(f)}
+	}
+	var gruppi []gruppoEsplora
+	aggiungi := func(nome string, candidati []string) {
+		var v []voce
+		for _, x := range candidati {
+			if !visti[x] && len(v) < maxIntorno {
+				visti[x] = true
+				v = append(v, scheda(x))
+			}
+		}
+		if len(v) > 0 {
+			gruppi = append(gruppi, gruppoEsplora{nome, v})
+		}
+	}
+	// Stesso impianto: condividono una mappa del sito.
+	var impianto []string
+	for _, x := range slugs {
+		for _, m := range b.c.entita[x].Geolocation.MapIDs {
+			if slices.Contains(e.Geolocation.MapIDs, m) {
+				impianto = append(impianto, x)
+				break
+			}
+		}
+	}
+	aggiungi("Stesso impianto", impianto)
+	// Vicine: entro raggioKm, le più vicine prima.
+	perDistanza := func(lista []string) []string {
+		if e.Geolocation.Coords == nil {
+			return lista
+		}
+		d := map[string]float64{}
+		var out []string
+		for _, x := range lista {
+			if c := b.c.entita[x].Geolocation.Coords; c != nil {
+				d[x] = km(e.Geolocation.Coords.Latitudine, e.Geolocation.Coords.Longitudine, c.Latitudine, c.Longitudine)
+				out = append(out, x)
+			}
+		}
+		slices.SortStableFunc(out, func(a, b string) int { return cmp.Compare(d[a], d[b]) })
+		return out
+	}
+	var vicine []string
+	for _, x := range perDistanza(slugs) {
+		c := b.c.entita[x].Geolocation.Coords
+		if e.Geolocation.Coords != nil && km(e.Geolocation.Coords.Latitudine, e.Geolocation.Coords.Longitudine, c.Latitudine, c.Longitudine) <= raggioKm {
+			vicine = append(vicine, x)
+		}
+	}
+	aggiungi("Vicine", vicine)
+	// Simili: stessa famiglia di tipologia e stesso decennio, le più vicine prima.
+	if e.Diga != nil && famiglia(e.Diga.Tipologia) != "" {
+		var simili []string
+		for _, x := range slugs {
+			if d := b.c.entita[x].Diga; d != nil && famiglia(d.Tipologia) == famiglia(e.Diga.Tipologia) && decennio(d.Anno) == decennio(e.Diga.Anno) {
+				simili = append(simili, x)
+			}
+		}
+		nome := "Simili: " + strings.ToLower(famiglia(e.Diga.Tipologia))
+		if q := decennio(e.Diga.Anno); q != "" {
+			nome += ", " + strings.ToLower(q)
+		}
+		aggiungi(nome, perDistanza(simili))
+	}
+	return gruppi
+}
+
+// km è la distanza sul globo fra due punti, con la formula dell'emisenoverso.
+func km(lat1, lon1, lat2, lon2 float64) float64 {
+	const r = 6371.0
+	rad := math.Pi / 180
+	dlat, dlon := (lat2-lat1)*rad, (lon2-lon1)*rad
+	a := math.Sin(dlat/2)*math.Sin(dlat/2) + math.Cos(lat1*rad)*math.Cos(lat2*rad)*math.Sin(dlon/2)*math.Sin(dlon/2)
+	return 2 * r * math.Asin(math.Sqrt(a))
+}

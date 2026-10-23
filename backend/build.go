@@ -151,6 +151,7 @@ type corpoGriglia struct {
 	Foto             []miniatura
 	Pagina, Pagine   int
 	Indietro, Avanti string
+	Esplora          []gruppoEsplora // solo nella prima pagina di una diga
 }
 
 type corpoElenco struct {
@@ -276,7 +277,7 @@ func (b *builder) tutto() error {
 	b.contesto = map[int]contestoFoto{}
 	casa := voce{URL: b.url(), Testo: "Gallery"}
 
-	// Entità: una griglia per paginaSito del sito, che è anche il contesto delle sue Foto.
+	// Entità: una griglia per pagina del sito, che è anche il contesto delle sue Foto.
 	slugs := chiaviOrdinate(perEntita)
 	for _, s := range slugs {
 		e, fs := b.c.entita[s], perEntita[s]
@@ -287,7 +288,7 @@ func (b *builder) tutto() error {
 			link = append(link, voce{URL: b.sito + s + "/", Testo: "Pagina di " + e.Title + " sul sito"})
 		}
 		sotto := luogoEntita(e)
-		if err := b.griglie(fs, e.Title, sotto, link, []voce{casa}, s); err != nil {
+		if err := b.griglie(fs, e.Title, sotto, link, []voce{casa}, b.intorno(s, perEntita, slugs), s); err != nil {
 			return err
 		}
 	}
@@ -298,7 +299,7 @@ func (b *builder) tutto() error {
 		nome := b.c.album.Categorie[cid].Nome
 		su := voce{URL: b.url("altre", strconv.Itoa(cid)), Testo: "Da classificare: " + nome}
 		b.registraContesto(altre[cid], su)
-		if err := b.griglie(altre[cid], nome, "Foto non ancora collegate a una paginaSito del sito.", nil, []voce{casa, daClassificare}, "altre", strconv.Itoa(cid)); err != nil {
+		if err := b.griglie(altre[cid], nome, "Foto non ancora collegate a una pagina del sito.", nil, []voce{casa, daClassificare}, nil, "altre", strconv.Itoa(cid)); err != nil {
 			return err
 		}
 	}
@@ -306,7 +307,7 @@ func (b *builder) tutto() error {
 	contributori := voce{URL: b.url("contributori"), Testo: "Contributori"}
 	ids := chiaviOrdinate(perContributore)
 	for _, id := range ids {
-		if err := b.griglie(perContributore[id], "Foto di "+nomi[id], "", nil, []voce{casa, contributori}, "contributori", strconv.Itoa(id)); err != nil {
+		if err := b.griglie(perContributore[id], "Foto di "+nomi[id], "", nil, []voce{casa, contributori}, nil, "contributori", strconv.Itoa(id)); err != nil {
 			return err
 		}
 	}
@@ -316,6 +317,9 @@ func (b *builder) tutto() error {
 		}
 	}
 	if err := b.home(perEntita, slugs); err != nil {
+		return err
+	}
+	if err := b.bussola(perEntita, slugs, len(ids), altre); err != nil {
 		return err
 	}
 	if err := b.elencoContributori(ids, nomi, perContributore, casa); err != nil {
@@ -353,7 +357,7 @@ func (b *builder) radice(aid int) int {
 }
 
 // griglie scrive un elenco di Foto in pagine da perPagina: la prima in parti/, le altre in parti/<n>/.
-func (b *builder) griglie(fs []*fotoPubblicata, tit, sotto string, link, briciole []voce, parti ...string) error {
+func (b *builder) griglie(fs []*fotoPubblicata, tit, sotto string, link, briciole []voce, esplora []gruppoEsplora, parti ...string) error {
 	n := (len(fs) + perPagina - 1) / perPagina
 	pag := func(k int) string {
 		if k == 1 {
@@ -365,7 +369,7 @@ func (b *builder) griglie(fs []*fotoPubblicata, tit, sotto string, link, briciol
 		fine := min(k*perPagina, len(fs))
 		corpo := corpoGriglia{Foto: b.miniature(fs[(k-1)*perPagina : fine]), Pagina: k, Pagine: n}
 		if k == 1 {
-			corpo.Sottotitolo, corpo.Link = conteggio(len(fs), sotto), link
+			corpo.Sottotitolo, corpo.Link, corpo.Esplora = conteggio(len(fs), sotto), link, esplora
 		}
 		if k > 1 {
 			corpo.Indietro = pag(k - 1)
@@ -495,7 +499,37 @@ func (b *builder) home(perEntita map[string][]*fotoPubblicata, slugs []string) e
 		}
 		corpo.Gruppi = append(corpo.Gruppi, g)
 	}
-	return b.scrivi("elenco", paginaSito{Titolo: "Dighe", Corpo: corpo})
+	return b.scrivi("elenco", paginaSito{Titolo: "Tutte le dighe", Corpo: corpo, Briciole: []voce{{URL: b.url(), Testo: "Gallery"}}}, "dighe")
+}
+
+type corpoBussola struct {
+	Sottotitolo string
+	Dati        template.JS // le dighe con foto, in JSON, lette dallo script della pagina
+	Porte       []voce
+}
+
+// bussola è la home: si restringono le dighe per Dove, Quando, Come e Per cosa (esplora.go).
+func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string, contributori int, altre map[int][]*fotoPubblicata) error {
+	d, err := json.Marshal(b.vociBussola(perEntita, slugs))
+	if err != nil {
+		return err
+	}
+	senza := 0
+	for _, f := range b.c.foto {
+		if len(f.Slug) == 0 {
+			senza++
+		}
+	}
+	corpo := corpoBussola{
+		Sottotitolo: "Scegli da dove partire: ogni scelta restringe le altre.",
+		Dati:        template.JS(d),
+		Porte: []voce{
+			{URL: b.url("dighe"), Testo: "Tutte le dighe", N: len(slugs), Sito: "dighe"},
+			{URL: b.url("contributori"), Testo: "Contributori", N: contributori, Sito: "contributori"},
+			{URL: b.url("altre"), Testo: "Da classificare", N: senza, Sito: "foto"},
+		},
+	}
+	return b.scrivi("bussola", paginaSito{Titolo: "Gallery", Corpo: corpo})
 }
 
 func (b *builder) elencoContributori(ids []int, nomi map[int]string, per map[int][]*fotoPubblicata, casa voce) error {

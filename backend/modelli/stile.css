@@ -14,3 +14,6 @@
 .avanti { right: 0; border-radius: .5rem 0 0 .5rem; }
 .svg-inline svg { height: 1em; }
 .pd-map-brand + .pd-map-burger-btn { margin-left: auto; }
+/* Esplora intorno: una fila di schede che scorre in orizzontale */
+.striscia-esplora { overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .5rem; }
+.scheda-esplora { flex: 0 0 9.5rem; width: 9.5rem; min-width: 0; overflow: hidden; scroll-snap-align: start; }

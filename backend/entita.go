@@ -17,10 +17,19 @@ import (
 )
 
 type entita struct {
-	Slug        string   `json:"slug"` // sezione/nome (ADR 0013)
-	Title       string   `json:"title"`
-	Draft       bool     `json:"draft,omitempty"` // pagina in bozza: è comunque un'Entità ("ha o avrà una pagina")
-	Tags        []string `json:"tags,omitempty"`
+	Slug  string   `json:"slug"` // sezione/nome (ADR 0013)
+	Title string   `json:"title"`
+	Draft bool     `json:"draft,omitempty"` // pagina in bozza: è comunque un'Entità ("ha o avrà una pagina")
+	Tags  []string `json:"tags,omitempty"`
+	// Diga è la parte della scheda dati che serve a esplorare la Gallery (#25): stessi
+	// nomi del front matter del sito.
+	Diga *struct {
+		Tipologia      string   `json:"tipologia,omitempty"`
+		Anno           string   `json:"anno,omitempty"` // a volte un intervallo: «1900-06»
+		Uso            []string `json:"uso,omitempty"`
+		Concessionario []string `json:"concessionario,omitempty"`
+		Corsoacqua     string   `json:"corsoacqua,omitempty"`
+	} `json:"diga,omitempty"`
 	Geolocation struct {
 		MapIDs    []string `json:"map_ids,omitempty" yaml:"map_ids"`
 		Stato     string   `json:"stato,omitempty"`
