@@ -51,7 +51,8 @@ var menu = []struct{ testo, percorso string }{
 
 // fileSito sono le copie dei file del Sito principale unite in statico/stile.css,
 // nell'ordine degli @import di main.css; poi le regole proprie della Gallery.
-var fileSito = []string{"sito/tachyons.css", "sito/map.css", "sito/search.css", "sito/main.css", "stile.css"}
+var fileSito = []string{"sito/tachyons.css", "sito/leaflet.css", "sito/map.control.verticalexpand.css",
+	"sito/map.css", "sito/search.css", "sito/main.css", "stile.css"}
 
 const perPagina = 240
 
@@ -152,7 +153,10 @@ type corpoGriglia struct {
 	Pagina, Pagine   int
 	Indietro, Avanti string
 	Esplora          []gruppoEsplora // solo nella prima pagina di una diga
+	Mappa            *mappaDiga      // idem (#27)
 }
+
+type mappaDiga struct{ Centro, GeoJSON string }
 
 type corpoElenco struct {
 	Sottotitolo string
@@ -288,7 +292,7 @@ func (b *builder) tutto() error {
 			link = append(link, voce{URL: b.sito + s + "/", Testo: "Pagina di " + e.Title + " sul sito"})
 		}
 		sotto := luogoEntita(e)
-		if err := b.griglie(fs, e.Title, sotto, link, []voce{casa}, b.intorno(s, perEntita, slugs), s); err != nil {
+		if err := b.griglie(fs, e.Title, sotto, link, []voce{casa}, b.intorno(s, perEntita, slugs), b.mappaDiga(s, perEntita, slugs), s); err != nil {
 			return err
 		}
 	}
@@ -299,7 +303,7 @@ func (b *builder) tutto() error {
 		nome := b.c.album.Categorie[cid].Nome
 		su := voce{URL: b.url("altre", strconv.Itoa(cid)), Testo: "Da classificare: " + nome}
 		b.registraContesto(altre[cid], su)
-		if err := b.griglie(altre[cid], nome, "Foto non ancora collegate a una pagina del sito.", nil, []voce{casa, daClassificare}, nil, "altre", strconv.Itoa(cid)); err != nil {
+		if err := b.griglie(altre[cid], nome, "Foto non ancora collegate a una pagina del sito.", nil, []voce{casa, daClassificare}, nil, nil, "altre", strconv.Itoa(cid)); err != nil {
 			return err
 		}
 	}
@@ -307,7 +311,7 @@ func (b *builder) tutto() error {
 	contributori := voce{URL: b.url("contributori"), Testo: "Contributori"}
 	ids := chiaviOrdinate(perContributore)
 	for _, id := range ids {
-		if err := b.griglie(perContributore[id], "Foto di "+nomi[id], "", nil, []voce{casa, contributori}, nil, "contributori", strconv.Itoa(id)); err != nil {
+		if err := b.griglie(perContributore[id], "Foto di "+nomi[id], "", nil, []voce{casa, contributori}, nil, nil, "contributori", strconv.Itoa(id)); err != nil {
 			return err
 		}
 	}
@@ -357,7 +361,14 @@ func (b *builder) radice(aid int) int {
 }
 
 // griglie scrive un elenco di Foto in pagine da perPagina: la prima in parti/, le altre in parti/<n>/.
-func (b *builder) griglie(fs []*fotoPubblicata, tit, sotto string, link, briciole []voce, esplora []gruppoEsplora, parti ...string) error {
+func (b *builder) mappaDiga(s string, per map[string][]*fotoPubblicata, slugs []string) *mappaDiga {
+	if c, g := b.geojsonDiga(s, per, slugs); g != "" {
+		return &mappaDiga{c, g}
+	}
+	return nil
+}
+
+func (b *builder) griglie(fs []*fotoPubblicata, tit, sotto string, link, briciole []voce, esplora []gruppoEsplora, mappa *mappaDiga, parti ...string) error {
 	n := (len(fs) + perPagina - 1) / perPagina
 	pag := func(k int) string {
 		if k == 1 {
@@ -369,7 +380,7 @@ func (b *builder) griglie(fs []*fotoPubblicata, tit, sotto string, link, briciol
 		fine := min(k*perPagina, len(fs))
 		corpo := corpoGriglia{Foto: b.miniature(fs[(k-1)*perPagina : fine]), Pagina: k, Pagine: n}
 		if k == 1 {
-			corpo.Sottotitolo, corpo.Link, corpo.Esplora = conteggio(len(fs), sotto), link, esplora
+			corpo.Sottotitolo, corpo.Link, corpo.Esplora, corpo.Mappa = conteggio(len(fs), sotto), link, esplora, mappa
 		}
 		if k > 1 {
 			corpo.Indietro = pag(k - 1)
@@ -579,7 +590,7 @@ func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 		return err
 	}
 	for orig, dest := range map[string]string{"documento.svg": "documento.svg", "sito/PDLogo.svg": "PDLogo.svg",
-		"sito/icone/cc.svg": "cc.svg", "sito/icone/by.svg": "by.svg", "sito/icone/sa.svg": "sa.svg"} {
+		"sito/mappa.js": "mappa.js", "sito/icone/cc.svg": "cc.svg", "sito/icone/by.svg": "by.svg", "sito/icone/sa.svg": "sa.svg"} {
 		d, err := modelli.ReadFile("modelli/" + orig)
 		if err != nil {
 			return err

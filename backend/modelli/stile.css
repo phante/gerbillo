@@ -13,6 +13,9 @@
 .avanti { right: 0; border-radius: .5rem 0 0 .5rem; }
 .svg-inline svg { height: 1em; }
 .pd-map-brand + .pd-map-burger-btn { margin-left: auto; }
+/* Mappa della diga (#27): più bassa di quella degli articoli, sopra le foto */
+.mappa-diga .pd-maps { height: 300px; }
+@media screen and (min-width: 60em) { .mappa-diga .pd-maps { height: 380px; } }
 /* Esplora intorno: una fila di schede che scorre in orizzontale */
 .striscia-esplora { overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .5rem; }
 .scheda-esplora { flex: 0 0 9.5rem; width: 9.5rem; min-width: 0; overflow: hidden; scroll-snap-align: start; }

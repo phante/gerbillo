@@ -1,0 +1,38 @@
+.pd-maps {
+    height: 500px;
+}
+
+.pd-maps--expanded {
+    /* !important: Leaflet imposta position:relative inline sul container */
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 9000;
+}
+
+/* Icona espandi/comprimi: mask-image (non background-image) cosi ricolora
+   lo sprite in grigio scuro a prescindere dal fill originale. Lo sprite
+   sorgente è verticale 26x52 (due stati 26x26 impilati), scalato a 22x44
+   per allinearsi alle altre icone da 22px; mask-position sostituisce il
+   vecchio background-position per il toggle di stato. */
+.vertical-expand-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  background-color: #333;
+  -webkit-mask-image: url(../../asset/images/leaflet/icon-fullscreen.svg);
+  mask-image: url(../../asset/images/leaflet/icon-fullscreen.svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 22px 44px;
+  mask-size: 22px 44px;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+}
+.vertical-expand-icon.leaflet-vertical-expand-on {
+  -webkit-mask-position: 0 -22px;
+  mask-position: 0 -22px;
+}

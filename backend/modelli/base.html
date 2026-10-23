@@ -86,6 +86,10 @@ document.addEventListener("click",function(e){
   {{if .Sottotitolo}}<p class="f5 black-60 mt0 mb2">{{.Sottotitolo}}</p>{{end}}
   {{range .Link}}<p class="mt0 mb3"><a class="f6 link dim br2 ph3 pv2 dib white bg-dark-gray" href="{{.URL}}">{{.Testo}}</a></p>{{end}}
 </div>
+{{with .Mappa}}<div class="ph3 mb3 mappa-diga">
+  <div class="pd-maps br3 overflow-hidden" data-center="{{.Centro}}" data-zoom="13" data-article="main" data-geojson="{{.GeoJSON}}"></div>
+</div>
+<script src="{{statico "mappa.js"}}" defer></script>{{end}}
 {{if .Esplora}}<section class="ph3 mb3" aria-label="Esplora intorno">
   <h2 class="f6 ttu tracked black-60 mt2 mb2">Esplora intorno</h2>
   <div class="striscia-esplora flex">

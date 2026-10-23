@@ -8,6 +8,8 @@ se il sito non risponde (#25).
 | Qui | Nel tema del sito |
 |---|---|
 | `tachyons.css`, `main.css`, `map.css`, `search.css` | `assets/asset/css/` |
+| `map.control.verticalexpand.css` | `assets/asset/css/` |
+| `mappa.js`, `leaflet.css` | costruiti da `scripts/mappa-sito.sh`: `map*.js` del sito più Leaflet alle versioni del suo `package-lock.json` |
 | `PDLogo.svg` | `static/asset/brand/` |
 | `icone/cc.svg`, `by.svg`, `sa.svg` | `static/asset/brand/cc/` |
 | `icone/<nome>.svg` | `layouts/_partials/svg/simbols/` |

@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"strings"
 	"testing"
 )
 
@@ -81,5 +82,17 @@ func TestIntorno(t *testing.T) {
 	}
 	if _, ok := nomi["dighe/agaro"]; ok {
 		t.Error("la diga stessa fra quelle intorno")
+	}
+	centro, geo := b.geojsonDiga("dighe/agaro", per, slugs)
+	if centro != "[46.29,8.3]" {
+		t.Errorf("centro %s", centro)
+	}
+	for _, atteso := range []string{`"id":"main"`, `"name":"dighe/codelago · 1 foto","url":"/g/dighe/codelago/"`, `"dighe/vicina · 1 foto"`, `"coordinates":[8.3,46.29]`} {
+		if !strings.Contains(geo, atteso) {
+			t.Errorf("GeoJSON senza %s:\n%s", atteso, geo)
+		}
+	}
+	if strings.Contains(geo, "lontana") {
+		t.Error("la diga lontana e di un altro impianto non va sulla mappa")
 	}
 }

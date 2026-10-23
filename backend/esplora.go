@@ -7,6 +7,7 @@ package main
 
 import (
 	"cmp"
+	"encoding/json"
 	"math"
 	"slices"
 	"strconv"
@@ -179,4 +180,57 @@ func km(lat1, lon1, lat2, lon2 float64) float64 {
 	dlat, dlon := (lat2-lat1)*rad, (lon2-lon1)*rad
 	a := math.Sin(dlat/2)*math.Sin(dlat/2) + math.Cos(lat1*rad)*math.Cos(lat2*rad)*math.Sin(dlon/2)*math.Sin(dlon/2)
 	return 2 * r * math.Asin(math.Sqrt(a))
+}
+
+// geojsonDiga è la mappa della pagina della diga (#27), per il componente mappa del
+// sito (modelli/sito/mappa.js): la diga stessa, che porta alla sua pagina sul sito,
+// e le dighe con foto dello stesso impianto o entro raggioKm, che portano ai loro
+// album. Vuota se la diga non ha coordinate.
+func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, slugs []string) (centro string, geo string) {
+	e := b.c.entita[s]
+	c := e.Geolocation.Coords
+	if c == nil {
+		return "", ""
+	}
+	type proprieta struct {
+		Type string `json:"type"`
+		Name string `json:"name"`
+		URL  string `json:"url,omitempty"`
+	}
+	type feature struct {
+		Type       string    `json:"type"`
+		ID         string    `json:"id,omitempty"`
+		Properties proprieta `json:"properties"`
+		Geometry   struct {
+			Type        string     `json:"type"`
+			Coordinates [2]float64 `json:"coordinates"`
+		} `json:"geometry"`
+	}
+	punto := func(x *entita, id, nome, url string) feature {
+		f := feature{Type: "Feature", ID: id, Properties: proprieta{"diga", nome, url}}
+		f.Geometry.Type = "Point"
+		f.Geometry.Coordinates = [2]float64{x.Geolocation.Coords.Longitudine, x.Geolocation.Coords.Latitudine}
+		return f
+	}
+	sito := ""
+	if !e.Draft {
+		sito = b.sito + s + "/"
+	}
+	fs := []feature{punto(e, "main", e.Title, sito)}
+	for _, x := range slugs {
+		o := b.c.entita[x]
+		if x == s || o.Geolocation.Coords == nil {
+			continue
+		}
+		impianto := false
+		for _, m := range o.Geolocation.MapIDs {
+			impianto = impianto || slices.Contains(e.Geolocation.MapIDs, m)
+		}
+		if impianto || km(c.Latitudine, c.Longitudine, o.Geolocation.Coords.Latitudine, o.Geolocation.Coords.Longitudine) <= raggioKm {
+			fs = append(fs, punto(o, "", o.Title+" · "+strconv.Itoa(len(perEntita[x]))+" foto", b.url(x)))
+		}
+	}
+	g, _ := json.Marshal(map[string]any{"type": "FeatureCollection", "features": fs})
+	ctr, _ := json.Marshal([2]float64{c.Latitudine, c.Longitudine})
+	return string(ctr), string(g)
 }
