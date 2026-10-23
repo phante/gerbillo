@@ -38,6 +38,7 @@ type entita struct {
 		Coords    *struct {
 			Latitudine  float64 `json:"latitudine"`
 			Longitudine float64 `json:"longitudine"`
+			Zoom        int     `json:"zoom,omitempty"`
 		} `json:"coords,omitempty"`
 	} `json:"geolocation"`
 }

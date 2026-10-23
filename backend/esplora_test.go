@@ -42,7 +42,8 @@ func TestIntorno(t *testing.T) {
 		x.Geolocation.Coords = &struct {
 			Latitudine  float64 `json:"latitudine"`
 			Longitudine float64 `json:"longitudine"`
-		}{lat, lon}
+			Zoom        int     `json:"zoom,omitempty"`
+		}{lat, lon, 0}
 		x.Diga = &struct {
 			Tipologia      string   `json:"tipologia,omitempty"`
 			Anno           string   `json:"anno,omitempty"`
@@ -84,8 +85,8 @@ func TestIntorno(t *testing.T) {
 		t.Error("la diga stessa fra quelle intorno")
 	}
 	centro, geo, zoom := b.geojsonDiga("dighe/agaro", per, slugs)
-	if zoom < 8 || zoom > 12 {
-		t.Errorf("zoom %d: deve contenere codelago, 8 km a ovest", zoom)
+	if zoom != zoomPredefinito {
+		t.Errorf("zoom %d, atteso quello predefinito", zoom)
 	}
 	if centro != "[46.29,8.3]" {
 		t.Errorf("centro %s", centro)

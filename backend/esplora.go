@@ -96,8 +96,9 @@ type gruppoEsplora struct {
 }
 
 const (
-	maxIntorno = 6
-	raggioKm   = 30.0
+	zoomPredefinito = 14 // se la pagina del sito non ne indica uno
+	maxIntorno      = 6
+	raggioKm        = 30.0
 )
 
 // intorno calcola gli album collegati a una diga, fra quelle che hanno foto.
@@ -230,24 +231,13 @@ func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, 
 			fs = append(fs, punto(o, "", o.Title+" · "+strconv.Itoa(len(perEntita[x]))+" foto", b.url(x)))
 		}
 	}
-	// Le mappe d'articolo del sito non adattano l'inquadratura ai punti: lo zoom lo
-	// sceglie la pagina. Il più stretto che, con la diga al centro, li mostra tutti.
-	dlat, dlon := 0.002, 0.002
-	for _, f := range fs[1:] {
-		dlat = max(dlat, math.Abs(f.Geometry.Coordinates[1]-c.Latitudine))
-		dlon = max(dlon, math.Abs(f.Geometry.Coordinates[0]-c.Longitudine))
+	// Lo zoom della pagina della diga sul sito, come le mappe degli articoli: le dighe
+	// intorno sono sulla mappa, ma si raggiungono spostandola.
+	zoom = c.Zoom
+	if zoom == 0 {
+		zoom = zoomPredefinito
 	}
-	zoom = zoomPer(dlat, dlon, c.Latitudine)
 	g, _ := json.Marshal(map[string]any{"type": "FeatureCollection", "features": fs})
 	ctr, _ := json.Marshal([2]float64{c.Latitudine, c.Longitudine})
 	return string(ctr), string(g), zoom
-}
-
-// zoomPer è lo zoom Leaflet a cui ±dlat e ±dlon gradi attorno al centro stanno in una
-// mappa di circa 300×260 pixel (la più piccola, su telefono), fra 8 e 15.
-func zoomPer(dlat, dlon, lat float64) int {
-	const largo, alto = 300.0, 260.0
-	zx := math.Log2(largo * 360 / (256 * 2 * dlon))
-	zy := math.Log2(alto * 360 / (256 * 2 * dlat / math.Cos(lat*math.Pi/180)))
-	return max(8, min(15, int(math.Floor(min(zx, zy)))))
 }
