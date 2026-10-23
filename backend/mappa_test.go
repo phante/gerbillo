@@ -12,6 +12,9 @@ func TestNormNome(t *testing.T) {
 		"Cà Zul":                  "ca-zul",
 		"Lago Brugneto (GE)":      "brugneto",
 		"S. Caterina di Auronzo":  "s-caterina-di-auronzo",
+		"Delle Piazze (Pinè)":     "piazze",
+		"Lago Delle Piazze":       "piazze",
+		"La Stua":                 "stua",
 		"Punt dal Gall (Livigno)": "punt-dal-gall",
 		"  Crosis  (UD) ":         "crosis",
 	} {

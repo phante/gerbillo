@@ -278,8 +278,12 @@ func chiaviEntita(idx []entita) map[string][]*entita {
 		e := &idx[i]
 		nome := e.Slug[strings.LastIndex(e.Slug, "/")+1:]
 		agg(normNome(e.Title), e)
-		for _, alt := range reAlternativa.Split(e.Title, -1) { // "Lumiei o di La Maina di Sauris"
+		// Nomi alternativi: "Lumiei o di La Maina di Sauris", "Vicaglia, Silano".
+		for _, alt := range reAlternativa.Split(e.Title, -1) {
 			agg(normNome(alt), e)
+			for _, parte := range strings.Split(alt, ",") {
+				agg(normNome(parte), e)
+			}
 		}
 		agg(normNome(nome), e)
 		agg(reOmonimo.ReplaceAllString(nome, ""), e)
@@ -295,6 +299,7 @@ var (
 	reAlternativa = regexp.MustCompile(`\s+o\s+(di\s+)?`)
 	reMultipla    = regexp.MustCompile(`[-.]|\s+e\s+`) // "Arno-Campellio-Isola", "Pian Sapeio e Giacopiane"
 	reLocalita    = regexp.MustCompile(`-(di|del|della|in|sul|sulla|presso)-.*$`)
+	reIniziale    = regexp.MustCompile(`^(il|lo|la|l|i|gli|le|di|del|della|dello|dei|delle|degli)-`) // "Delle Piazze", "La Stua"
 	reArticolo    = regexp.MustCompile(`^(diga|lago|invaso|serbatoio|traversa|sbarramento)(-(di|del|della|dello|dei|delle|degli|d|dell))?-`)
 	accenti       = strings.NewReplacer("à", "a", "á", "a", "â", "a", "ä", "a", "è", "e", "é", "e", "ê", "e", "ë", "e",
 		"ì", "i", "í", "i", "î", "i", "ï", "i", "ò", "o", "ó", "o", "ô", "o", "ö", "o",
@@ -306,7 +311,8 @@ func normNome(s string) string {
 	s = reParentesi.ReplaceAllString(s, " ")
 	s = accenti.Replace(strings.ToLower(s))
 	s = strings.Trim(reNonAlnum.ReplaceAllString(s, "-"), "-")
-	return reArticolo.ReplaceAllString(s, "")
+	s = reArticolo.ReplaceAllString(s, "")
+	return reIniziale.ReplaceAllString(s, "")
 }
 
 // trova cerca le dighe che corrispondono a un nome Coppermine: prima il nome intero,
