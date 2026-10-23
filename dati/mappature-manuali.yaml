@@ -4,6 +4,11 @@ album:
     33:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Verzasca
         origine: manuale
+    34:
+        coppermine: Dighe - Dams / Italia / Veneto / Ghirlo (BL)
+        origine: manuale
+        slug:
+        - dighe/ponte-ghirlo
     38:
         coppermine: Dighe - Dams / Italia / Veneto / S. Caterina di Auronzo (BL)
         origine: manuale
@@ -98,6 +103,9 @@ album:
         origine: manuale
     137:
         coppermine: Dighe - Dams / ... resto del mondo / Cina
+        origine: manuale
+    139:
+        coppermine: Dighe - Dams / Italia / Lombardia / Colombera (SO)
         origine: manuale
     140:
         coppermine: Dighe - Dams / Austria - Österreich / Außerfern
@@ -253,6 +261,21 @@ album:
         origine: manuale
         slug:
         - dighe/vicaglia-silano
+    649:
+        coppermine: Dighe - Dams / Italia / Toscana / Rio Salita I e II
+        origine: manuale
+        slug:
+        - dighe/rio-salita
+    671:
+        coppermine: Dighe - Dams / Italia / Toscana / La Lima
+        origine: manuale
+        slug:
+        - dighe/la-lima-ponte-lima
+    672:
+        coppermine: Dighe - Dams / Italia / Toscana / Tistino
+        origine: manuale
+        slug:
+        - dighe/tistino-sperando
     746:
         coppermine: Dighe - Dams / Italia / Lazio / Pertuso (RM)
         origine: manuale
@@ -266,6 +289,9 @@ album:
         - dighe/san-cosimato
     753:
         coppermine: Dighe - Dams / Italia / Lazio / Simbrivio (RM)
+        origine: manuale
+    756:
+        coppermine: Dighe - Dams / Italia / Lazio / Fiumerotto - Castel Madama (RM)
         origine: manuale
     766:
         coppermine: Dighe - Dams / ... resto del mondo / Norvegia
@@ -294,6 +320,14 @@ album:
     803:
         coppermine: Dighe - Dams / Italia / Piemonte / Robbio
         origine: manuale
+    820:
+        coppermine: Dighe - Dams / Italia / Lombardia / Lago d'Elio (VA)
+        origine: manuale
+        slug:
+        - dighe/lago-delio-nord
+        - dighe/lago-delio-sud
+        tags:
+        - da-separare
     866:
         coppermine: Dighe - Dams / Italia / Piemonte / Busin Inferiore
         origine: manuale
@@ -302,9 +336,30 @@ album:
     871:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Lago Bianco Sud
         origine: manuale
+    879:
+        coppermine: Dighe - Dams / Italia / Valle d'Aosta / Cignana
+        origine: manuale
+        slug:
+        - dighe/cignana-i
+        - dighe/cignana-ii
+        tags:
+        - da-separare
+    880:
+        coppermine: Dighe - Dams / Italia / Valle d'Aosta / Gabiet
+        origine: manuale
+        slug:
+        - dighe/lago-gabiet-nord
+        - dighe/lago-gabietsud
+        tags:
+        - da-separare
     883:
         coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Val di Vizze
         origine: manuale
+    884:
+        coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / La Rocchetta
+        origine: manuale
+        slug:
+        - dighe/rocchetta-tn
     894:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Griessee
         origine: manuale

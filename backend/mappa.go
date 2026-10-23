@@ -54,6 +54,7 @@ func mappa(args []string) error {
 	fs := flag.NewFlagSet("mappa", flag.ExitOnError)
 	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
 	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
+	manuali := fs.String("manuali", "", "righe manuali da aggiungere (es. dati/mappature-manuali.yaml): vincono su quelle esistenti")
 	fs.Parse(args)
 	var c configImporta
 	if _, err := toml.DecodeFile(*conf, &c); err != nil {
@@ -83,6 +84,17 @@ func mappa(args []string) error {
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
+	if *manuali != "" {
+		b, err := os.ReadFile(*manuali)
+		if err != nil {
+			return err
+		}
+		var m fileMappature
+		if err := yaml.Unmarshal(b, &m); err != nil {
+			return fmt.Errorf("%s: %w", *manuali, err)
+		}
+		vecchie.Album, vecchie.Categorie = unisciManuali(vecchie.Album, m.Album), unisciManuali(vecchie.Categorie, m.Categorie)
+	}
 	nuove, rap := abbina(cpg, idx, vecchie)
 	out, err := yaml.Marshal(nuove)
 	if err != nil {
@@ -100,6 +112,18 @@ func mappa(args []string) error {
 	fmt.Printf("album Dighe: %d, abbinati in automatico %.1f%% (foto %.1f%%)\n",
 		rap.album, perc(rap.autoAlbum, rap.album), perc(rap.autoFoto, rap.foto))
 	return registra(c.Contenuti, "arricchimento", fmt.Sprintf("mappature: %d album Dighe, %d da fare", rap.album, len(rap.daFare)))
+}
+
+func unisciManuali(dst, src map[int]*mappatura) map[int]*mappatura {
+	if dst == nil {
+		dst = map[int]*mappatura{}
+	}
+	for k, v := range src {
+		if v.Origine == manuale {
+			dst[k] = v
+		}
+	}
+	return dst
 }
 
 func perc(a, b int) float64 {
