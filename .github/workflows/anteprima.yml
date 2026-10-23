@@ -47,12 +47,13 @@ jobs:
           build-args: |
             BRANCH=${{ github.ref_name }}
             COMMIT=${{ github.sha }}
+      # Solo sui fallimenti: a build riuscita avvisa già il container dell'anteprima,
+      # che ripartendo con l'immagine nuova manda la password con branch e commit.
       - name: notifica
-        if: always()
+        if: failure()
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
         run: |
           [ -n "$TELEGRAM_TOKEN" ] || exit 0
-          stato=$([ "${{ job.status }}" = success ] && echo ✅ || echo ❌)
           curl -s -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-            -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — immagine dev %s\nBranch: %s\nCommit: %.7s\nOnline entro ~1 min: https://dev.progettodighe.it/gerbillo/' "$stato" "${{ github.ref_name }}" "${{ github.sha }}")"
+            -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — build dev fallita ❌\nBranch: %s\nCommit: %.7s\n%s' "${{ github.ref_name }}" "${{ github.sha }}" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")"
