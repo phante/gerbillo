@@ -1,0 +1,16 @@
+# Configurazione di `gerbillo importa` (#9). Copiala in gerbillo.toml, fuori da git.
+
+# Cartella del Repository dei contenuti: solo locale, un commit per Importazione.
+contenuti = "/srv/gerbillo-contenuti"
+
+[mysql]
+utente = "gerbillo_ro"
+password = ""
+# Sul server è il socket locale; con [ssh] è il socket sul server.
+socket = "/var/run/mysqld/mysqld.sock"
+db_gallery = "progettodighe_it_gallery"
+db_forum = "progettodighe_it_forum"
+
+# Solo dal Mac: il socket arriva da un tunnel ssh -L.
+# [ssh]
+# host = "ubuntu@prdi.it"

@@ -1,6 +1,6 @@
 // Command gerbillo è il Backend di Gerbillo (ADR 0007).
-// Per ora contiene solo l'anteprima dev (ADR 0011): una pagina con branch e commit
-// e un admin protetto da una password usa e getta inviata via Telegram.
+// Sottocomandi: serve, l'anteprima dev (ADR 0011) con un admin protetto da una
+// password usa e getta inviata via Telegram; importa, l'Importazione da Coppermine (#9).
 package main
 
 import (
@@ -35,8 +35,14 @@ var (
 )
 
 func main() {
+	if len(os.Args) >= 2 && os.Args[1] == "importa" {
+		if err := importa(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	if len(os.Args) < 2 || os.Args[1] != "serve" {
-		fmt.Fprintln(os.Stderr, "uso: gerbillo serve")
+		fmt.Fprintln(os.Stderr, "uso: gerbillo serve | gerbillo importa [-config gerbillo.toml]")
 		os.Exit(2)
 	}
 	nuovaPassword()
