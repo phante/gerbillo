@@ -14,6 +14,13 @@ album:
         origine: manuale
         slug:
         - dighe/grande-dixience
+    44:
+        coppermine: Dighe - Dams / Italia / Veneto / Mis (BL)
+        origine: manuale
+        slug:
+        - dighe/mis-s-giuliana
+        tags:
+        - mis
     52:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Emosson
         origine: manuale
@@ -48,6 +55,16 @@ album:
         - campellio
         - poglia
         - da-separare
+    113:
+        coppermine: Dighe - Dams / Italia / Lombardia / Val Camonica Sistema Avio
+            / Laghi Avio e Benedetto. Centrale del Pantano
+        origine: manuale
+        slug:
+        - dighe/lago-benedetto
+        - dighe/lago-d-avio
+        - dighe/pantano-d-avio
+        tags:
+        - da-separare
     114:
         coppermine: Dighe - Dams / Italia / Lombardia / Val Camonica Sistema Avio
             / Vasca e centrale di Edolo
@@ -64,6 +81,9 @@ album:
         origine: manuale
     125:
         coppermine: Dighe - Dams / Austria - Österreich / Strubklamm - Salzburg
+        origine: manuale
+    127:
+        coppermine: Dighe - Dams / Italia / Friuli Venezia-Giulia / Debellis (UD)
         origine: manuale
     131:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Aiba
@@ -86,26 +106,75 @@ album:
     147:
         coppermine: Dighe - Dams / ... resto del mondo / Giappone
         origine: manuale
+    161:
+        coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Val Contrin
+        origine: manuale
     169:
         coppermine: Dighe - Dams / ... resto del mondo / Congo - Inga
         origine: manuale
     180:
         coppermine: Dighe - Dams / ... resto del mondo / USA / Matilija
         origine: manuale
+    185:
+        coppermine: Dighe - Dams / Italia / Friuli Venezia-Giulia / Raccolana (UD)
+        origine: manuale
     191:
         coppermine: Dighe - Dams / ... resto del mondo / USA / Hoover
+        origine: manuale
+    195:
+        coppermine: Dighe - Dams / Italia / Friuli Venezia-Giulia / Tramba (UD)
         origine: manuale
     196:
         coppermine: Dighe - Dams / ... resto del mondo / Venezuela - Presa El Guapo
         origine: manuale
+    200:
+        coppermine: Dighe - Dams / Italia / Lombardia / Campo Moro (SO)
+        origine: manuale
+        slug:
+        - dighe/campo-moro-i
+        - dighe/campo-moro-ii
     212:
         coppermine: Dighe - Dams / ... resto del mondo / Grecia - Leros
+        origine: manuale
+    220:
+        coppermine: Dighe - Dams / Italia / Lombardia / Val Camonica Sistema del Poglia
+            / San Fiorano
+        origine: manuale
+    226:
+        coppermine: Dighe - Dams / Italia / Veneto / Ciòu del Conte - Cortina d'Ampezzo
+            (BL)
         origine: manuale
     265:
         coppermine: Dighe - Dams / Francia / Moncenisio
         origine: manuale
+    305:
+        coppermine: Dighe - Dams / Italia / Lazio / Tivoli (RM)
+        origine: manuale
+    309:
+        coppermine: Dighe - Dams / Italia / Piemonte / Pont Ventoux
+        origine: manuale
     339:
         coppermine: Dighe - Dams / Austria - Österreich / Schlegeis
+        origine: manuale
+    356:
+        coppermine: Dighe - Dams / Italia / Toscana / Vagli
+        origine: manuale
+        slug:
+        - dighe/vagli-prima-fase
+        tags:
+        - vagli
+    433:
+        coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Selva dei Molini
+        origine: manuale
+    480:
+        coppermine: Dighe - Dams / Italia / Piemonte / Devero (Codelago)
+        origine: manuale
+        slug:
+        - dighe/codelago
+        tags:
+        - da-separare
+    514:
+        coppermine: Dighe - Dams / Italia / Toscana / Bagnone
         origine: manuale
     561:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Santa Maria
@@ -122,8 +191,20 @@ album:
     568:
         coppermine: Dighe - Dams / ... resto del mondo / Repubblica di Macedonia
         origine: manuale
+    591:
+        coppermine: Dighe - Dams / Italia / Piemonte / Castel
+        origine: manuale
     606:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Che Avce
+        origine: manuale
+    746:
+        coppermine: Dighe - Dams / Italia / Lazio / Pertuso (RM)
+        origine: manuale
+    751:
+        coppermine: Dighe - Dams / Italia / Lazio / Roviano (RM)
+        origine: manuale
+    753:
+        coppermine: Dighe - Dams / Italia / Lazio / Simbrivio (RM)
         origine: manuale
     766:
         coppermine: Dighe - Dams / ... resto del mondo / Norvegia
@@ -149,8 +230,14 @@ album:
     798:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Albigna
         origine: manuale
+    803:
+        coppermine: Dighe - Dams / Italia / Piemonte / Robbio
+        origine: manuale
     871:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Lago Bianco Sud
+        origine: manuale
+    883:
+        coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Val di Vizze
         origine: manuale
     894:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Griessee
