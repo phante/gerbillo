@@ -32,7 +32,7 @@ La licenza sotto cui ogni Foto è pubblicata: unica, obbligatoria e uguale a que
 ### Classificazione
 
 **Entità**:
-Un oggetto che ha (o avrà) una pagina nel sito principale con uno slug stabile: una diga, una centrale, un'opera di presa con pagina. Una Foto è di norma collegata a una o più Entità oppure a un Impianto, raramente a entrambi.
+Un oggetto che ha (o avrà) una pagina nel sito principale con uno Slug stabile: una diga, una centrale, un'opera di presa con pagina, un reportage. Una Foto è collegata alle Entità che ritrae tramite il campo `slug` (ADR 0013).
 _Avoid_: oggetto, nodo, album
 
 **Impianto**:
@@ -40,25 +40,31 @@ Un insieme di più Entità che funzionano insieme (es. diga, centrale e opere di
 _Avoid_: complesso, sistema
 
 **Slug**:
-Il nome stabile con cui il sito principale identifica un'Entità (es. `agaro`).
+Il percorso stabile `sezione/nome` con cui il sito principale identifica una pagina (es. `dighe/agaro`, `centrali/goglio-baceno-vb`).
 
 **Attributo**:
-Una proprietà di una Foto che non è un collegamento a un'Entità: Tema, Datazione, Autore, Fonte, Formato.
+Una proprietà di una Foto che non è un collegamento a un'Entità: Tag, Categoria, Datazione, Autore, Fonte, Formato, Punto geografico.
 _Avoid_: tag, campo
 
-**Tema**:
-Un Attributo che classifica il soggetto di una Foto senza essere un'Entità (es. Tecnica, Meeting, opere di presa senza pagina).
-_Avoid_: categoria, tag
+**Tag**:
+Un'etichetta libera ma da vocabolario controllato, con gli stessi valori dei tag del Sito principale quando esistono (campo `tags`).
+
+**Categoria**:
+Il tipo o sottotipo del soggetto di una Foto, con valori a percorso (es. `tecnica/turbine`, campo `categories`).
+_Avoid_: tema
+
+**Punto geografico**:
+Il punto geografico centrale associato alla Foto (`geolocation.coords`), come nel sito lo è per l'articolo. Se manca si eredita dall'Entità.
 
 **Datazione**:
-Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo). Distinta dalla Data di scansione e dalla Data di caricamento.
+Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo), in EDTF. Distinta dalla Data di scansione e dalla Data di caricamento.
 _Avoid_: data, periodo
 
 **Data di scansione**:
 Il momento in cui una foto analogica è stata digitalizzata.
 
 **Data di caricamento**:
-Il momento in cui la Foto è entrata nella gallery.
+Il momento in cui la Foto è entrata nella gallery (campo `date`, come nel sito).
 
 **Autore**:
 Chi ha scattato la Foto: una persona o un ente, non necessariamente un utente del forum.
@@ -72,7 +78,7 @@ _Avoid_: uploader, utente
 Da dove proviene la Foto quando non è opera di chi la carica (archivio, pubblicazione, ente).
 
 **Vista**:
-Un modo generato di navigare le Foto: per albero (regione → diga → tema), per periodo, per mappa, per Tema. Nessuna Vista è la struttura reale dei dati.
+Un modo generato di navigare le Foto: per albero (regione → diga → Categoria), per periodo, per mappa, per Tag o Categoria. Nessuna Vista è la struttura reale dei dati.
 _Avoid_: gerarchia, album
 
 ### Sistemi
@@ -119,8 +125,8 @@ Il BBCode generato per una Foto: miniatura cliccabile verso la pagina della Foto
 **Coppermine**:
 La gallery attuale, fonte primaria delle Foto finché resta attiva.
 
-**Album** / **Categoria**:
-Contenitori di Coppermine. Esistono solo come input della Mappatura, non nel modello di Gerbillo.
+**Album** / **Categoria Coppermine**:
+Contenitori di Coppermine. Esistono solo come input della Mappatura, non nel modello di Gerbillo. Da non confondere con la Categoria di Gerbillo.
 
 **Album personale**:
 Un Album di Coppermine nelle *User galleries*, legato a un Contributore e non a un'Entità. Il suo destino nel modello è da decidere guardando i dati di G1.
@@ -130,7 +136,7 @@ L'esecuzione, ripetibile, che porta le Foto da Coppermine a Gerbillo. Ogni esecu
 _Avoid_: sync, esportazione, migrazione (la Migrazione è il processo complessivo)
 
 **Mappatura**:
-La corrispondenza tra un Album di Coppermine e le Entità o i Temi di Gerbillo.
+La corrispondenza tra un Album (o una Categoria Coppermine) e gli Slug, i Tag e le Categorie di Gerbillo.
 
 **Livello di arricchimento**:
 Il lavoro editoriale fatto in Gerbillo (Mappature, correzioni, metadati aggiunti), applicato sopra ogni Importazione.

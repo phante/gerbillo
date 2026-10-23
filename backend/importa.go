@@ -243,7 +243,7 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 		// Le mappe di yaml.v3 escono con le chiavi ordinate: output deterministico.
 		y := map[string]any{
 			"pid":       f.pid,
-			"caricata":  time.Unix(f.ctime, 0).In(roma).Format(time.RFC3339),
+			"date":      time.Unix(f.ctime, 0).In(roma).Format(time.RFC3339),
 			"larghezza": f.larghezza,
 			"altezza":   f.altezza,
 		}
@@ -254,10 +254,13 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 				m[k] = v
 			}
 		}
-		metti(y, "titolo", testo("title", f.titolo))
-		metti(y, "descrizione", testo("caption", f.descrizione))
+		metti(y, "title", testo("title", f.titolo))
+		metti(y, "description", testo("caption", f.descrizione))
 		autore := testo("user1", f.user1)
-		metti(y, "autore", autore)
+		// authors è una lista come nel sito (ADR 0013); la separazione dei nomi arriva con #19.
+		if autore != "" {
+			y["authors"] = []string{autore}
+		}
 		nome := testo("filename", f.filename)
 		metti(cpg, "filepath", testo("filepath", f.filepath))
 		metti(cpg, "filename", nome)

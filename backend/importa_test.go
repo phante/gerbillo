@@ -59,8 +59,8 @@ func TestConverti(t *testing.T) {
 	}
 	foto, rap := converti(d)
 	atteso := `altezza: 600
-autore: Mario Rossi
-caricata: "2006-12-27T11:18:31+01:00"
+authors:
+    - Mario Rossi
 contributore:
     id: 25
     nome: utente
@@ -69,16 +69,17 @@ coppermine:
     data_exif: 2005:06:03 11:31:56
     filename: a.JPG
     filepath: userpics/10025/
+date: "2006-12-27T11:18:31+01:00"
 formato: immagine
 larghezza: 800
 pid: 1
-titolo: Città
+title: Città
 `
 	if got := string(foto[0].file); got != atteso {
 		t.Errorf("YAML:\n%s\natteso:\n%s", got, atteso)
 	}
 	for _, f := range foto[1:] {
-		if strings.Contains(string(f.file), "contributore") || strings.Contains(string(f.file), "autore") {
+		if strings.Contains(string(f.file), "contributore") || strings.Contains(string(f.file), "authors") {
 			t.Errorf("pid %d: contributore o autore non attesi:\n%s", f.pid, f.file)
 		}
 	}
