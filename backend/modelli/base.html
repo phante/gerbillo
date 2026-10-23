@@ -1,51 +1,123 @@
+{{/* Scocca della Gallery pubblica: header compatto della mappa e footer del Sito
+     principale, con le sue classi Tachyons (#25). Il markup segue
+     progettodighe/themes/progettodighe/layouts: mappa/baseof.html (header) e
+     baseof.html (footer); i metadati seguono _partials/main_header.html. */}}
 {{define "testa"}}<!doctype html>
 <html lang="it">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{.Titolo}} · Gallery ProgettoDighe</title>
-<link rel="stylesheet" href="{{.CSS}}">
+<title>{{.Titolo}} | Gallery ProgettoDighe</title>
+<link rel="stylesheet" href="{{statico "stile.css"}}">
+<link rel="icon" href="{{.Sito}}asset/icon/favicon.ico">
+<link rel="icon" href="{{.Sito}}asset/icon/icon.svg" type="image/svg+xml">
 {{if .Indietro}}<link rel="prev" href="{{.Indietro}}">{{end}}{{if .Avanti}}<link rel="next" href="{{.Avanti}}">{{end}}
 </head>
-<body>
-{{if .Striscia}}<p class="striscia">{{.Striscia}}</p>{{end}}
-<header class="testata">
-  <a class="marchio" href="{{.Base}}">Gallery <span>ProgettoDighe</span></a>
-  <nav><a href="{{.Base}}contributori/">Contributori</a> <a href="{{.Base}}altre/">Da classificare</a></nav>
+<body class="sans-serif bg-near-white black-80">
+{{if .Striscia}}<p class="striscia ma0">{{.Striscia}}</p>{{end}}
+<header class="pd-map-header">
+  <a class="pd-map-brand link black-80" href="{{.Sito}}" title="Home">
+    <img src="{{statico "PDLogo.svg"}}" alt="ProgettoDighe" width="34" height="34">
+    <span class="fw6">ProgettoDighe</span>
+  </a>
+  <button type="button" class="pd-map-burger-btn" aria-expanded="false" aria-controls="pd-map-nav" aria-label="Apri il menu di navigazione">
+    <span class="pd-map-burger" aria-hidden="true"></span>
+  </button>
+  <nav id="pd-map-nav" class="pd-map-nav-links">
+    {{range .Menu}}<a class="link black-80{{if .N}} b{{end}}" href="{{.URL}}">{{.Testo}}</a>{{end}}
+  </nav>
 </header>
-<main>
-{{if .Briciole}}<nav class="briciole">{{range .Briciole}}<a href="{{.URL}}">{{.Testo}}</a> › {{end}}</nav>{{end}}
-<h1>{{.Titolo}}</h1>
+<main id="mainanchor" class="mw8 center">
+<header class="w-100 ph3 pv2">
+  <nav class="flex flex-wrap items-center mb2" aria-label="Percorso di navigazione">
+    {{range .Briciole}}<a class="dib pa2 mr1 mb1 f5 b ttu tracked link white bg-dark-gray" href="{{.URL}}">{{.Testo}}</a>{{end}}
+  </nav>
+  <h1 class="black-80 f3 ttu tracked lh-title mt1 mb3">{{.Titolo}}</h1>
+</header>
 {{end}}
 
 {{define "piede"}}
 </main>
-<footer class="piede">Foto della community di ProgettoDighe, con la stessa licenza del sito.</footer>
+<footer class="footer-sfumato pa2 pa4-m pa5-l mt5 black-70 bg-light-gray">
+  <p class="w-100 pv0 f5 fw6 ttu tracked mb4">Mantenuto e gestito da Elvis Del Tedesco e dalla comunit&agrave; di ProgettoDighe dal 2005</p>
+  <section class="cf mb3">
+    <address class="fs-normal fl-ns w-auto-l w-100-m w-100 tc mb4">
+      <a class="link black-70 hover-silver f2-ns f3 fw6" href="mailto:info@progettodighe.it">info@progettodighe.it</a>
+    </address>
+    <div class="fr-ns mt1 w-auto-l w-100-m w-100 tc mb4">
+      <a class="link near-black hover-silver dib h2 w2 mr3" href="https://t.me/progettodighe" title="Telegram" aria-label="Telegram">{{icona "telegram"}}</a>
+      <a class="link near-black hover-silver dib h2 w2 mr3" href="https://matrix.to/#/#prdi-generale:matrix.org" title="Matrix" aria-label="Matrix">{{icona "matrix"}}</a>
+      <a class="link near-black hover-silver dib h2 w2 mr3" href="https://www.facebook.com/progettodighe" title="Facebook" aria-label="Facebook">{{icona "facebook"}}</a>
+      <a class="link near-black hover-silver dib h2 w2 mr3" href="https://www.instagram.com/progettodighe.it/" title="Instagram" aria-label="Instagram">{{icona "instagram"}}</a>
+      <a class="link near-black hover-silver dib h2 w2 mr3" href="{{.Sito}}index.xml" title="RSS" aria-label="RSS">{{icona "rss"}}</a>
+    </div>
+  </section>
+  <div class="tc mt3">
+    <div class="mb3">
+      <a class="link dim black-70 ph2" href="{{.Sito}}cookie/">Cookie</a> |
+      <a class="link dim black-70 ph2" href="{{.Sito}}license/">Licenze</a> |
+      <a class="link dim black-70 ph2" href="{{.Sito}}privacy/">Privacy</a>
+    </div>
+    <p class="dib ph2 link dim black-70">
+      Eccetto dove indicato, i contenuti sono licenziati <a class="link black-80 b" href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>.
+      Le foto della Gallery hanno la stessa licenza.
+      <span class="nowrap ml2">
+        <img class="v-mid h1" src="{{statico "cc.svg"}}" alt="CC" loading="lazy">
+        <img class="v-mid h1" src="{{statico "by.svg"}}" alt="BY" loading="lazy">
+        <img class="v-mid h1" src="{{statico "sa.svg"}}" alt="SA" loading="lazy">
+      </span>
+    </p>
+  </div>
+</footer>
+<script>
+// Menu a comparsa su mobile, come nella mappa del sito (main.js).
+document.addEventListener("click",function(e){
+  var t=e.target.closest&&e.target.closest(".pd-map-burger-btn");if(!t)return;
+  var n=document.getElementById("pd-map-nav"),aperto=n.classList.toggle("is-open");
+  t.setAttribute("aria-expanded",aperto?"true":"false");
+});
+</script>
 </body>
 </html>
 {{end}}
 
 {{define "griglia"}}{{template "testa" .}}
 {{with .Corpo}}
-{{if .Sottotitolo}}<p class="sotto">{{.Sottotitolo}}</p>{{end}}
-{{range .Link}}<p class="sotto"><a href="{{.URL}}">{{.Testo}}</a></p>{{end}}
-<ul class="griglia">
-{{range .Foto}}<li><a href="{{.URL}}"><img src="{{.Mini}}" alt="{{.Titolo}}" loading="lazy" decoding="async"><span>{{.Titolo}}</span></a></li>
+<div class="ph3">
+  {{if .Sottotitolo}}<p class="f5 black-60 mt0 mb2">{{.Sottotitolo}}</p>{{end}}
+  {{range .Link}}<p class="mt0 mb3"><a class="f6 link dim br2 ph3 pv2 dib white bg-dark-gray" href="{{.URL}}">{{.Testo}}</a></p>{{end}}
+</div>
+<ul class="list pa0 ma0 ph2 flex flex-wrap">
+{{range .Foto}}<li class="w-third w-25-m w-20-l pa1">
+  <a class="db link grow" href="{{.URL}}" title="{{.Titolo}}">
+    <div class="aspect-ratio aspect-ratio--1x1"><img class="aspect-ratio--object cover br2 shadow-4 bg-light-gray" src="{{.Mini}}" alt="{{.Titolo}}" loading="lazy" decoding="async"></div>
+  </a>
+</li>
 {{end}}</ul>
-{{if or .Indietro .Avanti}}<nav class="pagine">{{if .Indietro}}<a href="{{.Indietro}}">‹ Precedenti</a>{{end}} <span>Pagina {{.Pagina}} di {{.Pagine}}</span> {{if .Avanti}}<a href="{{.Avanti}}">Successive ›</a>{{end}}</nav>{{end}}
+{{if or .Indietro .Avanti}}<nav class="flex items-center justify-center mt4 ph3 f6">
+  {{if .Indietro}}<a class="link dim br2 ph3 pv2 mh2 white bg-dark-gray" href="{{.Indietro}}">‹ Precedenti</a>{{end}}
+  <span class="black-60 mh2">Pagina {{.Pagina}} di {{.Pagine}}</span>
+  {{if .Avanti}}<a class="link dim br2 ph3 pv2 mh2 white bg-dark-gray" href="{{.Avanti}}">Successive ›</a>{{end}}
+</nav>{{end}}
 {{end}}
 {{template "piede" .}}{{end}}
 
 {{define "elenco"}}{{template "testa" .}}
 {{with .Corpo}}
-{{if .Sottotitolo}}<p class="sotto">{{.Sottotitolo}}</p>{{end}}
+<div class="ph3">{{if .Sottotitolo}}<p class="f5 black-60 mt0 mb3">{{.Sottotitolo}}</p>{{end}}</div>
 {{range .Gruppi}}
-{{if .Nome}}<h2>{{.Nome}}</h2>{{end}}
+{{if .Nome}}<h2 class="f4 ttu tracked black-80 ph3 mt4 mb2">{{.Nome}}</h2>{{end}}
 {{range .Sottogruppi}}
-{{if .Nome}}<h3>{{.Nome}}</h3>{{end}}
-<ul class="voci">
-{{range .Voci}}<li><a href="{{.URL}}">{{if .Mini}}<img src="{{.Mini}}" alt="" loading="lazy" decoding="async">{{end}}<span>{{.Testo}}</span> <small>{{.N}}</small></a></li>
-{{end}}</ul>
+{{if .Nome}}<h3 class="f6 ttu tracked black-60 ph3 mt3 mb1">{{.Nome}}</h3>{{end}}
+<div class="flex flex-wrap ph2">
+{{range .Voci}}<article class="w-50 w-third-m w-20-l pa2 flex">
+  <a class="link w-100 bb b--black-10 pb2 dim flex flex-column" href="{{.URL}}">
+    <div class="aspect-ratio aspect-ratio--1x1 w-100">{{if .Mini}}<img class="aspect-ratio--object cover br4 bg-light-gray" src="{{.Mini}}" alt="" loading="lazy" decoding="async">{{end}}</div>
+    <h2 class="f5 tracked-tight lh-title black-80 mt2 mb0 flex-auto">{{.Testo}}</h2>
+    <span class="f6 black-60 mt1">{{.N}} foto</span>
+  </a>
+</article>
+{{end}}</div>
 {{end}}
 {{end}}
 {{end}}
@@ -53,26 +125,29 @@
 
 {{define "foto"}}{{template "testa" .}}
 {{with .Corpo}}
-<figure class="visore">
-  {{if .Schermo}}<a href="{{.Schermo}}"><img src="{{.Schermo}}" alt="{{.Alt}}" width="{{.Larghezza}}" height="{{.Altezza}}"></a>
-  {{else}}<a class="documento" href="{{.Originale}}"><img src="{{.Mini}}" alt="" width="160" height="160"><span>Apri il documento ({{.Formato}})</span></a>{{end}}
-  {{if $.Indietro}}<a class="freccia indietro" href="{{$.Indietro}}" aria-label="Foto precedente">‹</a>{{end}}
-  {{if $.Avanti}}<a class="freccia avanti" href="{{$.Avanti}}" aria-label="Foto successiva">›</a>{{end}}
-</figure>
-<div class="scheda">
-  {{if .Description}}<p class="descrizione">{{.Description}}</p>{{end}}
-  <dl>
-    {{if .Slug}}<dt>Ritrae</dt><dd>{{range $i, $e := .Slug}}{{if $i}}, {{end}}<a href="{{$e.URL}}">{{$e.Testo}}</a>{{if $e.Sito}} <a class="esterno" href="{{$e.Sito}}">pagina sul sito</a>{{end}}{{end}}</dd>{{end}}
-    {{if .Authors}}<dt>Autore</dt><dd>{{.Authors}}</dd>{{end}}
-    {{if .Datazione}}<dt>Datazione</dt><dd>{{.Datazione}}</dd>{{end}}
-    {{if .Luogo}}<dt>Luogo</dt><dd>{{.Luogo}}</dd>{{end}}
-    {{if .Contributore}}<dt>Caricata da</dt><dd><a href="{{.Contributore.URL}}">{{.Contributore.Testo}}</a></dd>{{end}}
-    <dt>Caricata il</dt><dd>{{.Caricata}}</dd>
-    {{if .Tags}}<dt>Tag</dt><dd>{{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}</dd>{{end}}
-  </dl>
-  <div class="forum">
-    <button type="button" id="copia" data-bbcode="{{.BBCode}}">Copia per il forum</button>
+<div class="ph3">
+  <figure class="reset-figure visore relative">
+    {{if .Schermo}}<a class="db" href="{{.Schermo}}"><img class="db center h-auto br4 shadow-4" src="{{.Schermo}}" alt="{{.Alt}}" width="{{.Larghezza}}" height="{{.Altezza}}" fetchpriority="high"></a>
+    {{else}}<a class="db tc pa4 link black-80 bg-white br4 shadow-4" href="{{.Originale}}"><img class="db center" src="{{.Mini}}" alt="" width="120" height="120"><span class="db mt2">Apri il documento ({{.Formato}})</span></a>{{end}}
+    {{if $.Indietro}}<a class="freccia indietro" href="{{$.Indietro}}" aria-label="Foto precedente">{{icona "left-arrow"}}</a>{{end}}
+    {{if $.Avanti}}<a class="freccia avanti" href="{{$.Avanti}}" aria-label="Foto successiva">{{icona "right-arrow"}}</a>{{end}}
+  </figure>
+  {{if .Description}}<p class="f5 f4-ns lh-copy measure-wide mt4 mb3 pre-line">{{.Description}}</p>{{end}}
+  <div class="pa2 grid-metadata ma0 mt3">
+    {{if .Dighe}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "route"}}</span><small class="ttu tracked black-70">Dighe:</small>
+      <div class="black-70">{{range $i, $e := .Dighe}}{{if $i}} | {{end}}<a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{$e.URL}}">{{$e.Testo}}</a>{{end}}</div></div>{{end}}
+    {{if .Authors}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "at"}}</span><small class="ttu tracked black-70">Autore:</small><span class="black-70 ml1 fw5">{{.Authors}}</span></div>{{end}}
+    {{if .Datazione}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "oclock"}}</span><small class="ttu tracked black-70">Scattata:</small><span class="black-70 ml1 fw5">{{.Datazione}}</span></div>{{end}}
+    {{if .Luogo}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "route"}}</span><small class="ttu tracked black-70">Luogo:</small><span class="black-70 ml1 fw5">{{.Luogo}}</span></div>{{end}}
+    <div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "send-mail"}}</span><small class="ttu tracked black-70">Caricata:</small>
+      <span class="black-70 ml1 fw5">{{.Caricata}}{{with .Contributore}} da <a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{.URL}}">{{.Testo}}</a>{{end}}</span></div>
+    {{if .Tags}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "hashtag"}}</span><small class="ttu tracked black-70">Tag:</small><span class="black-70 ml1">{{range $i, $t := .Tags}}{{if $i}}, {{end}}{{$t}}{{end}}</span></div>{{end}}
+    {{if .SulSito}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "link"}}</span><small class="ttu tracked black-70">Sul sito:</small>
+      <div class="black-70">{{range $i, $e := .SulSito}}{{if $i}} | {{end}}<a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{$e.URL}}">{{$e.Testo}}</a>{{end}}</div></div>{{end}}
   </div>
+  <p class="mt4">
+    <button type="button" id="copia" class="f6 b ttu tracked br2 ph3 pv2 bn pointer white bg-dark-gray dim" data-bbcode="{{.BBCode}}"><span class="svg-inline mr2" aria-hidden="true">{{icona "forum"}}</span><span id="copia-testo">Copia per il forum</span></button>
+  </p>
 </div>
 {{end}}
 <script>
@@ -90,8 +165,8 @@
     if(dx<-60&&next)location.href=next;
   });
   // Il BBCode non si mostra: il pulsante lo copia e basta.
-  var b=document.getElementById("copia"),testo=b.textContent;
-  var fatto=function(){b.textContent="Copiato";setTimeout(function(){b.textContent=testo},1500)};
+  var b=document.getElementById("copia"),s=document.getElementById("copia-testo"),testo=s.textContent;
+  var fatto=function(){s.textContent="Copiato";setTimeout(function(){s.textContent=testo},1500)};
   var vecchio=function(){
     var t=document.createElement("textarea");t.value=b.dataset.bbcode;t.style.position="fixed";t.style.opacity="0";
     document.body.appendChild(t);t.select();document.execCommand("copy");t.remove();fatto();

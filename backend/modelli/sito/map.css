@@ -1,0 +1,673 @@
+.leaflet-cluster-coverage {
+    background-color: rgba(0, 128, 255, 0.05); /* azzurro molto chiaro */
+    border: 2px dashed rgba(0, 128, 255, 0.3); /* bordo leggero e trasparente */
+    border-radius: 50%;
+  }
+
+
+/* =========================
+   Base cluster
+========================= */
+.map-cluster-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* La classe .map-cluster-icon sta sia sul wrapper interno (dove serve
+   position:relative per il badge numerico) sia sul root del divIcon di
+   Leaflet. Sul root NON deve sovrascrivere il position:absolute richiesto da
+   Leaflet: altrimenti l'icona entra nel flow del documento e i cluster
+   derivano cumulativamente verso sud (bbox nord Italia, marker in mare). */
+.leaflet-marker-icon.map-cluster-icon {
+  position: absolute;
+}
+
+/* Cerchio principale del cluster */
+.map-cluster-icon .map-cluster-circle {
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Bounce del cerchio */
+.map-cluster-icon .map-cluster-circle.map-bounce {
+  animation: map-bounce 0.3s ease-in-out;
+}
+
+@keyframes map-bounce {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Badge numerico */
+.map-cluster-number {
+  border-radius: 50%;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  transition: transform 0.25s ease-in-out;
+  border: 1px solid white;
+}
+
+/* Cluster numerico centrale (tipi diversi) */
+.map-cluster-icon.map-cluster-number-only {
+  background-color: #666;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* =========================
+   Pulsanti di controllo mappa — bianco, dimensione maggiore, angoli moderni.
+   Default: cerchio singolo indipendente (legenda, espandi).
+   .leaflet-control-zoom e .pd-nav-control sono le due eccezioni "a pillola"
+   (zoom +/-, App Mappe+OSM): bottoni fusi, radius sul contenitore.
+   map.control.verticalexpand.css aggiunge solo la mask dell'icona
+   espandi/comprimi sopra questa base condivisa.
+========================= */
+
+.leaflet-top .leaflet-control {
+  margin-top: 16px;
+}
+.leaflet-left .leaflet-control {
+  margin-left: 16px;
+}
+
+.leaflet-bar {
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+}
+.leaflet-touch .leaflet-bar {
+  border: none;
+}
+
+/* Default: ogni bottone è un cerchio bianco indipendente da 44px */
+.leaflet-bar a {
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: #333;
+  border: none;
+  margin-bottom: 8px;
+  transition: background-color 0.2s ease;
+}
+.leaflet-bar a:last-of-type {
+  margin-bottom: 0;
+}
+/* leaflet.css applica un border-radius parziale (4px, 2px su touch) solo
+   su alcuni angoli di first-child/last-child, pensato per la pillola fusa
+   originale — su touch è ancora più specifico del nostro override sopra.
+   Qui lo neutralizziamo con !important per i bottoni standalone (legenda,
+   espandi), che devono restare cerchi completi. Per zoom/nav ci pensa la
+   regola "a pillola" sotto, anch'essa con !important. */
+.leaflet-bar a:first-child,
+.leaflet-bar a:last-child {
+  border-radius: 50% !important;
+}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+  background-color: #f4f4f4;
+}
+.leaflet-bar a.leaflet-disabled,
+.leaflet-bar a.leaflet-disabled:hover,
+.leaflet-bar a.leaflet-disabled:focus {
+  cursor: default;
+  background-color: #fff;
+  color: #bbb;
+  opacity: 0.55;
+  box-shadow: none;
+}
+.leaflet-touch .leaflet-bar a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+}
+
+/* Eccezione "a pillola": zoom (+/-) e navigazione (App Mappe + OSM) —
+   bottoni fusi in un unico contenitore arrotondato, senza gap tra loro */
+.leaflet-control-zoom,
+.pd-nav-control {
+  background-color: #fff;
+  border-radius: 22px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+.leaflet-control-zoom a,
+.pd-nav-control a {
+  border-radius: 0 !important;
+  box-shadow: none;
+  background-color: transparent;
+  margin-bottom: 0;
+}
+/* Specificità maggiore del reset generico first-child/last-child qui sopra
+   (che ha la stessa importanza ma meno classi): senza questo, i bottoni
+   estremi della pillola tornerebbero cerchi invece di restare fusi */
+.leaflet-control-zoom.leaflet-bar a:first-child,
+.leaflet-control-zoom.leaflet-bar a:last-child,
+.pd-nav-control.leaflet-bar a:first-child,
+.pd-nav-control.leaflet-bar a:last-child {
+  border-radius: 0 !important;
+}
+.leaflet-control-zoom a:not(:last-of-type),
+.pd-nav-control a:not(:last-of-type) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.leaflet-control-zoom a:hover,
+.pd-nav-control a:hover {
+  background-color: #f4f4f4;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  font: 22px/1 'Lucida Console', Monaco, monospace;
+  text-indent: 0;
+}
+.leaflet-touch .leaflet-control-zoom-in,
+.leaflet-touch .leaflet-control-zoom-out {
+  font-size: 22px;
+}
+
+/* Icone a mask-image: ricolorano SVG monocromatici in grigio scuro a
+   prescindere dal fill originale del file sorgente */
+.pd-control-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  background-color: #333;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  flex-shrink: 0;
+}
+.pd-control-icon--legend {
+  -webkit-mask-image: url(/asset/images/map-legend-svgrepo-com.svg);
+  mask-image: url(/asset/images/map-legend-svgrepo-com.svg);
+}
+.pd-control-icon--route {
+  -webkit-mask-image: url(/asset/images/phone-route-svgrepo-com.svg);
+  mask-image: url(/asset/images/phone-route-svgrepo-com.svg);
+}
+.pd-control-icon--osm {
+  -webkit-mask-image: url(/asset/images/openstreetmap-svgrepo-com.svg);
+  mask-image: url(/asset/images/openstreetmap-svgrepo-com.svg);
+}
+.pd-control-icon--filter {
+  -webkit-mask-image: url(/asset/images/filter-funnel.svg);
+  mask-image: url(/asset/images/filter-funnel.svg);
+}
+.pd-control-icon--locate {
+  -webkit-mask-image: url(/asset/images/gps-locate.svg);
+  mask-image: url(/asset/images/gps-locate.svg);
+}
+
+/* =========================
+   Controllo "Dove sono" (map.locate.js): pulsante + pallino di posizione.
+   is-locating = richiesta al browser in corso, is-active = posizione mostrata.
+========================= */
+
+.pd-locate-control a.is-active .pd-control-icon {
+  background-color: #0078a8;
+}
+.pd-locate-control a.is-locating .pd-control-icon {
+  background-color: #0078a8;
+  animation: pd-locate-pulse 1s ease-in-out infinite;
+}
+@keyframes pd-locate-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Popup del pallino: intestazione più blocco "più vicino" evidenziato.
+   La larghezza la governa Leaflet (min/maxWidth in map.locate.js): qui niente
+   width fissa, altrimenti su schermi stretti il contenuto sborda. */
+.pd-locate-popup-body {
+  font-size: 1rem;
+}
+.pd-locate-title {
+  color: #000;
+}
+.pd-locate-empty {
+  margin-top: 6px;
+  color: #555;
+}
+/* Invito a premere: una riga sola sotto il titolo, non ripetuta in ogni box */
+.pd-locate-hint {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: #777;
+}
+
+/* Con più punti suggeriti il popup può superare l'altezza utile della mappa:
+   Leaflet gli mette lo scorrimento interno (maxHeight in map.locate.js) e qui
+   lasciamo spazio alla barra di scorrimento, che altrimenti copre i box. */
+.pd-locate-popup .leaflet-popup-scrolled {
+  padding-right: 8px;
+}
+
+/* Sfumatura sul bordo inferiore quando il contenuto scorre: senza, l'ultimo
+   box tagliato a metà sembra un errore invece che un invito a scorrere. */
+.pd-locate-popup .leaflet-popup-content-wrapper:has(.leaflet-popup-scrolled) {
+  position: relative;
+}
+.pd-locate-popup .leaflet-popup-content-wrapper:has(.leaflet-popup-scrolled)::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  left: 2px;
+  height: 22px;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff);
+  pointer-events: none;
+}
+
+/* Box di un punto suggerito: fondo tinto e barra d'accento a sinistra per
+   staccarlo dall'intestazione e dai box vicini. È un <button> (premendolo la
+   mappa va sul punto), quindi azzera anche gli stili del browser: font, bordi
+   e allineamento non si ereditano da soli. */
+.pd-locate-nearest {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 9px;
+  border: none;
+  border-left: 3px solid #0078a8;
+  border-radius: 3px;
+  background-color: #eef6fa;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background-color 0.15s ease;
+}
+.pd-locate-nearest:hover,
+.pd-locate-nearest:focus-visible {
+  background-color: #dcecf5;
+}
+.pd-locate-nearest:focus-visible {
+  outline: 2px solid #0078a8;
+  outline-offset: 1px;
+}
+/* Etichetta e distanza sulla stessa riga, "in linea d'aria" sulla successiva:
+   layout fisso a due righe, così non dipende dalla larghezza del popup */
+.pd-locate-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.pd-locate-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #55707d;
+}
+.pd-locate-distance {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0a5c7a;
+  /* Con etichette lunghe ("Centrale più vicina") in un popup stretto va a capo
+     l'etichetta, mai il numero separato dall'unità */
+  white-space: nowrap;
+}
+.pd-locate-crow {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  color: #777;
+}
+.pd-locate-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #000;
+}
+.pd-locate-tag {
+  display: block;
+  margin-top: 6px;
+}
+
+/* =========================
+   Widget "DEV" per simulare la posizione (map.locate.debug.js): presente solo
+   fuori produzione. Volutamente riconoscibile, per non scambiarlo con un
+   comando del sito.
+========================= */
+
+.pd-debug-locations a.pd-debug-button {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #b3261e;
+  border: 1px dashed #b3261e;
+}
+.pd-debug-panel {
+  position: absolute;
+  top: 0;
+  left: 52px;
+  z-index: 1000;
+  width: 230px;
+  padding: 8px;
+  border: 1px dashed #b3261e;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+}
+.pd-debug-panel-title {
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #b3261e;
+}
+.pd-debug-place {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 3px;
+  background-color: #f4f4f4;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pd-debug-place + .pd-debug-place {
+  margin-top: 4px;
+}
+.pd-debug-place:hover,
+.pd-debug-place:focus-visible {
+  background-color: #e6eef2;
+}
+.pd-debug-place b {
+  display: block;
+  font-size: 0.95rem;
+}
+.pd-debug-place span {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* Pallino della posizione dell'utente (divIcon 22x22, ancorata al centro) */
+.pd-user-location-dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 4px;
+  border-radius: 50%;
+  background-color: #0078a8;
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 2px rgba(0, 120, 168, 0.35),
+    0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.pd-legend-close {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Tag del tipo nel popup: pillola piena colorata come la legenda
+   (background impostato inline col colore dello stile del marker). */
+.map-popup-type {
+  display: inline-block;
+  padding: 0.22rem 0.7rem;
+  border-radius: 20px;
+  /* color impostato inline in getPopupText (contrasto WCAG sul colore tag) */
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+/* =========================
+   Pagina mappa generale (/mappa/): layout a pieno schermo
+   Header compatto + mappa a tutto viewport + footer minimale.
+========================= */
+.pd-map-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  overflow: hidden;
+}
+
+.pd-map-header,
+.pd-map-filterbar {
+  flex: 0 0 auto;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.pd-map-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  z-index: 1200;
+}
+
+.pd-map-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  text-decoration: none;
+}
+.pd-map-brand img { display: block; }
+
+/* Navigazione: inline su desktop, hamburger a comparsa su mobile */
+.pd-map-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+}
+.pd-map-nav-links a {
+  padding: 0.35rem 0;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.pd-map-burger-btn { display: none; }
+
+/* Mobile: nav nascosta, apribile col pulsante hamburger */
+@media (max-width: 48em) {
+  .pd-map-burger-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .pd-map-burger,
+  .pd-map-burger::before,
+  .pd-map-burger::after {
+    width: 22px;
+    height: 2px;
+    background: #333;
+  }
+  .pd-map-burger { position: relative; display: block; }
+  .pd-map-burger::before,
+  .pd-map-burger::after {
+    content: "";
+    position: absolute;
+    left: 0;
+  }
+  .pd-map-burger::before { top: -6px; }
+  .pd-map-burger::after { top: 6px; }
+
+  .pd-map-nav-links { display: none; }
+  .pd-map-nav-links.is-open {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    position: absolute;
+    right: 0.75rem;
+    top: 52px;
+    min-width: 160px;
+    padding: 0.5rem 1rem;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1300;
+  }
+}
+
+.pd-map-filterbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.5rem 1rem;
+  z-index: 1100;
+}
+.pd-map-search { flex: 0 1 260px; position: relative; }
+.pd-map-search input {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 0.85rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  font-size: 0.95rem;
+}
+#map-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  color: #999;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+#map-search-clear:hover { color: #333; }
+
+/* Il pulsante nativo dei campi type="search" duplicherebbe il nostro X. */
+.pd-map-search input[type="search"]::-webkit-search-cancel-button { display: none; }
+/* Filtri sempre collassati dietro il pulsante "Filtri", a ogni larghezza:
+   inline occupavano troppo spazio (es. iPad orizzontale). Stile pillola come
+   .search-filter-btn ma senza quella classe: search.js aggancia tutti i
+   .search-filter-btn al load e fa stopPropagation, bloccando la delega. */
+.pd-map-filterbar { position: relative; }
+.pd-map-filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.4rem 0.9rem;
+  background-color: #f4f4f4;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.pd-map-filters-toggle[aria-expanded="true"] {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+}
+#map-type-filters {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  position: absolute;
+  left: 0.75rem;
+  top: 100%;
+  margin-top: 0.4rem;
+  max-width: calc(100% - 1.5rem);
+  padding: 0.6rem 0.75rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 60vh;
+  overflow-y: auto;
+  z-index: 1250;
+}
+#map-type-filters.is-open { display: flex; }
+
+.pd-map-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+}
+.pd-map-canvas {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* Override dell'altezza fissa base (.pd-maps { height: 500px }) */
+.pd-map-canvas .pd-maps { height: 100%; }
+
+.pd-map-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  color: #666;
+  background: #f4f4f4;
+  border-top: 1px solid #e0e0e0;
+}

@@ -27,7 +27,31 @@ import (
 //go:embed modelli
 var modelli embed.FS
 
-var pagine = template.Must(template.ParseFS(modelli, "modelli/*.html"))
+// I modelli usano icona (SVG copiati dal sito, inseriti nel markup) e statico
+// (URL di un file statico, con o senza estensione: build -anteprima).
+var pagine = template.Must(template.New("").Funcs(template.FuncMap{
+	"icona":   icona,
+	"statico": func(string) string { return "" },
+}).ParseFS(modelli, "modelli/*.html"))
+
+func icona(nome string) template.HTML {
+	d, err := modelli.ReadFile("modelli/sito/icone/" + nome + ".svg")
+	if err != nil {
+		panic(err) // nome scritto nei modelli: un errore qui è un errore di battitura
+	}
+	return template.HTML(d)
+}
+
+// menu riproduce il menu principale del sito (config/_default e front matter delle sezioni).
+var menu = []struct{ testo, percorso string }{
+	{"Le dighe", "dighe/"}, {"Le centrali", "centrali/"}, {"Tecnica", "tecnica/"},
+	{"Reportage", "reportage/"}, {"Biblioteca", "biblioteca/"}, {"Noi", "noi/"},
+	{"Mappa", "mappa/"}, {"Forum", "forum/"}, {"Gallery", ""},
+}
+
+// fileSito sono le copie dei file del Sito principale unite in statico/stile.css,
+// nell'ordine degli @import di main.css; poi le regole proprie della Gallery.
+var fileSito = []string{"sito/tachyons.css", "sito/map.css", "sito/main.css", "stile.css"}
 
 const perPagina = 240
 
@@ -70,6 +94,7 @@ func build(args []string) error {
 	nuova := strings.TrimSuffix(*dist, "/") + ".nuova"
 	os.RemoveAll(nuova)
 	b := &builder{opzioniBuild: o, c: cont, dir: nuova}
+	pagine.Funcs(template.FuncMap{"statico": b.statico})
 	if err := b.tutto(); err != nil {
 		return err
 	}
@@ -108,9 +133,9 @@ type contestoFoto struct {
 }
 
 type paginaSito struct {
-	Titolo, Base, Striscia, Indietro, Avanti, CSS string
-	Briciole                                      []voce
-	Corpo                                         any
+	Titolo, Base, Striscia, Indietro, Avanti, Sito string
+	Briciole, Menu                                 []voce
+	Corpo                                          any
 }
 
 type voce struct {
@@ -148,7 +173,7 @@ type corpoFoto struct {
 	Description, Authors, Datazione, Luogo, Caricata string
 	BBCode                                           string
 	Larghezza, Altezza                               int
-	Slug                                             []voce
+	Dighe, SulSito                                   []voce
 	Contributore                                     *voce
 	Tags                                             []string
 }
@@ -161,7 +186,14 @@ func (b *builder) url(parti ...string) string {
 }
 
 func (b *builder) scrivi(modello string, p paginaSito, parti ...string) error {
-	p.Base, p.Striscia, p.CSS = b.base, b.striscia, b.statico("stile.css")
+	p.Base, p.Striscia, p.Sito = b.base, b.striscia, b.sito
+	for _, m := range menu {
+		v := voce{URL: b.sito + m.percorso, Testo: m.testo}
+		if m.percorso == "" {
+			v.URL, v.N = b.base, 1 // la voce della Gallery, in evidenza
+		}
+		p.Menu = append(p.Menu, v)
+	}
 	dir := filepath.Join(append([]string{b.dir}, parti...)...)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
@@ -396,11 +428,13 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 	}
 	for _, s := range f.Slug {
 		e := b.c.entita[s]
-		v := voce{URL: b.url(s), Testo: e.Title}
+		c.Dighe = append(c.Dighe, voce{URL: b.url(s), Testo: e.Title})
 		if !e.Draft {
-			v.Sito = b.sito + s + "/"
+			c.SulSito = append(c.SulSito, voce{URL: b.sito + s + "/", Testo: e.Title})
 		}
-		c.Slug = append(c.Slug, v)
+	}
+	if len(c.Dighe) < 2 {
+		c.Dighe = nil // una sola diga è già nelle briciole
 	}
 	if f.Contributore != nil {
 		c.Contributore = &voce{URL: b.url("contributori", strconv.Itoa(f.Contributore.ID)), Testo: f.Contributore.Nome}
@@ -486,12 +520,29 @@ func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	for _, n := range []string{"stile.css", "documento.svg"} {
+	var css []byte
+	for _, n := range fileSito {
 		d, err := modelli.ReadFile("modelli/" + n)
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile(filepath.Join(dir, n), d, 0o644); err != nil {
+		for _, riga := range strings.SplitAfter(string(d), "\n") {
+			if !strings.HasPrefix(riga, "@import") { // i file importati sono già qui
+				css = append(css, riga...)
+			}
+		}
+		css = append(css, '\n')
+	}
+	if err := os.WriteFile(filepath.Join(dir, "stile.css"), css, 0o644); err != nil {
+		return err
+	}
+	for orig, dest := range map[string]string{"documento.svg": "documento.svg", "sito/PDLogo.svg": "PDLogo.svg",
+		"sito/icone/cc.svg": "cc.svg", "sito/icone/by.svg": "by.svg", "sito/icone/sa.svg": "sa.svg"} {
+		d, err := modelli.ReadFile("modelli/" + orig)
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(dir, dest), d, 0o644); err != nil {
 			return err
 		}
 	}
