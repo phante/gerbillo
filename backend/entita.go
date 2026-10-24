@@ -5,6 +5,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -19,7 +20,8 @@ import (
 type entita struct {
 	Slug        string   `json:"slug"` // sezione/nome (ADR 0013)
 	Title       string   `json:"title"`
-	Draft       bool     `json:"draft,omitempty"` // pagina in bozza: è comunque un'Entità ("ha o avrà una pagina")
+	Draft       bool     `json:"draft,omitempty"`         // pagina in bozza: è comunque un'Entità ("ha o avrà una pagina")
+	Nome        string   `json:"nome,omitempty" yaml:"-"` // diga.nome o centrale.nome, un nome in più per l'abbinamento
 	Tags        []string `json:"tags,omitempty"`
 	Geolocation struct {
 		MapIDs    []string `json:"map_ids,omitempty" yaml:"map_ids"`
@@ -33,8 +35,8 @@ type entita struct {
 	} `json:"geolocation"`
 }
 
-// Sezioni del sito che diventano Entità. Le centrali sono rimandate: sul sito sono poco strutturate.
-var sezioniEntita = []string{"dighe"}
+// Sezioni del sito a cui una Foto si può collegare (ADR 0013).
+var sezioniEntita = []string{"dighe", "centrali", "reportage", "tecnica"}
 
 func indiceEntita(args []string) error {
 	fs := flag.NewFlagSet("indice-entita", flag.ExitOnError)
@@ -68,6 +70,13 @@ func leggiSito(dir string) ([]entita, error) {
 			if err := frontMatter(b, &e); err != nil {
 				return nil, fmt.Errorf("%s: %w", p, err)
 			}
+			var blocchi struct {
+				Diga, Centrale struct{ Nome string }
+			}
+			if err := frontMatter(b, &blocchi); err != nil {
+				return nil, fmt.Errorf("%s: %w", p, err)
+			}
+			e.Nome = cmp.Or(blocchi.Diga.Nome, blocchi.Centrale.Nome)
 			e.Slug = sez + "/" + filepath.Base(filepath.Dir(p))
 			idx = append(idx, e)
 		}

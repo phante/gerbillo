@@ -38,6 +38,9 @@ func indiceProva() []entita {
 		e("dighe/santa-caterina", "Santa Caterina", "Italia", "Veneto"),
 		e("dighe/castel", "Castel", "Italia", "Piemonte"),
 		e("dighe/castel-1", "Castel", "Italia", "Lombardia"),
+		e("centrali/achille-gaggia-soverzene-bl", "Achille Gaggia - Soverzene (BL)", "Italia", "Veneto"),
+		e("centrali/ligonchio-ligonchio-re", "Ligonchio - Ligonchio (RE)", "Italia", "Emilia-Romagna"),
+		e("reportage/il-guardiano-della-diga", "Il guardiano della diga", "", ""),
 	}
 }
 
@@ -56,6 +59,8 @@ func TestTrova(t *testing.T) {
 		{"S. Caterina di Auronzo (BL)", []string{"Dighe - Dams", "Italia", "Veneto"}, []string{"dighe/santa-caterina"}, false},
 		{"Castel", []string{"Dighe - Dams", "Italia", "Piemonte"}, []string{"dighe/castel"}, true},
 		{"Castel", []string{"Dighe - Dams", "Francia"}, []string{"dighe/castel", "dighe/castel-1"}, true},
+		{"Achille Gaggia", nil, []string{"centrali/achille-gaggia-soverzene-bl"}, true},
+		{"Centrale Ligonchio", nil, []string{"centrali/ligonchio-ligonchio-re"}, true},
 		{"La Forra", friuli, []string{}, false},
 	}
 	for _, c := range casi {
@@ -88,7 +93,7 @@ func TestMappature(t *testing.T) {
 		22: {Origine: manuale, Slug: []string{"dighe/ravedis"}, Tags: []string{"cellina"}},
 		21: {Origine: daFare},
 	}}
-	m, rap := mappature(cpg, indiceProva(), vecchie)
+	m, rap := mappature(cpg, indiceProva(), vecchie, vocabolario{})
 	if c := m.Categorie[10]; c == nil || !slices.Equal(c.Slug, []string{"dighe/vajont"}) {
 		t.Errorf("categoria Vajont: %+v", c)
 	}
@@ -104,11 +109,13 @@ func TestMappature(t *testing.T) {
 	if a := m.Album[22]; a == nil || a.Origine != manuale || a.Tags[0] != "cellina" || a.Coppermine == "" {
 		t.Errorf("album 22 manuale non conservato: %+v", a)
 	}
-	if m.Album[500] != nil {
-		t.Error("album fuori da Dighe mappato")
+	// Sotto Centrali si cercano solo le centrali: la diga Ponte Antoi non conta.
+	if a := m.Album[500]; a == nil || a.Origine != daFare || !slices.Equal(a.Tags, []string{daCollegare}) {
+		t.Errorf("album 500 sotto Centrali: %+v", a)
 	}
-	if rap.album != 4 || rap.autoAlbum != 2 || rap.eredAlbum != 1 || rap.manAlbum != 1 || len(rap.daFare) != 1 {
-		t.Errorf("rapporto %+v", rap)
+	d := rap.radici[cidDighe]
+	if d.album != 4 || d.autoAlbum != 2 || d.eredAlbum != 1 || d.manAlbum != 1 || d.faAlbum != 1 || len(rap.daFare) != 2 {
+		t.Errorf("rapporto %+v %+v", d, rap)
 	}
 	if !slices.Equal(rap.sconosciuti, []string{"album 22: dighe/ravedis"}) {
 		t.Errorf("sconosciuti %v", rap.sconosciuti)
@@ -123,5 +130,82 @@ func TestFrontMatterChiaviRipetute(t *testing.T) {
 	}
 	if e.Title != "Alpe Gera" || !e.Draft || e.Tags[0] != "valmalenco" {
 		t.Errorf("%+v", e)
+	}
+}
+
+// Le categorie della #1: categories e tags si ereditano dalla categoria, anche nelle righe automatiche.
+func TestMappatureCategorieNonDighe(t *testing.T) {
+	cpg := albumCoppermine{
+		Categorie: map[int]categoriaYAML{
+			1:  {"User galleries", 0},
+			3:  {"Centrali - Powerplants", 0},
+			69: {"Italia", 3},
+			55: {"Emilia Romagna", 69},
+			11: {"Opere di Presa", 0},
+			70: {"Italia", 11},
+			34: {"Veneto", 70},
+			16: {"Uploads Temporanei", 0},
+			47: {"Off-Topics", 0},
+		},
+		Album: map[int]albumYAML{
+			1: {55, 20, "Centrale Caprile - Ligonchio (RE)"}, // il comune è di un'altra centrale
+			2: {55, 59, "Centrale Ligonchio - Ligonchio (RE)"},
+			3: {34, 16, "Diga di Vajont"},            // automatica: eredita categories dalla categoria
+			4: {34, 30, "Sbarramento sul Brenta"},    // eredita, nessuna riga
+			5: {16, 153, "Uploads temporanei"},       // eredita il tag interno
+			6: {47, 30, "Brenner Basis Tunnel"},      // eredita off-topic
+			7: {10025, 4, "Il guardiano della diga"}, // album personale: reportage mai certo
+			8: {10025, 3, "Vajont"},                  // album personale abbinato
+			9: {47, 5, "Locomotive"},                 // riga manuale: vince per intero
+		},
+	}
+	vecchie := fileMappature{
+		Categorie: map[int]*mappatura{
+			34: {Origine: manuale, Categories: []string{"opere-idrauliche"}},
+			16: {Origine: manuale, Tags: []string{"da-classificare"}},
+			47: {Origine: manuale, Categories: []string{"off-topic"}},
+		},
+		Album: map[int]*mappatura{9: {Origine: manuale}},
+	}
+	voc := vocabolario{TagsInterni: []string{"da-classificare", daCollegare}}
+	m, rap := mappature(cpg, indiceProva(), vecchie, voc)
+	if a := m.Album[1]; a == nil || a.Origine != daFare {
+		t.Errorf("album 1: %+v", a)
+	}
+	if a := m.Album[2]; a == nil || !slices.Equal(a.Slug, []string{"centrali/ligonchio-ligonchio-re"}) {
+		t.Errorf("album 2: %+v", a)
+	}
+	if a := m.Album[3]; a == nil || a.Origine != automatica || !slices.Equal(a.Slug, []string{"dighe/vajont"}) ||
+		!slices.Equal(a.Categories, []string{"opere-idrauliche"}) {
+		t.Errorf("album 3: %+v", a)
+	}
+	for _, aid := range []int{4, 5, 6} {
+		if m.Album[aid] != nil {
+			t.Errorf("album %d eredita, non deve avere una riga: %+v", aid, m.Album[aid])
+		}
+	}
+	if a := m.Album[7]; a == nil || a.Origine != daFare || !slices.Equal(a.Candidati, []string{"reportage/il-guardiano-della-diga"}) ||
+		a.Coppermine != "User galleries / Il guardiano della diga" {
+		t.Errorf("album 7: %+v", a)
+	}
+	if a := m.Album[8]; a == nil || a.Origine != automatica {
+		t.Errorf("album 8: %+v", a)
+	}
+	if a := m.Album[9]; a == nil || a.Origine != manuale || len(a.Categories) > 0 {
+		t.Errorf("album 9: %+v", a)
+	}
+	if rap.interni["da-classificare"] != 153 || rap.interni[daCollegare] != 24 {
+		t.Errorf("tag interni %v", rap.interni)
+	}
+}
+
+func TestFuoriVocabolario(t *testing.T) {
+	m := fileMappature{
+		Categorie: map[int]*mappatura{47: {Categories: []string{"off-topic"}}},
+		Album:     map[int]*mappatura{80: {Categories: []string{"tecnica/turbina/francis"}}},
+	}
+	fuori := fuoriVocabolario(m, vocabolario{Categories: []string{"off-topic", "tecnica/turbine/francis"}})
+	if !slices.Equal(fuori, []string{"album 80: tecnica/turbina/francis"}) {
+		t.Errorf("%v", fuori)
 	}
 }
