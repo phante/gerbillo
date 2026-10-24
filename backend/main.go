@@ -6,9 +6,6 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/subtle"
-	"encoding/base64"
 	"fmt"
 	"html/template"
 	"log"
@@ -18,7 +15,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 	_ "time/tzdata" // l'immagine distroless non ha i fusi orari
 )
@@ -26,16 +22,9 @@ import (
 // Impostati in build con -ldflags "-X main.branch=… -X main.commit=…".
 var branch, commit = "locale", "sconosciuto"
 
-const durataPassword = 24 * time.Hour
-
 var roma, _ = time.LoadLocation("Europe/Rome")
 
-var (
-	mu       sync.Mutex
-	password string
-	scadenza time.Time
-	avvio    = time.Now()
-)
+var avvio = time.Now()
 
 func main() {
 	comandi := map[string]func([]string) error{"importa": importa, "indice-entita": indiceEntita, "varianti": generaVarianti, "build": build}
@@ -49,37 +38,19 @@ func main() {
 		fmt.Fprintln(os.Stderr, "uso: gerbillo serve | importa | indice-entita | varianti | build")
 		os.Exit(2)
 	}
-	nuovaPassword()
+	// Nell'anteprima l'utente corrente è solo l'admin, con la password usa e getta (#42).
+	var uc utenteCorrente = nuovaPasswordAnteprima()
 	// Nell'anteprima la Gallery pubblica generata in CI sta in /dist (ADR 0011, 0012).
 	if dist := envOr("GERBILLO_DIST", "/dist"); esiste(filepath.Join(dist, "index.html")) {
 		http.Handle("/", staticiSenzaEstensione(dist, http.FileServer(http.Dir(dist))))
 	} else {
 		http.HandleFunc("/", home)
 	}
-	http.HandleFunc("/admin/", soloModeratore(admin))
-	http.HandleFunc("/admin/stato", soloModeratore(stato))
+	http.HandleFunc("/admin/", soloModeratore(uc, admin))
+	http.HandleFunc("/admin/stato", soloModeratore(uc, stato))
 	addr := envOr("GERBILLO_ADDR", ":8080")
 	log.Printf("gerbillo %s@%s in ascolto su %s", branch, commit, addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
-}
-
-// nuovaPassword genera la password usa e getta e la invia via Telegram.
-// Vive solo in memoria: un riavvio ne genera un'altra.
-func nuovaPassword() {
-	b := make([]byte, 12)
-	rand.Read(b)
-	mu.Lock()
-	password = base64.RawURLEncoding.EncodeToString(b)
-	scadenza = time.Now().Add(durataPassword)
-	p := password
-	mu.Unlock()
-	// <code>: su Telegram un tocco copia il testo. base64url non ha caratteri HTML.
-	msg := fmt.Sprintf("Gerbillo dev %s@%s\nutente: <code>gerbillo</code>\npassword: <code>%s</code>\nscade: %s",
-		template.HTMLEscapeString(branch), commit, p, scadenza.In(roma).Format("02/01 15:04"))
-	if err := telegram(msg); err != nil {
-		// ponytail: senza Telegram (in locale) la password va nel log del container.
-		log.Printf("telegram: %v; password: %s", err, p)
-	}
 }
 
 func telegram(testo string) error {
@@ -97,29 +68,6 @@ func telegram(testo string) error {
 		return fmt.Errorf("HTTP %d", r.StatusCode)
 	}
 	return nil
-}
-
-// soloModeratore è l'implementazione dev di "utente corrente" (ADR 0008):
-// HTTP Basic con la password usa e getta, rigenerata alla scadenza.
-func soloModeratore(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		mu.Lock()
-		scaduta := time.Now().After(scadenza)
-		mu.Unlock()
-		if scaduta {
-			nuovaPassword()
-		}
-		mu.Lock()
-		p := password
-		mu.Unlock()
-		u, pw, ok := r.BasicAuth()
-		if !ok || u != "gerbillo" || subtle.ConstantTimeCompare([]byte(pw), []byte(p)) != 1 {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Gerbillo dev"`)
-			http.Error(w, "password su Telegram", http.StatusUnauthorized)
-			return
-		}
-		h(w, r)
-	}
 }
 
 var pagina = template.Must(template.New("p").Parse(`<!doctype html>
@@ -144,7 +92,8 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func admin(w http.ResponseWriter, r *http.Request) {
-	mostra(w, "Gerbillo: admin", "Stato: admin/stato")
+	u := utenteDi(r)
+	mostra(w, "Gerbillo: admin", fmt.Sprintf("Utente: %s (%d), gruppi %s\nStato: admin/stato", u.Nome, u.ID, strings.Join(u.Gruppi, ", ")))
 }
 
 // stato mostra la memoria del processo, quella del container (cgroup v2)
