@@ -1,0 +1,492 @@
+# Mappature manuali degli Album di Coppermine, decise in chat (G2, #10, #1, #38; ADR 0009, 0013).
+# Si scrive solo a mano: nessuno riscrive il file, quindi i commenti restano.
+# Una riga sostituisce in blocco l'abbinamento automatico sul nome (slug, tags, categories);
+# una riga senza slug vuol dire "nessuna Entità". Un album senza riga prende l'abbinamento
+# automatico, altrimenti la Mappatura della sua categoria. Il commento è il percorso Coppermine.
+# Nell'anteprima si applica con build -arricchimento dati/arricchimento; al rientro va
+# nel Repository dei contenuti, in arricchimento/mappature.yaml.
+
+album:
+    6: # Dighe - Dams / Italia / Friuli Venezia-Giulia / Barcis - Vecchia diga (PN)
+        slug:
+            - dighe/barcis-o-del-cellina
+    33: # Dighe - Dams / Svizzera - Schweiz - Suisse / Verzasca
+    34: # Dighe - Dams / Italia / Veneto / Ghirlo (BL)
+        slug:
+            - dighe/ponte-ghirlo
+    37: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Caprizi
+        categories:
+            - opere-idrauliche/presa
+    38: # Dighe - Dams / Italia / Veneto / S. Caterina di Auronzo (BL)
+        slug:
+            - dighe/santa-caterina
+    40: # Dighe - Dams / Svizzera - Schweiz - Suisse / Grande Dixence
+        slug:
+            - dighe/grande-dixience
+    44: # Dighe - Dams / Italia / Veneto / Mis (BL)
+        slug:
+            - dighe/mis-s-giuliana
+        tags:
+            - mis
+    47: # Altro - Other / Divertenti
+        categories:
+            - off-topic/divertenti
+    48: # Altro - Other / Ritocchi/Wallpaper
+        categories:
+            - off-topic/ritocchi
+    52: # Dighe - Dams / Svizzera - Schweiz - Suisse / Emosson
+    53: # Dighe - Dams / Svizzera - Schweiz - Suisse / Mauvoisin
+    54: # Dighe - Dams / Svizzera - Schweiz - Suisse / Zeuzier
+    57: # Dighe - Dams / ... resto del mondo / altre - other
+    78: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Lago Negrisiola - Partitore Carron
+        categories:
+            - opere-idrauliche/canale
+    79: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Lago Madruc e sifone val Friga - Caneva
+        categories:
+            - opere-idrauliche/condotta
+        slug:
+            - centrali/caneva-caneva-pn
+    80: # Tecnica - Turbine - Elementi elettrici e meccanici / Turbine Francis
+        categories:
+            - tecnica/turbine/francis
+        slug:
+            - tecnica/le-turbine-cenni-generali
+    85: # Dighe - Dams / ... resto del mondo / Slovenia / altre - other
+    88: # User galleries / Il guardiano della diga
+        tags:
+            - da-collegare
+    92: # Tecnica - Turbine - Elementi elettrici e meccanici / Turbine Pelton
+        categories:
+            - tecnica/turbine/pelton
+        slug:
+            - tecnica/le-turbine-cenni-generali
+    93: # Tecnica - Turbine - Elementi elettrici e meccanici / Turbine Kaplan
+        categories:
+            - tecnica/turbine/kaplan
+        slug:
+            - tecnica/le-turbine-cenni-generali
+    94: # Tecnica - Turbine - Elementi elettrici e meccanici / Elementi elettrici
+        categories:
+            - tecnica/elettrica
+    95: # Tecnica - Turbine - Elementi elettrici e meccanici / Elementi meccanici
+        categories:
+            - tecnica/meccanica
+    100: # Dighe - Dams / Svizzera - Schweiz - Suisse / Luzzone
+    101: # Dighe - Dams / Svizzera - Schweiz - Suisse / Hongrin
+    103: # Dighe - Dams / ... resto del mondo / Croazia
+    104: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Ponte tubo Pontesei - Vajont
+        categories:
+            - opere-idrauliche/condotta
+        slug:
+            - dighe/pontesei
+            - dighe/vajont
+    106: # Dighe - Dams / Italia / Lombardia / Val Camonica Sistema del Poglia / Arno-Campellio-Isola
+        slug:
+            - dighe/lago-d-arno
+        tags:
+            - campellio
+            - poglia
+            - da-separare
+    113: # Dighe - Dams / Italia / Lombardia / Val Camonica Sistema Avio / Laghi Avio e Benedetto. Centrale del Pantano
+        slug:
+            - dighe/lago-benedetto
+            - dighe/lago-d-avio
+            - dighe/pantano-d-avio
+        tags:
+            - da-separare
+    114: # Dighe - Dams / Italia / Lombardia / Val Camonica Sistema Avio / Vasca e centrale di Edolo
+        slug:
+            - dighe/vasca-di-edolo
+        tags:
+            - da-separare
+    116: # Dighe - Dams / Austria - Österreich / Kaprun
+    124: # Dighe - Dams / Austria - Österreich / Wiestal
+    125: # Dighe - Dams / Austria - Österreich / Strubklamm - Salzburg
+    127: # Dighe - Dams / Italia / Friuli Venezia-Giulia / Debellis (UD)
+    130: # Dighe - Dams / Italia / Liguria / Pian Sapeio e Giacopiane (GE)
+        slug:
+            - dighe/pian-sapejo
+            - dighe/giacopiane
+        tags:
+            - da-separare
+    131: # Dighe - Dams / ... resto del mondo / Slovenia / Aiba
+    132: # Altro - Other / Documenti
+        categories:
+            - documenti
+    137: # Dighe - Dams / ... resto del mondo / Cina
+    139: # Dighe - Dams / Italia / Lombardia / Colombera (SO)
+    140: # Dighe - Dams / Austria - Österreich / Außerfern
+    141: # Dighe - Dams / Austria - Österreich / KW-Gruppe Mayrhofen
+    143: # Dighe - Dams / Austria - Österreich / altre
+    144: # Dighe - Dams / ... resto del mondo / Turchia
+    147: # Dighe - Dams / ... resto del mondo / Giappone
+    149: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Presa sul torrente Degano
+        categories:
+            - opere-idrauliche/presa
+    150: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Presa sul torrente Degano località Ponte Coperto
+        categories:
+            - opere-idrauliche/presa
+    155: # Dighe - Dams / Italia / Piemonte / Sabbioni
+        slug:
+            - dighe/sabbione
+        tags:
+            - toce
+            - sabbione
+    160: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Vasca di carico di Pramper
+        categories:
+            - opere-idrauliche/condotta
+        slug:
+            - dighe/pramper
+    161: # Dighe - Dams / Italia / Trentino - Alto Adige / Val Contrin
+    167: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Fimon - Canal Bisatto
+        categories:
+            - opere-idrauliche/canale
+    169: # Dighe - Dams / ... resto del mondo / Congo - Inga
+    171: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lombardia / Valtellina - Prese Adda frana 1987
+        categories:
+            - opere-idrauliche/presa
+    174: # Meeting, incontri e visite / Centrale Soverzene - 15/05/2007
+        categories:
+            - eventi/visita
+        slug:
+            - centrali/achille-gaggia-soverzene-bl
+    177: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Scolmatori e sbarramenti provincia di Udine
+        categories:
+            - opere-idrauliche/traversa
+        tags:
+            - da-separare
+    180: # Dighe - Dams / ... resto del mondo / USA / Matilija
+    185: # Dighe - Dams / Italia / Friuli Venezia-Giulia / Raccolana (UD)
+    191: # Dighe - Dams / ... resto del mondo / USA / Hoover
+    195: # Dighe - Dams / Italia / Friuli Venezia-Giulia / Tramba (UD)
+    196: # Dighe - Dams / ... resto del mondo / Venezuela - Presa El Guapo
+    197: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Diga del Chievo
+        categories:
+            - opere-idrauliche/traversa
+    200: # Dighe - Dams / Italia / Lombardia / Campo Moro (SO)
+        slug:
+            - dighe/campo-moro-i
+            - dighe/campo-moro-ii
+    206: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Val Da Rin
+        categories:
+            - opere-idrauliche/presa
+    212: # Dighe - Dams / ... resto del mondo / Grecia - Leros
+    215: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Ferron
+        categories:
+            - opere-idrauliche/presa
+    220: # Dighe - Dams / Italia / Lombardia / Val Camonica Sistema del Poglia / San Fiorano
+    223: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Consorzio bonifica Ledra-Tagliamento
+        categories:
+            - opere-idrauliche/canale
+        slug:
+            - reportage/ledra-tagliamento
+    226: # Dighe - Dams / Italia / Veneto / Ciòu del Conte - Cortina d'Ampezzo (BL)
+    228: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Rugo Stella, canali e condotte della Val Cellina
+        categories:
+            - opere-idrauliche/canale
+            - opere-idrauliche/condotta
+        slug:
+            - dighe/rugo-stella
+        tags:
+            - da-separare
+    253: # Tecnica - Turbine - Elementi elettrici e meccanici / Idraulica
+        categories:
+            - tecnica/idraulica
+    265: # Dighe - Dams / Francia / Moncenisio
+    286: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Busche
+        categories:
+            - opere-idrauliche/traversa
+    291: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Galleria Adige-Garda
+        categories:
+            - opere-idrauliche/canale
+    293: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Acquedotto di Rovereto
+        categories:
+            - opere-idrauliche/acquedotto
+    294: # Meeting, incontri e visite / Fiera Primiero Energia 2008
+        categories:
+            - eventi/fiera
+    295: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Traversa di Mori
+        categories:
+            - opere-idrauliche/traversa
+    298: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Traversa di Cimego
+        categories:
+            - opere-idrauliche/traversa
+        slug:
+            - centrali/cimego
+    305: # Dighe - Dams / Italia / Lazio / Tivoli (RM)
+    306: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Consorzio bonifica Cellina-Meduna
+        categories:
+            - opere-idrauliche/canale
+    308: # Dighe - Dams / Italia / Lombardia / San Giacomo (SO)
+        slug:
+            - dighe/san-giacomo-di-fraele
+    309: # Dighe - Dams / Italia / Piemonte / Pont Ventoux
+    313: # Dighe - Dams / Italia / Emilia Romagna / Brasimone (BO)
+        slug:
+            - dighe/scalere-brasimone
+    318: # Dighe - Dams / Italia / Trentino - Alto Adige / San Valentino alla Mutta ( Lago di Resia )
+        slug:
+            - dighe/san_valentino-bz
+        tags:
+            - resia
+    339: # Dighe - Dams / Austria - Österreich / Schlegeis
+    353: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lombardia / Opere secondarie di Cancano
+        categories:
+            - opere-idrauliche/presa
+        slug:
+            - dighe/cancano
+    356: # Dighe - Dams / Italia / Toscana / Vagli
+        slug:
+            - dighe/vagli-prima-fase
+        tags:
+            - vagli
+    377: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Ex impianto di Vedronza
+        categories:
+            - opere-idrauliche/opifici
+    383: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Idrovore Mestre-laguna
+        categories:
+            - opere-idrauliche/idrovora
+    390: # Altro - Other / Riservata - solo per gli occhi degli amministratori
+    393: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Ex cotonificio Amman - Pordenone
+        categories:
+            - opere-idrauliche/opifici
+    411: # Dighe - Dams / Italia / Trentino - Alto Adige / Delle Piazze (Pinè)
+        slug:
+            - dighe/lago-delle-piazze
+    425: # Meeting, incontri e visite / Centrale Soverzene 5-5-2009
+        categories:
+            - eventi/visita
+        slug:
+            - centrali/achille-gaggia-soverzene-bl
+    426: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Ponte sbarramento Soverzene
+        categories:
+            - opere-idrauliche/traversa
+    427: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Presa Valbona rio Ala
+        categories:
+            - opere-idrauliche/presa
+    429: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Sistema del Biois (Falcade)
+        categories:
+            - opere-idrauliche/presa
+        tags:
+            - da-separare
+    430: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Presa Cismon 2 (lago di Corlo)
+        categories:
+            - opere-idrauliche/presa
+        slug:
+            - dighe/corlo
+    433: # Dighe - Dams / Italia / Trentino - Alto Adige / Selva dei Molini
+    437: # Dighe - Dams / Italia / Veneto / Stua (valle di Canzoi) (BL)
+        slug:
+            - dighe/la-stua-o-val-canzoi
+        tags:
+            - la stua o val canzoi
+    440: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Sistema della val Marzon (Somprade)
+        categories:
+            - opere-idrauliche/presa
+        tags:
+            - da-separare
+    452: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Presa Venzonassa
+        categories:
+            - opere-idrauliche/presa
+    460: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Roggia di Vivaro
+        categories:
+            - opere-idrauliche/canale
+    464: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Ex pastificio Tomadini e i salti del Maglio
+        categories:
+            - opere-idrauliche/opifici
+    477: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lombardia / Naviglio Grande e Canale Villoresi
+        categories:
+            - opere-idrauliche/canale
+    480: # Dighe - Dams / Italia / Piemonte / Devero (Codelago)
+        slug:
+            - dighe/codelago
+        tags:
+            - da-separare
+    481: # Dighe - Dams / Italia / Sardegna / Santa Chiara del Tirso (OR)
+        slug:
+            - dighe/santa-chiara-dula-o-del-tirso
+    490: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Castelviero (Nervesa)
+        categories:
+            - opere-idrauliche/presa
+    500: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Cellina - Impianto Roncon
+        categories:
+            - opere-idrauliche/presa
+    514: # Dighe - Dams / Italia / Toscana / Bagnone
+    527: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Val Rio del Lago - impianti
+        categories:
+            - opere-idrauliche/presa
+        tags:
+            - da-separare
+    537: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Canale Soverzene - Santa Croce
+        categories:
+            - opere-idrauliche/canale
+        slug:
+            - dighe/santa-croce-o-bastia
+    561: # Dighe - Dams / Svizzera - Schweiz - Suisse / Santa Maria
+    562: # Dighe - Dams / Svizzera - Schweiz - Suisse / Räterischbode
+    563: # Dighe - Dams / Svizzera - Schweiz - Suisse / Seuferegg
+    564: # Dighe - Dams / Svizzera - Schweiz - Suisse / Spitallamm
+    568: # Dighe - Dams / ... resto del mondo / Repubblica di Macedonia
+    591: # Dighe - Dams / Italia / Piemonte / Castel
+    599: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lombardia / Ex canale Guzzi - Maggio di Cremeno (LC)
+        categories:
+            - opere-idrauliche/canale
+    606: # Dighe - Dams / ... resto del mondo / Slovenia / Che Avce
+    613: # Dighe - Dams / Italia / Toscana / Vicaglia
+        slug:
+            - dighe/vicaglia-silano
+    641: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Valli del Pasubio
+        categories:
+            - opere-idrauliche/presa
+        tags:
+            - da-separare
+    648: # Meeting, incontri e visite / Presentazione Libro Vajont 1963 di Luigi Rivis
+        categories:
+            - eventi/presentazione
+        slug:
+            - dighe/vajont
+    649: # Dighe - Dams / Italia / Toscana / Rio Salita I e II
+        slug:
+            - dighe/rio-salita
+    661: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Toscana / Impianto del Cardoso o Rio di Lucca
+        categories:
+            - opere-idrauliche/presa
+    670: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Stramazzo Rio Freddo - Arsiero
+        categories:
+            - opere-idrauliche/traversa
+    671: # Dighe - Dams / Italia / Toscana / La Lima
+        slug:
+            - dighe/la-lima-ponte-lima
+    672: # Dighe - Dams / Italia / Toscana / Tistino
+        slug:
+            - dighe/tistino-sperando
+    677: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Sbarramento sul Brenta - Bassano del Grappa
+        categories:
+            - opere-idrauliche/traversa
+    683: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Piccoli impianti della Val Canale
+        categories:
+            - opere-idrauliche/presa
+        tags:
+            - da-separare
+    689: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lombardia / Traversa di Concesa e Naviglio Martesana
+        categories:
+            - opere-idrauliche/traversa
+            - opere-idrauliche/canale
+    690: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lombardia / Traversa di Canonica d'Adda
+        categories:
+            - opere-idrauliche/traversa
+    729: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Alta Carnia
+        categories:
+            - opere-idrauliche/presa
+        tags:
+            - da-separare
+    733: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Piemonte / Canali Piemontesi
+        categories:
+            - opere-idrauliche/canale
+    744: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lazio / Tivoli
+        categories:
+            - opere-idrauliche/canale
+    745: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lazio / Lago e presa Canterno
+        categories:
+            - opere-idrauliche/presa
+        slug:
+            - reportage/il-lago-di-canterno
+    746: # Dighe - Dams / Italia / Lazio / Pertuso (RM)
+    747: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lazio / Comunacqua - Trevi nel Lazio (FR)
+        categories:
+            - opere-idrauliche/presa
+    751: # Dighe - Dams / Italia / Lazio / Roviano (RM)
+    752: # Dighe - Dams / Italia / Lazio / S. Cosimato (RM)
+        slug:
+            - dighe/san-cosimato
+    753: # Dighe - Dams / Italia / Lazio / Simbrivio (RM)
+    756: # Dighe - Dams / Italia / Lazio / Fiumerotto - Castel Madama (RM)
+    766: # Dighe - Dams / ... resto del mondo / Norvegia
+    771: # Dighe - Dams / Francia / La Gittaz
+    772: # Dighe - Dams / Francia / Roselend
+    773: # Dighe - Dams / Francia / St. Guerin
+    774: # Dighe - Dams / Francia / Vari
+    796: # Dighe - Dams / Austria - Österreich / Malta-Kolnbrein
+    797: # Dighe - Dams / Austria - Österreich / Reisseck
+    798: # Dighe - Dams / Svizzera - Schweiz - Suisse / Albigna
+    802: # Meeting, incontri e visite / Presentazione Libro da Molare al Vajont di Giorgio Temporelli
+        categories:
+            - eventi/presentazione
+        slug:
+            - dighe/molare
+            - dighe/vajont
+    803: # Dighe - Dams / Italia / Piemonte / Robbio
+    820: # Dighe - Dams / Italia / Lombardia / Lago d'Elio (VA)
+        slug:
+            - dighe/lago-delio-nord
+            - dighe/lago-delio-sud
+        tags:
+            - da-separare
+    834: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Lago di Raibl
+        categories:
+            - opere-idrauliche/presa
+    847: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Fusine
+        categories:
+            - opere-idrauliche/presa
+    851: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Friuli Venezia-Giulia / Impianti torrente But (Carnia)
+        categories:
+            - opere-idrauliche/presa
+        tags:
+            - da-separare
+    852: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Sbarramento sul Dese
+        categories:
+            - opere-idrauliche/traversa
+    862: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Lombardia / Mulino di Rosasco (PV)
+        categories:
+            - opere-idrauliche/opifici
+    866: # Dighe - Dams / Italia / Piemonte / Busin Inferiore
+        slug:
+            - dighe/busin
+    870: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Trentino - Alto Adige / Rio Flanginech - Giustino
+        categories:
+            - opere-idrauliche/presa
+    871: # Dighe - Dams / Svizzera - Schweiz - Suisse / Lago Bianco Sud
+    874: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Svizzera - Schweiz - Suisse / Cavaglia
+        categories:
+            - opere-idrauliche/presa
+    879: # Dighe - Dams / Italia / Valle d'Aosta / Cignana
+        slug:
+            - dighe/cignana-i
+            - dighe/cignana-ii
+        tags:
+            - da-separare
+    880: # Dighe - Dams / Italia / Valle d'Aosta / Gabiet
+        slug:
+            - dighe/lago-gabiet-nord
+            - dighe/lago-gabietsud
+        tags:
+            - da-separare
+    883: # Dighe - Dams / Italia / Trentino - Alto Adige / Val di Vizze
+    884: # Dighe - Dams / Italia / Trentino - Alto Adige / La Rocchetta
+        slug:
+            - dighe/rocchetta-tn
+    894: # Dighe - Dams / Svizzera - Schweiz - Suisse / Griessee
+    899: # Dighe - Dams / ... resto del mondo / USA / St. Francis
+    903: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Canale Biffis
+        categories:
+            - opere-idrauliche/canale
+    958: # Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia / Veneto / Canal del Maè e dintorni. A valle Pontesei. Opere e impianti
+        categories:
+            - opere-idrauliche/canale
+        slug:
+            - dighe/pontesei
+        tags:
+            - da-separare
+    965: # Dighe - Dams / Svizzera - Schweiz - Suisse / Orden
+categorie:
+    16: # Uploads Temporanei
+        tags:
+            - da-classificare
+    38: # Dighe - Dams / Italia / Friuli Venezia-Giulia / Vajont / Visita ProgettoDighe Novembre 2007
+        categories:
+            - eventi/visita
+        slug:
+            - dighe/vajont
+    47: # Off-Topics
+        categories:
+            - off-topic

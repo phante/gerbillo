@@ -2,7 +2,8 @@ package main
 
 // Importazione Coppermine → YAML (G1, #9). Ogni esecuzione rigenera da zero
 // importazione/foto/<pid>.yaml e importazione/anomalie.md nel Repository dei
-// contenuti e ne fa un commit locale (ADR 0004, 0009).
+// contenuti e ne fa un commit locale (ADR 0004, 0009). Con -indice il rapporto
+// comprende la Mappatura degli album, con gli album da fare e quelli ambigui (#38).
 
 import (
 	"bytes"
@@ -45,6 +46,9 @@ type configImporta struct {
 func importa(args []string) error {
 	fs := flag.NewFlagSet("importa", flag.ExitOnError)
 	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
+	indice := fs.String("indice", "", "Indice delle Entità (JSON), per il rapporto sulla Mappatura")
+	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
+	pVoc := fs.String("vocabolario", "", "vocabolario controllato (dati/vocabolario.yaml): rifiuta le categories che non conosce")
 	fs.Parse(args)
 	var c configImporta
 	c.MySQL.Socket = "/var/run/mysqld/mysqld.sock"
@@ -54,6 +58,29 @@ func importa(args []string) error {
 	}
 	if c.Contenuti == "" {
 		return errors.New("contenuti mancante nella configurazione")
+	}
+	liv := nuovoLivello(c.Contenuti, *arr)
+	var manuali fileMappature
+	if err := liv.leggi("mappature.yaml", &manuali); err != nil {
+		return err
+	}
+	if *pVoc != "" {
+		var voc vocabolario
+		if b, err := os.ReadFile(*pVoc); err != nil {
+			return err
+		} else if err := yaml.Unmarshal(b, &voc); err != nil {
+			return fmt.Errorf("%s: %w", *pVoc, err)
+		}
+		if fuori := fuoriVocabolario(manuali, voc); len(fuori) > 0 {
+			return fmt.Errorf("categories fuori dal vocabolario in mappature.yaml:\n%s", strings.Join(fuori, "\n"))
+		}
+	}
+	var idx []entita
+	if *indice != "" {
+		var err error
+		if idx, err = leggiIndice(*indice); err != nil {
+			return err
+		}
 	}
 	sock := c.MySQL.Socket
 	if c.SSH.Host != "" {
@@ -79,6 +106,12 @@ func importa(args []string) error {
 		return err
 	}
 	foto, rap := converti(righe)
+	if rap.alias, err = leggiAlias(liv); err != nil {
+		return err
+	}
+	if idx != nil {
+		_, rap.mappature = mappature(righe.album, idx, manuali)
+	}
 	if err := scrivi(c.Contenuti, foto, rap); err != nil {
 		return err
 	}
@@ -94,6 +127,11 @@ func importa(args []string) error {
 	}
 	fmt.Printf("importate %d foto: %d scritte, %d sparite, %d non decodificate, %d mojibake\n",
 		len(foto), rap.scritte, len(rap.spariti), len(rap.nonDecodificati), len(rap.mojibake))
+	if m := rap.mappature; m != nil {
+		t := m.totale()
+		fmt.Printf("album: %d, abbinati in automatico %.1f%% (foto %.1f%%), da collegare %d (foto %d)\n",
+			t.album, perc(t.autoAlbum, t.album), perc(t.autoFoto, t.foto), t.faAlbum+t.ambAlbum, m.interni[daCollegare])
+	}
 	return registra(c.Contenuti, "importazione", fmt.Sprintf("importazione: %d foto, %d scritte, %d sparite", rap.totale, rap.scritte, len(rap.spariti)))
 }
 
@@ -288,6 +326,7 @@ type rapporto struct {
 	riservate       int
 	spariti         []int
 	scritte         int
+	mappature       *rapportoMappature // solo con importa -indice
 }
 
 func formato(nome string) string {
@@ -420,9 +459,6 @@ func scrivi(dir string, foto []fotoYAML, rap *rapporto) error {
 		}
 	}
 	slices.Sort(rap.spariti)
-	if rap.alias, err = leggiAlias(dir); err != nil {
-		return err
-	}
 	return os.WriteFile(filepath.Join(dir, "importazione", "anomalie.md"), rap.markdown(), 0o644)
 }
 
@@ -499,6 +535,10 @@ func (r *rapporto) markdown() []byte {
 	p("## Spariti\n\nYAML spariti rispetto all'Importazione precedente: %d.\n", len(r.spariti))
 	if len(r.spariti) > 0 {
 		p("\n%s\n", unisci(r.spariti))
+	}
+	if r.mappature != nil {
+		p("\n")
+		b.Write(r.mappature.markdown())
 	}
 	return b.Bytes()
 }

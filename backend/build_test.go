@@ -28,9 +28,9 @@ categorie:
     10: {nome: Vajont, parent: 6}
 `)
 	scrivi("arricchimento/mappature.yaml", `categorie:
-    10: {coppermine: x, origine: automatica, slug: [dighe/vajont]}
+    10: {slug: [dighe/vajont]} # Dighe - Dams / Friuli / Vajont
 album:
-    20: {coppermine: x, origine: manuale, slug: [dighe/inesistente], tags: [da-separare, cellina]}
+    20: {slug: [dighe/inesistente], tags: [da-separare, cellina]}
 `)
 	foto := map[string]string{
 		"1": "pid: 1\ntitle: Diga\nformato: immagine\ndate: \"2006-12-27T12:23:55+01:00\"\ncontributore: {id: 25, nome: Mario}\ncoppermine: {aid: 14, filepath: userpics/1/, filename: a.jpg}\n",
@@ -50,7 +50,7 @@ album:
 
 func TestLeggiContenuti(t *testing.T) {
 	dir, indice := contenutiProva(t)
-	c, err := leggiContenuti(dir, indice)
+	c, err := leggiContenuti(dir, indice, nuovoLivello(dir, ""))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,6 +78,35 @@ func TestLeggiContenuti(t *testing.T) {
 	}
 	if tg := f[3].tagPubblici(); len(tg) != 1 || tg[0] != "cellina" {
 		t.Errorf("tag pubblici %v", tg)
+	}
+	// Album personale senza riga né abbinamento: il tag interno si deriva al build (#38).
+	if tg := f[4].Tags; len(tg) != 1 || tg[0] != daCollegare || len(f[4].tagPubblici()) != 0 {
+		t.Errorf("pid 4 senza da-collegare: %v", tg)
+	}
+}
+
+// La cartella di -arricchimento si sovrappone file per file a quella dei contenuti (#38, #39).
+func TestLeggiContenutiArricchimentoSovrapposto(t *testing.T) {
+	dir, indice := contenutiProva(t)
+	sopra := t.TempDir()
+	os.MkdirAll(filepath.Join(sopra, "foto"), 0o755)
+	os.WriteFile(filepath.Join(sopra, "mappature.yaml"), []byte("album:\n    20: {slug: [dighe/vajont]}\n"), 0o644)
+	os.WriteFile(filepath.Join(sopra, "foto", "3.yaml"), []byte("title: Sopra\n"), 0o644)
+	c, err := leggiContenuti(dir, indice, nuovoLivello(dir, sopra))
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := map[int]*fotoPubblicata{}
+	for _, x := range c.foto {
+		f[x.Pid] = x
+	}
+	if s := f[3].Slug; len(s) != 1 || s[0] != "dighe/vajont" || f[3].Title != "Sopra" {
+		t.Errorf("pid 3 senza la cartella sovrapposta: %+v", f[3])
+	}
+	// mappature.yaml sovrapposto sostituisce quello dei contenuti: la categoria 10 non ha più riga,
+	// e Vajont a due livelli da Dighe non si abbina in automatico.
+	if len(f[1].Slug) != 0 || f[1].Datazione != "195X" {
+		t.Errorf("pid 1: %+v", f[1])
 	}
 }
 

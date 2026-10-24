@@ -148,7 +148,7 @@ L'esecuzione, ripetibile, che porta le Foto da Coppermine a Gerbillo. Ogni esecu
 _Avoid_: sync, esportazione, migrazione (la Migrazione è il processo complessivo)
 
 **Mappatura**:
-La corrispondenza tra un Album (o una Categoria Coppermine) e gli Slug, i Tag e le Categorie di Gerbillo.
+La corrispondenza tra un Album (o una Categoria Coppermine) e gli Slug, i Tag e le Categorie di Gerbillo. È un dato derivato, calcolato a ogni build: per ogni Album vale la riga manuale, altrimenti l'abbinamento automatico sul nome, altrimenti la Mappatura della categoria. Le righe manuali stanno in `arricchimento/mappature.yaml`, scritto solo a mano: una riga sostituisce in blocco l'abbinamento automatico, una riga senza Slug vuol dire "nessuna Entità". Gli Album senza nessuna delle tre hanno il tag interno `da-collegare`; quelli da fare e gli ambigui sono nel rapporto dell'Importazione (#38).
 
 **Livello di arricchimento**:
 Il lavoro editoriale fatto in Gerbillo (Mappature, correzioni, metadati aggiunti), applicato sopra ogni Importazione.

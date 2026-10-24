@@ -72,6 +72,7 @@ func build(args []string) error {
 	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
 	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
 	dist := fs.String("dist", "dist", "cartella di uscita")
+	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
 	var o opzioniBuild
 	fs.StringVar(&o.base, "base", "/gallery/", "prefisso degli URL")
 	fs.StringVar(&o.media, "media", "", "URL di albums/ di Coppermine al posto delle Varianti (anteprima)")
@@ -88,7 +89,7 @@ func build(args []string) error {
 		return errors.New("servono contenuti nella configurazione e -indice")
 	}
 	inizio := time.Now()
-	cont, err := leggiContenuti(c.Contenuti, *indice)
+	cont, err := leggiContenuti(c.Contenuti, *indice, nuovoLivello(c.Contenuti, *arr))
 	if err != nil {
 		return err
 	}

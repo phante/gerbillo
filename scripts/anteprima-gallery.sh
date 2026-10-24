@@ -20,9 +20,9 @@ password = "gerbillo"
 indirizzo = "$indirizzo"
 EOF
 g() { "$lavoro/gerbillo" "$@"; }
-g importa -config "$lavoro/gerbillo.toml"
 g indice-entita -sito testdata/sito > "$lavoro/indice.json"
-g abbina -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -manuali dati/mappature-manuali.yaml -vocabolario dati/vocabolario.yaml
+# dati/arricchimento/ fa da Livello di arricchimento finché non c'è il rientro (#38, #39).
+g importa -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchimento dati/arricchimento -vocabolario dati/vocabolario.yaml
 # Nell'anteprima nginx serve la Gallery sotto /gerbillo/ e toglie il prefisso.
-g build -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -dist dist \
+g build -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchimento dati/arricchimento -dist dist \
   -base /gerbillo/ -anteprima -media https://progettodighe.it/gallery/albums/ -striscia "$striscia"

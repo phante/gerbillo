@@ -1,7 +1,7 @@
 package main
 
 // Foto pubblicata (ADR 0009, 0013): l'Importazione con gli alias degli Autori, poi la
-// Mappatura della categoria antenata, poi quella dell'album, poi arricchimento/foto/<pid>.yaml.
+// Mappatura dell'album (abbina.go), poi arricchimento/foto/<pid>.yaml.
 // Per ogni campo vince il livello più specifico.
 
 import (
@@ -65,7 +65,39 @@ type contenuti struct {
 	ignoti []string // "pid: slug" non presenti nell'Indice delle Entità
 }
 
-func leggiContenuti(dir, indice string) (*contenuti, error) {
+// livelloArricchimento sono le cartelle del Livello di arricchimento, dalla più specifica:
+// prima quella di -arricchimento (nell'anteprima dati/arricchimento/, #38, #39), poi
+// arricchimento/ del Repository dei contenuti. Si sovrappongono file per file.
+type livelloArricchimento []string
+
+func nuovoLivello(contenuti, sopra string) livelloArricchimento {
+	l := livelloArricchimento{filepath.Join(contenuti, "arricchimento")}
+	if sopra != "" {
+		l = append(livelloArricchimento{sopra}, l...)
+	}
+	return l
+}
+
+// leggi decodifica in v il file rel della cartella più specifica che lo ha.
+// Se nessuna lo ha, v resta com'è.
+func (l livelloArricchimento) leggi(rel string, v any) error {
+	for _, d := range l {
+		p := filepath.Join(d, rel)
+		b, err := os.ReadFile(p)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		} else if err != nil {
+			return err
+		}
+		if err := yaml.Unmarshal(b, v); err != nil {
+			return fmt.Errorf("%s: %w", p, err)
+		}
+		return nil
+	}
+	return nil
+}
+
+func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, error) {
 	c := &contenuti{entita: map[string]*entita{}}
 	idx, err := leggiIndice(indice)
 	if err != nil {
@@ -81,15 +113,12 @@ func leggiContenuti(dir, indice string) (*contenuti, error) {
 	if err := yaml.Unmarshal(b, &c.album); err != nil {
 		return nil, err
 	}
-	var m fileMappature
-	if b, err := os.ReadFile(filepath.Join(dir, "arricchimento", "mappature.yaml")); err == nil {
-		if err := yaml.Unmarshal(b, &m); err != nil {
-			return nil, err
-		}
-	} else if !errors.Is(err, os.ErrNotExist) {
+	var manuali fileMappature
+	if err := l.leggi("mappature.yaml", &manuali); err != nil {
 		return nil, err
 	}
-	alias, err := leggiAlias(dir)
+	mappe, _ := mappature(c.album, idx, manuali)
+	alias, err := leggiAlias(l)
 	if err != nil {
 		return nil, err
 	}
@@ -107,15 +136,11 @@ func leggiContenuti(dir, indice string) (*contenuti, error) {
 			return nil, fmt.Errorf("%s: %w", p, err)
 		}
 		f.Authors = alias.applica(f.Authors)
-		if mp := c.mappaturaAlbum(f.Coppermine.Aid, m); mp != nil {
+		if mp := mappe[f.Coppermine.Aid]; mp != nil {
 			f.Slug, f.Tags, f.Categories = mp.Slug, mp.Tags, mp.Categories
 		}
-		arr := filepath.Join(dir, "arricchimento", "foto", strconv.Itoa(f.Pid)+".yaml")
-		if b, err := os.ReadFile(arr); err == nil {
-			if err := yaml.Unmarshal(b, f); err != nil { // sovrascrive solo i campi presenti
-				return nil, fmt.Errorf("%s: %w", arr, err)
-			}
-		} else if !errors.Is(err, os.ErrNotExist) {
+		// Sovrascrive solo i campi presenti.
+		if err := l.leggi(filepath.Join("foto", strconv.Itoa(f.Pid)+".yaml"), f); err != nil {
 			return nil, err
 		}
 		if f.Riservata {
@@ -132,18 +157,9 @@ func leggiContenuti(dir, indice string) (*contenuti, error) {
 // di Coppermine → Autori. Più Autori per i composti, nessuno per scartare il valore.
 type aliasAutori map[string][]string
 
-func leggiAlias(dir string) (aliasAutori, error) {
+func leggiAlias(l livelloArricchimento) (aliasAutori, error) {
 	a := aliasAutori{}
-	b, err := os.ReadFile(filepath.Join(dir, "arricchimento", "autori.yaml"))
-	if errors.Is(err, os.ErrNotExist) {
-		return a, nil
-	} else if err != nil {
-		return nil, err
-	}
-	if err := yaml.Unmarshal(b, &a); err != nil {
-		return nil, fmt.Errorf("autori.yaml: %w", err)
-	}
-	return a, nil
+	return a, l.leggi("autori.yaml", &a)
 }
 
 // applica sostituisce i valori che hanno un alias; gli altri passano grezzi.
@@ -157,22 +173,6 @@ func (a aliasAutori) applica(grezzi []string) []string {
 		}
 	}
 	return out
-}
-
-// mappaturaAlbum è la riga dell'album se ha qualcosa, altrimenti quella della categoria
-// antenata più vicina che ha uno slug.
-func (c *contenuti) mappaturaAlbum(aid int, m fileMappature) *mappatura {
-	if r := m.Album[aid]; r != nil && len(r.Slug)+len(r.Tags)+len(r.Categories) > 0 {
-		return r
-	}
-	cid := c.album.Album[aid].Categoria
-	for i := 0; cid != 0 && i < 10; i++ {
-		if r := m.Categorie[cid]; r != nil && len(r.Slug) > 0 {
-			return r
-		}
-		cid = c.album.Categorie[cid].Parent
-	}
-	return nil
 }
 
 // licenzaSito è la Licenza predefinita delle Foto, la stessa del Sito principale.
