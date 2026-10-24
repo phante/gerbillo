@@ -24,6 +24,7 @@ type fotoPubblicata struct {
 	Date         string
 	Authors      []string
 	Datazione    string
+	Fonte        string // da dove proviene la Foto, se non è opera di chi la carica
 	Licenza      string // identificativo SPDX; vuota = quella del sito (ADR 0010)
 	Riservata    bool   // album non pubblico di Coppermine (#9): fuori dalla Gallery pubblica
 	Slug         []string
@@ -100,58 +101,29 @@ func (l livelloArricchimento) leggi(rel string, v any) error {
 
 func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, error) {
 	c := &contenuti{entita: map[string]*entita{}}
-	idx, err := leggiIndice(indice)
+	st, idx, err := leggiStrati(dir, indice, l, &c.album)
 	if err != nil {
 		return nil, err
 	}
 	for i := range idx {
 		c.entita[idx[i].Slug] = &idx[i]
 	}
-	b, err := os.ReadFile(filepath.Join(dir, "importazione", "album.yaml"))
-	if err != nil {
-		return nil, err
-	}
-	if err := yaml.Unmarshal(b, &c.album); err != nil {
-		return nil, err
-	}
-	var manuali fileMappature
-	if err := l.leggi("mappature.yaml", &manuali); err != nil {
-		return nil, err
-	}
-	mappe, _ := mappature(c.album, idx, manuali)
-	decisioni, err := leggiRiservati(l, c.album)
-	if err != nil {
-		return nil, err
-	}
-	alias, err := leggiAlias(l)
-	if err != nil {
-		return nil, err
-	}
 	file, err := filepath.Glob(filepath.Join(dir, "importazione", "foto", "*.yaml"))
 	if err != nil {
 		return nil, err
 	}
 	for _, p := range file {
-		b, err := os.ReadFile(p)
+		f, err := st.importata(p)
 		if err != nil {
 			return nil, err
 		}
-		f := &fotoPubblicata{}
-		if err := yaml.Unmarshal(b, f); err != nil {
-			return nil, fmt.Errorf("%s: %w", p, err)
-		}
-		switch decisioni[f.Coppermine.Aid] {
+		switch st.decisioni[f.Coppermine.Aid] {
 		case cancellaAlbum:
 			continue
 		case pubblicaAlbum:
 			f.Riservata = false
 		}
-		f.Authors = alias.applica(f.Authors)
-		if mp := mappe[f.Coppermine.Aid]; mp != nil {
-			f.Slug, f.Tags, f.Categories = mp.Slug, mp.Tags, mp.Categories
-		}
-		// Sovrascrive solo i campi presenti.
-		if err := l.leggi(filepath.Join("foto", strconv.Itoa(f.Pid)+".yaml"), f); err != nil {
+		if err := st.arricchisci(f); err != nil {
 			return nil, err
 		}
 		if f.Riservata {
@@ -163,6 +135,66 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 	slices.SortFunc(c.foto, func(a, b *fotoPubblicata) int { return a.Pid - b.Pid })
 	return c, nil
 }
+
+// strati sono i livelli che compongono la Foto pubblicata sopra l'Importazione.
+type strati struct {
+	l         livelloArricchimento
+	mappe     map[int]*mappatura // aid → Mappatura
+	decisioni map[int]string     // riservati.yaml
+	alias     aliasAutori
+}
+
+func leggiStrati(dir, indice string, l livelloArricchimento, album *albumCoppermine) (*strati, []entita, error) {
+	idx, err := leggiIndice(indice)
+	if err != nil {
+		return nil, nil, err
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "importazione", "album.yaml"))
+	if err != nil {
+		return nil, nil, err
+	}
+	if err := yaml.Unmarshal(b, album); err != nil {
+		return nil, nil, err
+	}
+	st := &strati{l: l}
+	var manuali fileMappature
+	if err := l.leggi("mappature.yaml", &manuali); err != nil {
+		return nil, nil, err
+	}
+	st.mappe, _ = mappature(*album, idx, manuali)
+	if st.decisioni, err = leggiRiservati(l, *album); err != nil {
+		return nil, nil, err
+	}
+	if st.alias, err = leggiAlias(l); err != nil {
+		return nil, nil, err
+	}
+	return st, idx, nil
+}
+
+// importata è la Foto dell'Importazione con gli alias degli Autori e la Mappatura dell'album:
+// tutto tranne arricchimento/foto/<pid>.yaml. Il Backend confronta con questa (#43).
+func (st *strati) importata(p string) (*fotoPubblicata, error) {
+	b, err := os.ReadFile(p)
+	if err != nil {
+		return nil, err
+	}
+	f := &fotoPubblicata{}
+	if err := yaml.Unmarshal(b, f); err != nil {
+		return nil, fmt.Errorf("%s: %w", p, err)
+	}
+	f.Authors = st.alias.applica(f.Authors)
+	if mp := st.mappe[f.Coppermine.Aid]; mp != nil {
+		f.Slug, f.Tags, f.Categories = slices.Clone(mp.Slug), slices.Clone(mp.Tags), slices.Clone(mp.Categories)
+	}
+	return f, nil
+}
+
+// arricchisci applica arricchimento/foto/<pid>.yaml, che sovrascrive solo i campi presenti.
+func (st *strati) arricchisci(f *fotoPubblicata) error {
+	return st.l.leggi(fileFoto(f.Pid), f)
+}
+
+func fileFoto(pid int) string { return filepath.Join("foto", strconv.Itoa(pid)+".yaml") }
 
 // Decisioni su un album non pubblico di Coppermine, in arricchimento/riservati.yaml (#35).
 // Un album senza riga resta riservato: la protezione di #9 regge anche senza arricchimento.

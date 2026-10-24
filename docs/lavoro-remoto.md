@@ -30,6 +30,7 @@ Come si sviluppa Gerbillo senza computer: sessioni cloud di Claude Code, avviate
 - Ogni push avvia GitHub Actions (`.github/workflows/anteprima.yml`), che pubblica `ghcr.io/phante/gerbillo:dev`. Su Telegram arriva un messaggio solo se la build fallisce; se riesce, l'avviso è il messaggio con la password nuova, mandato dal container quando riparte con l'immagine aggiornata (riporta branch e commit).
 - Entro circa un minuto, l'anteprima è su `https://dev.progettodighe.it/gerbillo/`. Branch e commit sono nella striscia gialla.
 - L'admin è su `/gerbillo/admin/`. Utente `gerbillo`, password su Telegram, nuova a ogni avvio e ogni 24 ore.
+- La modifica diretta delle Foto è su `/gerbillo/admin/foto/<pid>` (#43). Salva in un Repository dei contenuti creato in `/tmp` all'avvio, con un commit per salvataggio, poi rifà il build: la pagina della Foto cambia dopo circa mezzo minuto. Le modifiche si perdono a ogni deploy. Per tenerle, si chiede a Claude di riportarle in `dati/arricchimento/foto/`.
 - Lo stato è su `/gerbillo/admin/stato`: memoria del container e dell'host, swap, disco, riavvii. Un messaggio Telegram con una password nuova, che non arriva dopo un deploy, significa che il container è ripartito: controlla lo stato.
 - Woodpecker (`deploy.prdi.it`) esegue solo `.woodpecker/simulazione.yml`, su push su `main` o a mano. Non builda, non pubblica nulla e non manda notifiche.
 

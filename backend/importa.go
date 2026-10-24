@@ -137,7 +137,7 @@ func importa(args []string) error {
 		fmt.Printf("album: %d, abbinati in automatico %.1f%% (foto %.1f%%), da collegare %d (foto %d)\n",
 			t.album, perc(t.autoAlbum, t.album), perc(t.autoFoto, t.foto), t.faAlbum+t.ambAlbum, m.interni[daCollegare])
 	}
-	return registra(c.Contenuti, "importazione", fmt.Sprintf("importazione: %d foto, %d scritte, %d sparite", rap.totale, rap.scritte, len(rap.spariti)))
+	return registra(c.Contenuti, "importazione", fmt.Sprintf("importazione: %d foto, %d scritte, %d sparite", rap.totale, rap.scritte, len(rap.spariti)), "")
 }
 
 // tunnel inoltra il socket MySQL del server su un socket locale con ssh -L.
@@ -661,7 +661,8 @@ func unisci(v []int) string {
 }
 
 // registra fa il commit di percorso nel Repository dei contenuti, che è solo locale.
-func registra(dir, percorso, msg string) error {
+// autore ("Nome <email>") è chi ha fatto la modifica; il committer è sempre gerbillo.
+func registra(dir, percorso, msg, autore string) error {
 	git := func(a ...string) *exec.Cmd {
 		c := exec.Command("git", append([]string{"-C", dir, "-c", "user.name=gerbillo", "-c", "user.email=gerbillo@localhost"}, a...)...)
 		c.Stderr = os.Stderr
@@ -679,5 +680,9 @@ func registra(dir, percorso, msg string) error {
 		fmt.Println("nessun cambiamento da registrare")
 		return nil
 	}
-	return git("commit", "-q", "-m", msg).Run()
+	a := []string{"commit", "-q", "-m", msg}
+	if autore != "" {
+		a = append(a, "--author", autore)
+	}
+	return git(a...).Run()
 }

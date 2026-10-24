@@ -1,7 +1,8 @@
 // Command gerbillo è il Backend di Gerbillo (ADR 0007).
 // Sottocomandi: serve, l'anteprima dev (ADR 0011) con un admin protetto da una
-// password usa e getta inviata via Telegram; importa, l'Importazione da Coppermine (#9),
-// con il rapporto sulla Mappatura degli album (#10, #38); indice-entita, l'Indice delle Entità provvisorio.
+// password usa e getta inviata via Telegram e la modifica diretta delle Foto (#43);
+// importa, l'Importazione da Coppermine (#9), con il rapporto sulla Mappatura degli
+// album (#10, #38); indice-entita, l'Indice delle Entità provvisorio.
 // varianti, le Varianti WebP (#11); build, la Gallery pubblica (#12).
 package main
 
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -40,13 +42,27 @@ func main() {
 	}
 	// Nell'anteprima l'utente corrente è solo l'admin, con la password usa e getta (#42).
 	var uc utenteCorrente = nuovaPasswordAnteprima()
-	// Nell'anteprima la Gallery pubblica generata in CI sta in /dist (ADR 0011, 0012).
-	if dist := envOr("GERBILLO_DIST", "/dist"); esiste(filepath.Join(dist, "index.html")) {
-		http.Handle("/", staticiSenzaEstensione(dist, http.FileServer(http.Dir(dist))))
+	// Nell'anteprima la Gallery pubblica generata in CI sta in /dist (ADR 0011, 0012); quella
+	// rigenerata dopo una modifica (#43) sta in /tmp/dist, con i soli file cambiati, e vince.
+	dist := envOr("GERBILLO_DIST", "/dist")
+	modifiche := envOr("GERBILLO_DIST_MODIFICHE", "/tmp/dist")
+	red, err := redazioneAnteprima(envOr("GERBILLO_SEME", "/seme"), envOr("GERBILLO_CONTENUTI", "/tmp/contenuti"), dist, modifiche)
+	if err != nil {
+		log.Printf("modifica delle Foto non disponibile: %v", err)
+	}
+	if esiste(filepath.Join(dist, "index.html")) {
+		cartelle := sovrapposte{http.Dir(modifiche), http.Dir(dist)}
+		http.Handle("/", staticiSenzaEstensione(cartelle, http.FileServer(cartelle)))
 	} else {
 		http.HandleFunc("/", home)
 	}
-	http.HandleFunc("/admin/", soloModeratore(uc, admin))
+	if red != nil {
+		http.HandleFunc("/admin/", soloModeratore(uc, red.admin))
+		// Il browser rimanda l'HTTP Basic anche dai POST di altri siti: si rifiutano.
+		http.Handle("/admin/foto/", http.NewCrossOriginProtection().Handler(soloModeratore(uc, red.foto)))
+	} else {
+		http.HandleFunc("/admin/", soloModeratore(uc, admin))
+	}
 	http.HandleFunc("/admin/stato", soloModeratore(uc, stato))
 	addr := envOr("GERBILLO_ADDR", ":8080")
 	log.Printf("gerbillo %s@%s in ascolto su %s", branch, commit, addr)
@@ -117,18 +133,37 @@ func stato(w http.ResponseWriter, r *http.Request) {
 }
 
 // staticiSenzaEstensione serve /statico/stile come /statico/stile.css (build -anteprima).
-func staticiSenzaEstensione(dist string, h http.Handler) http.Handler {
+func staticiSenzaEstensione(fs sovrapposte, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/statico/") && filepath.Ext(r.URL.Path) == "" {
+		if strings.HasPrefix(r.URL.Path, "/statico/") && path.Ext(r.URL.Path) == "" {
 			for _, ext := range []string{".css", ".svg", ".js", ".json"} {
-				if p := filepath.Join(dist, filepath.FromSlash(r.URL.Path)+ext); esiste(p) {
-					http.ServeFile(w, r, p)
+				if f, err := fs.Open(r.URL.Path + ext); err == nil {
+					st, _ := f.Stat()
+					http.ServeContent(w, r, path.Base(r.URL.Path)+ext, st.ModTime(), f)
+					f.Close()
 					return
 				}
 			}
 		}
 		h.ServeHTTP(w, r)
 	})
+}
+
+// sovrapposte serve ogni file dalla prima cartella che lo ha.
+type sovrapposte []http.Dir
+
+func (s sovrapposte) Open(nome string) (http.File, error) {
+	var primo error
+	for _, d := range s {
+		f, err := d.Open(nome)
+		if err == nil {
+			return f, nil
+		}
+		if primo == nil {
+			primo = err
+		}
+	}
+	return nil, primo
 }
 
 func esiste(p string) bool {
