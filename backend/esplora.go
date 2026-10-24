@@ -2,8 +2,8 @@ package main
 
 // Esplorazione della Gallery (prototipo, #25): la Bussola della home, che restringe
 // le dighe per Dove, Quando, Come e Per cosa senza elenchi lunghi, e «Esplora
-// intorno» nella pagina della diga, che porta agli album collegati: stesso
-// impianto (map_ids), vicine (coords), simili (tipologia ed epoca).
+// intorno» nella pagina della diga, che porta agli album collegati: stessa
+// mappa (map_ids), vicine (coords), simili (tipologia ed epoca).
 
 import (
 	"cmp"
@@ -129,7 +129,31 @@ const (
 	zoomPredefinito = 14 // se la pagina del sito non ne indica uno
 	maxIntorno      = 6
 	raggioKm        = 30.0
+	// maxDigheMappa: una mappa del sito con più Entità non lega davvero le dighe (#36).
+	maxDigheMappa = 20
 )
+
+// mappaGenerale è la mappa di tutta Italia: è in quasi tutte le dighe (#36).
+const mappaGenerale = "italia"
+
+// stessaMappa dice se due Entità condividono una mappa del sito che non sia generale.
+// Una mappa non è sempre un Impianto, che nella Gallery non è modellato (CONTEXT).
+func (b *builder) stessaMappa(e, o *entita) bool {
+	if b.mappe == nil {
+		b.mappe = map[string]int{}
+		for _, x := range b.c.entita {
+			for _, m := range x.Geolocation.MapIDs {
+				b.mappe[m]++
+			}
+		}
+	}
+	for _, m := range o.Geolocation.MapIDs {
+		if m != mappaGenerale && b.mappe[m] <= maxDigheMappa && slices.Contains(e.Geolocation.MapIDs, m) {
+			return true
+		}
+	}
+	return false
+}
 
 // intorno calcola gli album collegati a una diga, fra quelle che hanno foto.
 func (b *builder) intorno(s string, perEntita map[string][]*fotoPubblicata, slugs []string) []gruppoEsplora {
@@ -152,17 +176,14 @@ func (b *builder) intorno(s string, perEntita map[string][]*fotoPubblicata, slug
 			gruppi = append(gruppi, gruppoEsplora{nome, v})
 		}
 	}
-	// Stesso impianto: condividono una mappa del sito.
-	var impianto []string
+	// Stessa mappa: condividono una mappa del sito.
+	var mappa []string
 	for _, x := range slugs {
-		for _, m := range b.c.entita[x].Geolocation.MapIDs {
-			if slices.Contains(e.Geolocation.MapIDs, m) {
-				impianto = append(impianto, x)
-				break
-			}
+		if b.stessaMappa(e, b.c.entita[x]) {
+			mappa = append(mappa, x)
 		}
 	}
-	aggiungi("Stesso impianto", impianto)
+	aggiungi("Stessa mappa", mappa)
 	// Vicine: entro raggioKm, le più vicine prima.
 	perDistanza := func(lista []string) []string {
 		if e.Geolocation.Coords == nil {
@@ -215,7 +236,7 @@ func km(lat1, lon1, lat2, lon2 float64) float64 {
 
 // geojsonDiga è la mappa della pagina della diga (#27), per il componente mappa del
 // sito (modelli/sito/mappa.js): la diga stessa, che porta alla sua pagina sul sito,
-// e le dighe con foto dello stesso impianto o entro raggioKm, che portano ai loro
+// e le dighe con foto della stessa mappa o entro raggioKm, che portano ai loro
 // album. Vuota se la diga non ha coordinate.
 func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, slugs []string) (centro, geo string, zoom int) {
 	e := b.c.entita[s]
@@ -258,11 +279,7 @@ func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, 
 		if x == s || o.Geolocation.Coords == nil {
 			continue
 		}
-		impianto := false
-		for _, m := range o.Geolocation.MapIDs {
-			impianto = impianto || slices.Contains(e.Geolocation.MapIDs, m)
-		}
-		if impianto || km(c.Latitudine, c.Longitudine, o.Geolocation.Coords.Latitudine, o.Geolocation.Coords.Longitudine) <= raggioKm {
+		if b.stessaMappa(e, o) || km(c.Latitudine, c.Longitudine, o.Geolocation.Coords.Latitudine, o.Geolocation.Coords.Longitudine) <= raggioKm {
 			fs = append(fs, punto(o, "", o.Title+" · "+strconv.Itoa(len(perEntita[x]))+" foto", b.url(x)))
 		}
 	}

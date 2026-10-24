@@ -125,6 +125,7 @@ type builder struct {
 	scritte int
 	// per ogni Foto: l'elenco in cui sta (per precedente e successiva) e la sua posizione
 	contesto map[int]contestoFoto
+	mappe    map[string]int // map_ids → Entità che la hanno (stessaMappa)
 }
 
 type contestoFoto struct {
