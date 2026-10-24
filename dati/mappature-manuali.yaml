@@ -84,6 +84,11 @@ album:
     85:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / altre - other
         origine: manuale
+    88:
+        coppermine: User galleries / Il guardiano della diga
+        origine: manuale
+        tags:
+        - da-collegare
     92:
         categories:
         - tecnica/turbine/pelton
