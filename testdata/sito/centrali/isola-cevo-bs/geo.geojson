@@ -1,0 +1,32 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Isola" },
+      "geometry": { "type": "Point", "coordinates": [10.4187548, 46.0644877] },
+      "id": "isola-cevo-bs"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "ex Lago D'Arno - Isola" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.4389429, 46.0480229],
+          [10.4385433, 46.0486167],
+          [10.4307649, 46.0513076],
+          [10.4317921, 46.0566972],
+          [10.4192045, 46.0639782]
+        ]
+      },
+      "id": "condotta-ex-lago-d-arno-isola"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "pozzo", "name": "Pozzo Isola e camera valvole" },
+      "geometry": { "type": "Point", "coordinates": [10.4317069, 46.0567465] },
+      "id": "pozzo-isola-e-camera-valvole"
+    }
+  ]
+}

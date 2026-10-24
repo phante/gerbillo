@@ -1,0 +1,58 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.77541690964225, 46.21748275268283]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pozzo",
+        "name": "Pozzo piezometrico di Meduno"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.775443424122784, 46.21834104358146]
+      },
+      "id": "pozzo-meduno"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Ponte Racli – Meduno"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.749913, 46.24083],
+          [12.751104, 46.241038],
+          [12.751833, 46.240875],
+          [12.75267, 46.23991],
+          [12.754011, 46.238797],
+          [12.75753, 46.23706],
+          [12.76356, 46.229891],
+          [12.769976, 46.226878],
+          [12.771413, 46.225661],
+          [12.77298, 46.22523],
+          [12.774686, 46.224317],
+          [12.775834, 46.223078],
+          [12.776424, 46.221786],
+          [12.776392, 46.21996],
+          [12.776075, 46.219526],
+          [12.775587, 46.219017],
+          [12.775123460248041, 46.217555363744076]
+        ]
+      },
+      "id": "condotta-ponte-racli-meduno"
+    }
+  ]
+}

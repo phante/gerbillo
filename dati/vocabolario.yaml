@@ -1,0 +1,29 @@
+# Vocabolario controllato del Livello di arricchimento (#1, ADR 0013).
+# gerbillo abbina rifiuta le categories che non sono qui. I valori sono della gallery:
+# dove il sito ha un valore equivalente si usa quello, ma la gallery non lo aspetta.
+categories:
+    - documenti
+    - eventi/fiera
+    - eventi/presentazione
+    - eventi/visita
+    - off-topic
+    - off-topic/divertenti
+    - off-topic/ritocchi
+    - opere-idrauliche/acquedotto
+    - opere-idrauliche/canale
+    - opere-idrauliche/condotta
+    - opere-idrauliche/idrovora
+    - opere-idrauliche/opifici
+    - opere-idrauliche/presa
+    - opere-idrauliche/traversa
+    - tecnica/elettrica
+    - tecnica/idraulica
+    - tecnica/meccanica
+    - tecnica/turbine/francis
+    - tecnica/turbine/kaplan
+    - tecnica/turbine/pelton
+# Segnali di lavoro editoriale: il build non li mostra mai e allo Switch non devono restare Foto che li hanno.
+tags_interni:
+    - da-classificare # manca la classificazione
+    - da-collegare # manca lo Slug
+    - da-separare # l'album copre più pagine: le Foto vanno divise

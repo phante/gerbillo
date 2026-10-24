@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [13.8968736, 41.661531] },
+      "id": "grotta-campanaro-2-picinisco-fr"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.8987297, 41.6625289],
+          [13.8985258, 41.6621682],
+          [13.8968736, 41.661531]
+        ]
+      },
+      "id": "condotta-6d5e0t"
+    }
+  ]
+}

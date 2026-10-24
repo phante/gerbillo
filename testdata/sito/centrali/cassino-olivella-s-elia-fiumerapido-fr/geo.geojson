@@ -1,0 +1,28 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "Collechiavico - Cassino" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.8509488, 41.5753565],
+          [13.8457882, 41.5699949],
+          [13.8441682, 41.5644402],
+          [13.8437122, 41.5627223],
+          [13.8432723, 41.5610565],
+          [13.8424382, 41.5578553],
+          [13.8396218, 41.5530904]
+        ]
+      },
+      "id": "condotta-collechiavico-cassino"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [13.8394368, 41.552984] },
+      "id": "cassino-olivella-s-elia-fiumerapido-fr"
+    }
+  ]
+}

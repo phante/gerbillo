@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale Cormor"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.1875238,
+          46.0886978
+        ]
+      },
+      "id": "cormor-martignacco-ud"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale-dismessa",
+        "name": "Centrale Cormor originale (dismessa 1957)"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.18821,
+          46.08847
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.068259,
+          46.342158
+        ]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Ambiesta – Somplago"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.9818308, 46.3803257],
+          [12.9813078, 46.3796295],
+          [12.9894045, 46.3650775],
+          [12.9894452, 46.3621008],
+          [12.9913986, 46.3587587],
+          [13.0291436, 46.3490291],
+          [13.0385749, 46.346004],
+          [13.0576803, 46.3380047],
+          [13.060455, 46.3387253],
+          [13.0628772, 46.3393312]
+        ]
+      },
+      "id": "condotta-ambiesta-somplago"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pozzo",
+        "name": "Pozzo piezometrico"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.0607271,
+          46.3389434
+        ]
+      },
+      "id": "pozzo-piezometrico"
+    }
+  ]
+}

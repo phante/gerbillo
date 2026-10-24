@@ -1,0 +1,213 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Presa Chiotas-Piastra",
+              "type": "presa"
+            },
+            "geometry": {
+              "coordinates": [
+                7.330319005757559,
+                44.16954057999226
+              ],
+              "type": "Point"
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Chiotas-Piastra",
+              "type": "condotta"
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  7.366694456579381,
+                  44.226823280007665
+                ],
+                [
+                  7.365871988338796,
+                  44.22679813782184
+                ],
+                [
+                  7.364610840438644,
+                  44.22622603195104
+                ],
+                [
+                  7.327290770951308,
+                  44.17503189902265
+                ],
+                [
+                  7.330333922813281,
+                  44.169526802616076
+                ]
+              ],
+              "type": "LineString"
+            },
+            "id": 4
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Condotta Nord Chiotas-Piastra",
+              "type": "condotta"
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  7.38206931771245,
+                  44.22691387441688
+                ],
+                [
+                  7.366713291472195,
+                  44.2270708423211
+                ],
+                [
+                  7.366682461951001,
+                  44.2266126135801
+                ]
+              ],
+              "type": "LineString"
+            },
+            "id": 5
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Condotta sud Chiotas-Piastra",
+              "type": "condotta"
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  7.3666875667550755,
+                  44.22661050304848
+                ],
+                [
+                  7.382056962012342,
+                  44.22618833787769
+                ]
+              ],
+              "type": "LineString"
+            },
+            "id": 6
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Presa della Rovina",
+              "type": "presa"
+            },
+            "geometry": {
+              "coordinates": [
+                7.34166391905228,
+                44.17650511813318
+              ],
+              "type": "Point"
+            },
+            "id":8
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Rovina-Piastra",
+              "type": "condotta"
+            },
+            "geometry": {
+              "coordinates": [
+                [
+                  7.382040432892751,
+                  44.226565302019395
+                ],
+                [
+                  7.372569269880742,
+                  44.22678633738636
+                ],
+                [
+                  7.335280980318579,
+                  44.17901085230375
+                ],
+                [
+                  7.341600877672761,
+                  44.1764921870342
+                ]
+              ],
+              "type": "LineString"
+            },
+            "id": 9
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "name": "Luigi Einaudi - Entracque",
+              "type": "centrale"
+            },
+            "geometry": {
+              "coordinates": [
+                7.3902999755000565,
+                44.228237665112346
+              ],
+              "type": "Point"
+            },
+            "id": "luigi-einaudi-entracque-cn"
+          },
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Sala macchine",
+          "type": "centrale"
+        },
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                7.382086405815187,
+                44.22730173942816
+              ],
+              [
+                7.382086405815187,
+                44.2257203315547
+              ],
+              [
+                7.3836381028710605,
+                44.2257203315547
+              ],
+              [
+                7.3836381028710605,
+                44.22730173942816
+              ],
+              [
+                7.382086405815187,
+                44.22730173942816
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "id": 11
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Galleria di scarico e aspirazione",
+          "type": "condotta"
+        },
+        "geometry": {
+          "coordinates": [
+            [
+              7.3835231330463955,
+              44.226230996449914
+            ],
+            [
+              7.388442587416222,
+              44.22459190246332
+            ]
+          ],
+          "type": "LineString"
+        },
+        "id": 12
+      }
+    ]
+  }

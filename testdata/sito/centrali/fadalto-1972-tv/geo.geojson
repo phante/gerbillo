@@ -1,0 +1,64 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Santa Croce"
+      },
+      "geometry": {
+        "coordinates": [
+          12.333033,
+          46.092825
+        ],
+        "type": "Point"
+      },
+      "id": "presa-santa_croce"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Santa Croce - Fadalto"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.333033,
+            46.092825
+          ],
+          [
+            12.331917,
+            46.092408
+          ],
+          [
+            12.326869,
+            46.071232
+          ],
+          [
+            12.329548893524588,
+            46.06930807390468
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "condotta-fadalto"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Fadalto 1972"
+      },
+      "geometry": {
+        "coordinates": [
+          12.329704029537359,
+          46.06923536718094
+        ],
+        "type": "Point"
+      },
+      "id": "fadalto-1972-tv"
+    }
+  ]
+}

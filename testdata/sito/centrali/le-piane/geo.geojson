@@ -1,0 +1,54 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "vasca" },
+      "geometry": { "type": "Point", "coordinates": [11.1664867, 44.2083499] },
+      "id": "vasca-1i5e3y"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [11.1664546, 44.2084248],
+          [11.1655319, 44.2077365],
+          [11.1651054, 44.2076366],
+          [11.1643088, 44.2073309],
+          [11.1629274, 44.2069021]
+        ]
+      },
+      "id": "condotta-6r4e40"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Le Piane" },
+      "geometry": { "type": "Point", "coordinates": [11.1628819, 44.2069636] },
+      "id": "le-piane"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "canale", "name": "Santa Maria - Le Piane" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [11.1519921, 44.1522361],
+          [11.1562836, 44.153691],
+          [11.1573243, 44.1533639],
+          [11.1580914, 44.1524632],
+          [11.1585796, 44.1523978],
+          [11.1593521, 44.1530906],
+          [11.1596954, 44.1532215],
+          [11.1602077, 44.1532907],
+          [11.1612698, 44.1538796],
+          [11.1613664, 44.1539508],
+          [11.172924, 44.1808498],
+          [11.1675274, 44.2078769]
+        ]
+      },
+      "id": "canale-santa-maria-le-piane"
+    }
+  ]
+}

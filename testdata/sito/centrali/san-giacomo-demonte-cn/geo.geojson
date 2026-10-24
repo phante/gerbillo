@@ -1,0 +1,99 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "San Giacomo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.2003937, 44.3458542]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta forzata"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.200222, 44.348708],
+          [7.2003861, 44.3458657]
+        ]
+      },
+      "id": "condotta-san-giacomo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "bacino",
+        "name": "Alto bacino del Cant"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.2004311, 44.3491253]
+      },
+      "id": "alto-bacino-cant"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa sul torrente San Giacomo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.2114606, 44.3606969]
+      },
+      "id": "presa-san-giacomo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale dal torrente San Giacomo"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.2114308, 44.3605935],
+          [7.2014441, 44.3497775]
+        ]
+      },
+      "id": "canale-san-giacomo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa sul torrente Cant"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.1733558, 44.3547344]
+      },
+      "id": "presa-cant"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale dal torrente Cant"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.173724, 44.3548176],
+          [7.2000426, 44.3493976],
+          [7.2000446, 44.3493976]
+        ]
+      },
+      "id": "canale-cant"
+    }
+  ]
+}

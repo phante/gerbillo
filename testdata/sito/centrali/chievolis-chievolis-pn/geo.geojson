@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.734023, 46.254107]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Ca' Selva – Chievolis"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.700775, 46.258473],
+          [12.701418, 46.257891],
+          [12.713885, 46.257909],
+          [12.729356, 46.255951],
+          [12.732403, 46.256396],
+          [12.733701, 46.254115]
+        ]
+      },
+      "id": "condotta-ca-selva-chievolis"
+    }
+  ]
+}

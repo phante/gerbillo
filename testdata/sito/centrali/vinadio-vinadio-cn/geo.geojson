@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "Rio Freddo-Vanadio" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.1728706, 44.2812455],
+          [7.1995988, 44.3002356],
+          [7.2000495, 44.3044721]
+        ]
+      },
+      "id": "condotta-rio_freddo_vinadio"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Vinadio" },
+      "geometry": { "type": "Point", "coordinates": [7.2002292, 44.3043915] },
+      "id": "main"
+    }
+  ]
+}

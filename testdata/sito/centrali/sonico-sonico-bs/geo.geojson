@@ -1,0 +1,51 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.3482682, 46.1712961],
+          [10.3536701, 46.1769387]
+        ]
+      },
+      "id": "condotta-3a556i"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "bacino", "name": "vasca di carico di Sonico" },
+      "geometry": { "type": "Point", "coordinates": [10.3528279, 46.1769146] },
+      "id": "bacino-vasca-di-carico-di-sonico"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa", "name": "presa di Temù" },
+      "geometry": { "type": "Point", "coordinates": [10.4530084, 46.2444956] },
+      "id": "presa-di-temu"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "condotta Temù - Sonico (ipotesi)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.4530084, 46.2444956],
+          [10.3715229, 46.2192177],
+          [10.3528762, 46.1779212]
+        ]
+      },
+      "id": "canale-condotta-temu-sonico-ipotesi"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [10.3481984, 46.1709153] },
+      "id": "sonico-sonico-bs"
+    }
+  ]
+}

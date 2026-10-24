@@ -1,0 +1,1055 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Diga di Tramba",
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.04491861207194,
+          46.42762061416267
+        ]
+      },
+      "id": "kmz-002"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Tramba",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.03924314746668,
+          46.43133987887138
+        ]
+      },
+      "id": "kmz-004"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Diga di Raccolana 1",
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.34732435759008,
+          46.39718987486907
+        ]
+      },
+      "id": "kmz-006"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Diga di Raccolana",
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.32365232058095,
+          46.3994561227871
+        ]
+      },
+      "id": "kmz-007"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Raccolana 2",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.42698555094215,
+          46.39900034320746
+        ]
+      },
+      "id": "kmz-008"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Raccolana 3",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.40127959788919,
+          46.40284357546769
+        ]
+      },
+      "id": "kmz-009"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Raccolana 1",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.32937344293164,
+          46.39666792003409
+        ]
+      },
+      "id": "kmz-010"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Raccolana 0",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.43560055094348,
+          46.39563709610176
+        ]
+      },
+      "id": "kmz-011"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Diga di Debellis",
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.32158411936665,
+          46.25531062985531
+        ]
+      },
+      "id": "kmz-012"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Diga di Gorgons",
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.3225576145223,
+          46.25083022896583
+        ]
+      },
+      "id": "kmz-013"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Torlano",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.27443831923617,
+          46.21810519766443
+        ]
+      },
+      "id": "kmz-014"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa sul Cornappo",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.27307626646044,
+          46.21024139645536
+        ]
+      },
+      "id": "kmz-015"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa Fusine Inferiore",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.6747055983668,
+          46.48193472341632
+        ]
+      },
+      "id": "kmz-017"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Luincis",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.85941101393925,
+          46.5038290372766
+        ]
+      },
+      "id": "kmz-018"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Cotonificio Poggio",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.51164903246695,
+          45.88450704198134
+        ]
+      },
+      "id": "kmz-019"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa Cotonificio Poggio",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.51896305150603,
+          45.89063167492776
+        ]
+      },
+      "id": "kmz-020"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Traversa Canale Gradiscano",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.59647540336724,
+          45.93432963713805
+        ]
+      },
+      "id": "kmz-021"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Madonnina",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.59655789472483,
+          45.93387296977598
+        ]
+      },
+      "id": "kmz-022"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Carraro",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.60503467138855,
+          45.94661119402722
+        ]
+      },
+      "id": "kmz-023"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Traversa canale Carraro",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.60734961964948,
+          45.95188119307995
+        ]
+      },
+      "id": "kmz-024"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Fantoni Farra",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.54402373212677,
+          45.90486547749126
+        ]
+      },
+      "id": "kmz-025"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa torrente Giaf",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.54236887479149,
+          46.42803451214525
+        ]
+      },
+      "id": "kmz-038"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa centrale Enfretons",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.00546752940721,
+          46.56812899730591
+        ]
+      },
+      "id": "kmz-039"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Enfretons",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.01054706734288,
+          46.54377818895084
+        ]
+      },
+      "id": "kmz-040"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Fontanone",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.99345136298571,
+          46.58666361509143
+        ]
+      },
+      "id": "kmz-041"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa centrale Mieli",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.86720532516932,
+          46.54118896371066
+        ]
+      },
+      "id": "kmz-042"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Magnanis",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.86593818791617,
+          46.54322260726553
+        ]
+      },
+      "id": "kmz-043"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Mieli",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.87226180888086,
+          46.52079897861054
+        ]
+      },
+      "id": "kmz-044"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa torrente Vaglina",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.88924564772611,
+          46.53597528651307
+        ]
+      },
+      "id": "kmz-045"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa centrale Museis",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.01163027917961,
+          46.54830183161113
+        ]
+      },
+      "id": "kmz-046"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Museis",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.00449926675489,
+          46.53060024915091
+        ]
+      },
+      "id": "kmz-047"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Noiariis",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.99832108246938,
+          46.49603537437219
+        ]
+      },
+      "id": "kmz-048"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nodo idraulico centrale Noiariis",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.00732152879456,
+          46.5290412633242
+        ]
+      },
+      "id": "kmz-049"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Degano",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.77455501519232,
+          46.58741583427846
+        ]
+      },
+      "id": "kmz-050"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Fullin",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.80304141944274,
+          46.5712861451904
+        ]
+      },
+      "id": "kmz-051"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Sostasio",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.83512307799997,
+          46.51468255857189
+        ]
+      },
+      "id": "kmz-052"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Chiaula",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.95654979122556,
+          46.59213515876676
+        ]
+      },
+      "id": "kmz-053"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Turriea",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.12307588897598,
+          46.52538859024972
+        ]
+      },
+      "id": "kmz-054"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Poschiedea",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.67947046195948,
+          46.39021146518311
+        ]
+      },
+      "id": "kmz-055"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Piova",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.46750094864051,
+          46.48781910485987
+        ]
+      },
+      "id": "kmz-056"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vasca Val da Rin",
+        "type": "vasca"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.37769755980092,
+          46.54467675392478
+        ]
+      },
+      "id": "kmz-057"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Val da Rin",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.38435607749443,
+          46.55091654111713
+        ]
+      },
+      "id": "kmz-058"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vasca Stabin",
+        "type": "vasca"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.32473454279065,
+          46.55175084607392
+        ]
+      },
+      "id": "kmz-059"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale e presa Somprade",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.34299857991037,
+          46.56088120943478
+        ]
+      },
+      "id": "kmz-060"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Ponte Malon",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.43289448589415,
+          46.55049837794049
+        ]
+      },
+      "id": "kmz-061"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Molinà",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.38736320512386,
+          46.43675972724841
+        ]
+      },
+      "id": "kmz-062"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Ciampato",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.3575506456734,
+          46.46276936901582
+        ]
+      },
+      "id": "kmz-063"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale San Giovanni",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.38451224237723,
+          46.44943424241293
+        ]
+      },
+      "id": "kmz-064"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Diga rio Costeana",
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.11251436947602,
+          46.51973640795672
+        ]
+      },
+      "id": "kmz-065"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Campo di Sotto",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.13071092064232,
+          46.51876660146377
+        ]
+      },
+      "id": "kmz-066"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa Ponte Coperto",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.8124101019334,
+          46.56967912894521
+        ]
+      },
+      "id": "kmz-067"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Campolongo",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.59192578919486,
+          46.54939558587176
+        ]
+      },
+      "id": "kmz-068"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Sopalù",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.50228064587472,
+          46.58899894515834
+        ]
+      },
+      "id": "kmz-069"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Malga Ciapela",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.90383269424646,
+          46.42842123869313
+        ]
+      },
+      "id": "kmz-071"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Diga dell'Ombretta",
+        "type": "diga"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.88486444521459,
+          46.42404598532152
+        ]
+      },
+      "id": "kmz-072"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa San Pellegrino",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.82071122353263,
+          46.37630336006819
+        ]
+      },
+      "id": "kmz-074"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Traversa Alleghe",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.01436760276368,
+          46.39881817685405
+        ]
+      },
+      "id": "kmz-075"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Saviner",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.98643104891848,
+          46.43931565552398
+        ]
+      },
+      "id": "kmz-076"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vasca Caverson",
+        "type": "vasca"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.84878204394471,
+          46.35028199767076
+        ]
+      },
+      "id": "kmz-077"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Cavia",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.83413556822541,
+          46.36587562089157
+        ]
+      },
+      "id": "kmz-078"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Molino",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.86272410521303,
+          46.35115978671503
+        ]
+      },
+      "id": "kmz-079"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Sospirolo",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.08241092459053,
+          46.14380611795102
+        ]
+      },
+      "id": "kmz-080"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Taibon",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.99808258140263,
+          46.29723922779299
+        ]
+      },
+      "id": "kmz-082"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa di San Cipriano",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.01826702899762,
+          46.29482182254921
+        ]
+      },
+      "id": "kmz-083"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di San Silvestro",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.76901357558066,
+          46.13414013996411
+        ]
+      },
+      "id": "kmz-087"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Caoria",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.66299370557439,
+          46.20400275435595
+        ]
+      },
+      "id": "kmz-088"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Val Noana",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.76915164632851,
+          46.13156796787136
+        ]
+      },
+      "id": "kmz-090"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale Moline",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.76315633505732,
+          46.06703054692766
+        ]
+      },
+      "id": "kmz-091"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Centrale di Pedesalto",
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          11.7785061133462,
+          46.02134809314145
+        ]
+      },
+      "id": "kmz-092"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Presa roggia di Palma sul Torre",
+        "type": "presa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.25677584529646,
+          46.17172379857124
+        ]
+      },
+      "id": "kmz-093"
+    }
+  ]
+}

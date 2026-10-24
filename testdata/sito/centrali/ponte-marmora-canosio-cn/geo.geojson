@@ -1,0 +1,30 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.0931339, 44.4887831],
+          [7.0908487, 44.486177],
+          [7.0193088, 44.4737453],
+          [7.0188636, 44.4736955],
+          [7.0184505, 44.4738218],
+          [7.018311, 44.4744037],
+          [7.0175976, 44.4746831],
+          [7.0168197, 44.4746793],
+          [7.016176, 44.4748745]
+        ]
+      },
+      "id": "condotta-704g25"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [7.0928922, 44.4891522] },
+      "id": "ponte-marmora-canosio-cn"
+    }
+  ]
+}

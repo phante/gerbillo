@@ -1,0 +1,52 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.78631,
+          46.426958
+        ]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale Sauris – Ampezzo"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.735837, 46.447534],
+          [12.738658, 46.445908],
+          [12.753711, 46.44474],
+          [12.773345, 46.427793],
+          [12.784063, 46.427937]
+        ]
+      },
+      "id": "canale-sauris-ampezzo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa sul Lumiei"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.755277, 46.449848],
+          [12.753711, 46.44474]
+        ]
+      },
+      "id": "presa-lumiei"
+    }
+  ]
+}

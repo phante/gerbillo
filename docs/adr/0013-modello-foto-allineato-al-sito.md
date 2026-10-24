@@ -46,3 +46,4 @@ altezza: 1153
 - I YAML di G1 rinominano `titolo`, `descrizione`, `caricata` e `autore` in `title`, `description`, `date` e `authors`.
 - I valori dei tag del sito oggi sono pochi e disordinati: la gallery li eredita dove esistono e aiuta a sistemarli.
 - Lo spostamento di una pagina nel sito rompe i riferimenti: il build lo rileva contro l'Indice delle Entità.
+- Sinergia con il sito, ma la gallery non si blocca ad aspettarlo: dove il sito non ha una pagina o un valore, la Foto resta senza `slug` o usa un valore proprio di `categories`, e si collega quando il sito lo avrà (#1).

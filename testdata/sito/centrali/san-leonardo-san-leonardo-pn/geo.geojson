@@ -1,0 +1,52 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.709553787027914, 46.09258162813609]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pozzo",
+        "name": "Pozzo piezometrico della centrale di San Leonardo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.709078220067909, 46.0931955161295]
+      },
+      "id": "pozzo-san-leonardo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale Ponte Giulio – San Leonardo"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.678915372956965, 46.13528040831716],
+          [12.683512256430248, 46.12880385629224],
+          [12.689714804046034, 46.12014435790535],
+          [12.692179908189011, 46.11706979954086],
+          [12.693134354266608, 46.11595740415214],
+          [12.6952675729343, 46.113097252204554],
+          [12.703463252239896, 46.101962768711836],
+          [12.705134901789824, 46.09962782915039],
+          [12.70582845320239, 46.09828388402384],
+          [12.709065865472326, 46.093183265219665],
+          [12.709490332402538, 46.09266189183052]
+        ]
+      },
+      "id": "canale-ponte-giulio-san-leonardo"
+    }
+  ]
+}

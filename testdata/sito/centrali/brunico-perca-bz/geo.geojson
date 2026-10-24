@@ -1,0 +1,141 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.971438738084515, 46.788074445826396]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa Rio Anterselva"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.055475943840491, 46.78771771530552]
+      },
+      "id": "presa-rio-anterselva"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa Rio Furcia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.016619711176872, 46.751738660818745]
+      },
+      "id": "presa-rio-furcia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa Rio Bruns"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.042310602226422, 46.751505516026924]
+      },
+      "id": "presa-rio-bruns"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Presa Rio Vila"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.991109849620273, 46.806281046743834]
+      },
+      "id": "presa-rio-vila"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Galleria di adduzione Valdaora – Brunico"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.053243834458101, 46.76014196008339],
+          [11.975920407053849, 46.78214881164547],
+          [11.971438914279645, 46.78805763139974]
+        ]
+      },
+      "id": "galleria-valdaora-brunico"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Derivazione Rio Anterselva"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.055496472613783, 46.78768914381163],
+          [12.04750457862636, 46.761787503265936]
+        ]
+      },
+      "id": "derivazione-rio-anterselva"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Derivazione Rio Furcia"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.016619711176872, 46.751738660818745],
+          [12.020458080419331, 46.75701866229414],
+          [12.039264703799063, 46.758168758546134]
+        ]
+      },
+      "id": "derivazione-rio-furcia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Derivazione Rio Bruns"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.042310602226422, 46.751505516026924],
+          [12.036186626497965, 46.76497274883411]
+        ]
+      },
+      "id": "derivazione-rio-bruns"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Derivazione Rio Vila"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [11.991109849620273, 46.806281046743834],
+          [11.984698601380586, 46.77967235790817]
+        ]
+      },
+      "id": "derivazione-rio-vila"
+    }
+  ]
+}

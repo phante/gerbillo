@@ -1,0 +1,68 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "San Floriano Nuova"
+      },
+      "geometry": {
+        "coordinates": [
+          12.300608522954372,
+          46.02858606766733
+        ],
+        "type": "Point"
+      },
+      "id": "san-floriano-nuova-vittorio-veneto-tv"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Prese sul lago del Restello per centrali di San Floriano"
+      },
+      "geometry": {
+        "coordinates": [
+          12.30162568560079,
+          46.031028654865146
+        ],
+        "type": "Point"
+      },
+      "id": "presa-san_floriano"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Nove - San Floriano Nuova"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.301493329088306,
+            46.03115287938818
+          ],
+          [
+            12.301168829088335,
+            46.03120950134087
+          ],
+          [
+            12.299833833401863,
+            46.02989031275344
+          ],
+          [
+            12.300516000013536,
+            46.02881163508328
+          ],
+          [
+            12.301045820544992,
+            46.02819070336529
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "condotta-san_floriano_nuova"
+    }
+  ]
+}

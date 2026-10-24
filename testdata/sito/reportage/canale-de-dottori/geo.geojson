@@ -1,0 +1,215 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Fogliano"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.47881484863737, 45.868858933137716]
+      },
+      "id": "centrale-fogliano"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Redipuglia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.48679191993412, 45.84794950607741]
+      },
+      "id": "centrale-redipuglia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Ronchi dei Legionari"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.502202892101536, 45.8324560077551]
+      },
+      "id": "centrale-ronchi-dei-legionari"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Monfalcone Anconetta"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.524538593563847, 45.810762372189686]
+      },
+      "id": "centrale-monfalcone-anconetta"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centrale di Monfalcone Porto"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.531783905542312, 45.80509628556206]
+      },
+      "id": "centrale-monfalcone-porto"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Centralina di San Polo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.5169064, 45.8195396]
+      },
+      "id": "centralina-san-polo"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "La Rosta"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.488056700287899, 45.87768742964019]
+      },
+      "id": "presa-la-rosta"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale De' Dottori — tratto Fogliano – Redipuglia"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.478552510615032, 45.868838772263956],
+          [13.477864723386944, 45.86462020993537],
+          [13.478045578172114, 45.86415267332966],
+          [13.480133842940411, 45.86262239045881],
+          [13.480895883748246, 45.86155979468255],
+          [13.483219109636494, 45.85638040997488],
+          [13.485712364238111, 45.85104112173869],
+          [13.48637700752154, 45.85001052420354],
+          [13.486808897120532, 45.84929150323007],
+          [13.486993726933573, 45.848658911199266],
+          [13.48681762289877, 45.84802631916847]
+        ]
+      },
+      "id": "canale-fogliano-redipuglia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale De' Dottori — tratto verso Fogliano (presa non identificata a monte)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.488056700287899, 45.87768742964019],
+          [13.487459349562869, 45.87751577714529],
+          [13.48707648411552, 45.877346218457866],
+          [13.486902089356164, 45.877165495414886],
+          [13.485440447250085, 45.87463523677478],
+          [13.485210040147194, 45.87446121298157],
+          [13.482490011936449, 45.874516070155316],
+          [13.481924565775984, 45.874395499523416],
+          [13.481357200025116, 45.873936067071476],
+          [13.479317552505407, 45.871788718930105],
+          [13.478941661441098, 45.87107053525027],
+          [13.478654260761502, 45.86947302806923],
+          [13.478799831064748, 45.86893716083006]
+        ]
+      },
+      "id": "canale-monte-fogliano"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale De' Dottori — tratto Redipuglia – Ronchi dei Legionari"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.486960224175704, 45.847931076526635],
+          [13.488028349600505, 45.848049274421356],
+          [13.501256347390509, 45.83466469153228],
+          [13.502186872248878, 45.833267431411016],
+          [13.502254661023631, 45.83271183351646],
+          [13.502165207473297, 45.83250926000713]
+        ]
+      },
+      "id": "canale-redipuglia-ronchi"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale De' Dottori — tratto Ronchi dei Legionari – Monfalcone Anconetta"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.502234233366437, 45.83238065170832],
+          [13.502628743447907, 45.832276724024126],
+          [13.503637302109635, 45.8302757343844],
+          [13.503720558032754, 45.83018414513933],
+          [13.503969502982747, 45.83006703596314],
+          [13.505891110575586, 45.82933246258323],
+          [13.506218175354329, 45.82910816952317],
+          [13.509896611185841, 45.825388889999914],
+          [13.510799711206566, 45.824967454697116],
+          [13.511990859530055, 45.8237194926505],
+          [13.512068769748868, 45.82326038288804],
+          [13.5125973585773, 45.82317461563673],
+          [13.514840617487927, 45.82101938058249],
+          [13.517192189056443, 45.81950744836804],
+          [13.518156174617488, 45.81903493411653],
+          [13.518001855000467, 45.81871593336266],
+          [13.52146508319648, 45.816064641286076],
+          [13.521573395856244, 45.81511388548597],
+          [13.520722731273437, 45.813963840239076],
+          [13.520606073616458, 45.81338171539757],
+          [13.520938415016925, 45.81280651604487],
+          [13.523717722165655, 45.81100621273396],
+          [13.524470092763409, 45.81083933577855]
+        ]
+      },
+      "id": "canale-ronchi-monfalcone-anconetta"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale De' Dottori — tratto Monfalcone Anconetta – Monfalcone Porto"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.524629725426763, 45.81073862979275],
+          [13.524693521170105, 45.81056437365263],
+          [13.5246087142915, 45.81032106355447],
+          [13.524059338278926, 45.809316534629914],
+          [13.524331032654306, 45.80891875748414],
+          [13.525534877504533, 45.80801962755855],
+          [13.530435788973122, 45.805530815344156],
+          [13.531717728251408, 45.80508804948647]
+        ]
+      },
+      "id": "canale-monfalcone-anconetta-porto"
+    }
+  ]
+}

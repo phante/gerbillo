@@ -1,0 +1,64 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "des Mesces-Saint-Dalmas-de-Tende",
+        "type": "condotta"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            7.526882607785126,
+            44.068963429999684
+          ],
+          [
+            7.535793972666557,
+            44.06598213485135
+          ],
+          [
+            7.54457508148014,
+            44.062626463648094
+          ],
+          [
+            7.5541433145484564,
+            44.05643183188728
+          ],
+          [
+            7.561106426278453,
+            44.04789694745645
+          ],
+          [
+            7.56891061459136,
+            44.04711640656272
+          ],
+          [
+            7.585193062948186,
+            44.04664108992069
+          ],
+          [
+            7.586108034700089,
+            44.047091965542364
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "des Mesces-Saint-Dalmas-de-Tende",
+        "type": "centrale"
+      },
+      "geometry": {
+        "coordinates": [
+          7.586173165103702,
+          44.0468809087383
+        ],
+        "type": "Point"
+      },
+      "id": "san_dalmazzo_di_tenda-fr"
+    }
+  ]
+}

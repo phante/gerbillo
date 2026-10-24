@@ -1,7 +1,7 @@
 // Command gerbillo è il Backend di Gerbillo (ADR 0007).
 // Sottocomandi: serve, l'anteprima dev (ADR 0011) con un admin protetto da una
 // password usa e getta inviata via Telegram; importa, l'Importazione da Coppermine (#9);
-// mappa, la Mappatura degli album (#10); indice-entita, l'Indice delle Entità provvisorio.
+// abbina, la Mappatura degli album (#10); indice-entita, l'Indice delle Entità provvisorio.
 // varianti, le Varianti WebP (#11); build, la Gallery pubblica (#12).
 package main
 
@@ -38,7 +38,7 @@ var (
 )
 
 func main() {
-	comandi := map[string]func([]string) error{"importa": importa, "mappa": mappa, "indice-entita": indiceEntita, "varianti": generaVarianti, "build": build}
+	comandi := map[string]func([]string) error{"importa": importa, "abbina": abbina, "indice-entita": indiceEntita, "varianti": generaVarianti, "build": build}
 	if len(os.Args) >= 2 && comandi[os.Args[1]] != nil {
 		if err := comandi[os.Args[1]](os.Args[2:]); err != nil {
 			log.Fatal(err)
@@ -46,7 +46,7 @@ func main() {
 		return
 	}
 	if len(os.Args) < 2 || os.Args[1] != "serve" {
-		fmt.Fprintln(os.Stderr, "uso: gerbillo serve | importa | mappa | indice-entita | varianti | build")
+		fmt.Fprintln(os.Stderr, "uso: gerbillo serve | importa | abbina | indice-entita | varianti | build")
 		os.Exit(2)
 	}
 	nuovaPassword()

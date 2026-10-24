@@ -53,9 +53,11 @@ func TestConverti(t *testing.T) {
 			{pid: 2, owner: 0, filename: []byte("b.zip")},
 			{pid: 3, owner: 1, filename: []byte("c.pdf")},
 			{pid: 4, owner: 999, filename: []byte("d.png")},
+			{pid: 5, aid: 390, owner: 0, filename: []byte("e.jpg")},
 		},
-		exif:   map[int]string{1: "2005:06:03 11:31:56"},
-		utenti: map[int]string{25: "utente", 1: "Anonymous"},
+		exif:      map[int]string{1: "2005:06:03 11:31:56"},
+		utenti:    map[int]string{25: "utente", 1: "Anonymous"},
+		riservati: map[int]bool{390: true},
 	}
 	foto, rap := converti(d)
 	atteso := `altezza: 600
@@ -83,10 +85,13 @@ title: Città
 			t.Errorf("pid %d: contributore o autore non attesi:\n%s", f.pid, f.file)
 		}
 	}
-	if rap.ospiti != 2 || rap.cancellati[999] != 1 || rap.senzaAutore != 3 {
+	if !strings.Contains(string(foto[4].file), "riservata: true") || strings.Contains(string(foto[0].file), "riservata") || rap.riservate != 1 {
+		t.Errorf("riservata: %d\n%s", rap.riservate, foto[4].file)
+	}
+	if rap.ospiti != 3 || rap.cancellati[999] != 1 || rap.senzaAutore != 4 {
 		t.Errorf("rapporto: ospiti %d, cancellati %v, senza autore %d", rap.ospiti, rap.cancellati, rap.senzaAutore)
 	}
-	if rap.formati["altro"] != 1 || rap.formati["pdf"] != 1 || rap.formati["immagine"] != 2 {
+	if rap.formati["altro"] != 1 || rap.formati["pdf"] != 1 || rap.formati["immagine"] != 3 {
 		t.Errorf("formati %v", rap.formati)
 	}
 	if len(rap.cp1252) != 1 || rap.cp1252[0] != 1 {

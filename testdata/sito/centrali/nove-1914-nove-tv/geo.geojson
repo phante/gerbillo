@@ -1,0 +1,112 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "ex presa per la Centrale di Nove 1914"
+      },
+      "geometry": {
+        "coordinates": [
+          12.317488789704072,
+          46.054168736988316
+        ],
+        "type": "Point"
+      },
+      "id": "presa-nove-1914"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Lago Morto - Nove 1914"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.309820842116352,
+            46.040568459440806
+          ],
+          [
+            12.309857959475295,
+            46.04078385419302
+          ],
+          [
+            12.309831234976599,
+            46.040894127736266
+          ],
+          [
+            12.309504602215753,
+            46.04111673534058
+          ],
+          [
+            12.309359745765192,
+            46.041294506547615
+          ],
+          [
+            12.317488789704072,
+            46.054168736988316
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "canale-nove-1914"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "vasca",
+        "name": "Bacino di carico di Nove 1914"
+      },
+      "geometry": {
+        "coordinates": [
+          12.309902079773337,
+          46.04047877347054
+        ],
+        "type": "Point"
+      },
+      "id": "vasca-nove-1914"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Nove 1914"
+      },
+      "geometry": {
+        "coordinates": [
+          12.307355710114422,
+          46.037116990148945
+        ],
+        "type": "Point"
+      },
+      "id": "nove-1914-nove-tv"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "nome": "ex Condotte per Nove 1914"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.30744176597642,
+            46.03726326339239
+          ],
+          [
+            12.308392205284719,
+            46.03794245051705
+          ],
+          [
+            12.309880775574982,
+            46.040444725666305
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "condotte-nove-1914"
+    }
+  ]
+}

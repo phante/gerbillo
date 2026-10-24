@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Osiglia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.1978481,
+          44.311003
+        ]
+      },
+      "id": "osiglia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.1969413,
+            44.3102634
+          ],
+          [
+            8.1978413,
+            44.3109836
+          ]
+        ]
+      }
+    }
+  ]
+}

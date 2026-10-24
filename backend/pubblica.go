@@ -24,6 +24,7 @@ type fotoPubblicata struct {
 	Authors      []string
 	Datazione    string
 	Licenza      string // identificativo SPDX; vuota = quella del sito (ADR 0010)
+	Riservata    bool   // album non pubblico di Coppermine (#9): fuori dalla Gallery pubblica
 	Slug         []string
 	Tags         []string
 	Categories   []string
@@ -54,7 +55,8 @@ type geolocFoto struct {
 }
 
 // tagInterni sono promemoria di lavoro, mai mostrati nella Gallery pubblica.
-var tagInterni = map[string]bool{"da-separare": true}
+// Gli stessi di tags_interni in dati/vocabolario.yaml.
+var tagInterni = map[string]bool{"da-classificare": true, "da-collegare": true, "da-separare": true}
 
 type contenuti struct {
 	foto   []*fotoPubblicata
@@ -115,6 +117,9 @@ func leggiContenuti(dir, indice string) (*contenuti, error) {
 			}
 		} else if !errors.Is(err, os.ErrNotExist) {
 			return nil, err
+		}
+		if f.Riservata {
+			continue
 		}
 		c.completa(f)
 		c.foto = append(c.foto, f)

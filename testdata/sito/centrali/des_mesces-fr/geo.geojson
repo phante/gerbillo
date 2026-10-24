@@ -1,0 +1,56 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "nome": "des Meshes"
+      },
+      "geometry": {
+        "coordinates": [
+          7.521607887491967,
+          44.071193480739595
+        ],
+        "type": "Point"
+      },
+      "id": "des_mesces-fr"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa"
+      },
+      "geometry": {
+        "coordinates": [
+          7.5198078498829375,
+          44.08124348405809
+        ],
+        "type": "Point"
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            7.519854964841954,
+            44.081237391076485
+          ],
+          [
+            7.519167236318964,
+            44.07151174874173
+          ],
+          [
+            7.521512232128941,
+            44.07116172921141
+          ]
+        ],
+        "type": "LineString"
+      }
+    }
+  ]
+}

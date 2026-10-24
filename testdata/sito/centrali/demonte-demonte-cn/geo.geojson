@@ -1,0 +1,32 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Demonte"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.2710648, 44.3149856]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta forzata"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.2721536, 44.3174581],
+          [7.2711145, 44.3150997]
+        ]
+      },
+      "id": "condotta-demonte"
+    }
+  ]
+}

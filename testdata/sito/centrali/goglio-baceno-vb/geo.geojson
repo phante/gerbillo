@@ -1,0 +1,104 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.2675362,
+          46.2953038
+        ]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Agaro-Goglio"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.3027088,
+            46.2927467
+          ],
+          [
+            8.3019065,
+            46.2922788
+          ],
+          [
+            8.3019993,
+            46.2917341
+          ],
+          [
+            8.301939,
+            46.2915931
+          ],
+          [
+            8.3016992,
+            46.2915487
+          ],
+          [
+            8.2754125,
+            46.2969317
+          ],
+          [
+            8.2675874,
+            46.2952791
+          ],
+          [
+            8.2675874,
+            46.2952791
+          ]
+        ]
+      },
+      "id": "condotta-agaro-goglio"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Devero"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.2554814,
+          46.3215112
+        ]
+      },
+      "id": "centrale-devero"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta dalla centrale di Devero"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.2553329,
+            46.3215175
+          ],
+          [
+            8.2591994,
+            46.3029511
+          ],
+          [
+            8.2672058,
+            46.2954106
+          ]
+        ]
+      },
+      "id": "condotta-centrale-devero"
+    }
+  ]
+}
