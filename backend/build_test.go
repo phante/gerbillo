@@ -131,7 +131,7 @@ func TestBuild(t *testing.T) {
 		`src="/g/f/1/schermo.webp"`,
 		"[url=https://progettodighe.it/gallery/f/1/][img]https://progettodighe.it/gallery/f/1/mini.webp[/img][/url]",
 		`href="/g/f/2/"`, // successiva nello stesso elenco (Vajont)
-		"195X", "27/12/2006", `href="/g/contributori/25/"`,
+		"anni &#39;50", "27/12/2006", `href="/g/contributori/25/"`,
 		`href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0`, // scelta per la Foto
 		`data-copy-url="https://progettodighe.it/gallery/f/1/"`,
 	} {

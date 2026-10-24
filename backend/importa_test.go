@@ -74,8 +74,13 @@ func TestConverti(t *testing.T) {
 			{pid: 3, owner: 1, filename: []byte("c.pdf")},
 			{pid: 4, owner: 999, filename: []byte("d.png")},
 			{pid: 5, aid: 390, owner: 0, filename: []byte("e.jpg"), user3: []byte("18/07/2004")},
+			// Candidate (#39): storica e scansione, caricate il 27/12/2006.
+			{pid: 6, ctime: 1167214711, filename: []byte("f.jpg"), user3: []byte("anni '60")},
+			{pid: 7, ctime: 1167214711, filename: []byte("g.jpg"), user3: []byte("1985")},
+			{pid: 8, ctime: 1167214711, filename: []byte("h.jpg"), user3: []byte("Inverno 1970")},
 		},
-		exif:      map[int]string{1: "2005:06:03 11:31:56", 2: "0000:00:00 00:00:00", 3: "6 Feb 2011 17:13:36"},
+		exif: map[int]string{1: "2005:06:03 11:31:56", 2: "0000:00:00 00:00:00", 3: "6 Feb 2011 17:13:36",
+			7: "2005:01:01 10:00:00"},
 		utenti:    map[int]string{25: "utente", 1: "Anonymous"},
 		riservati: map[int]bool{390: true},
 	}
@@ -109,10 +114,10 @@ title: Città
 	if !strings.Contains(string(foto[4].file), "riservata: true") || strings.Contains(string(foto[0].file), "riservata") || rap.riservate != 1 {
 		t.Errorf("riservata: %d\n%s", rap.riservate, foto[4].file)
 	}
-	if rap.ospiti != 3 || rap.cancellati[999] != 1 || rap.senzaAutore != 4 {
+	if rap.ospiti != 6 || rap.cancellati[999] != 1 || rap.senzaAutore != 7 {
 		t.Errorf("rapporto: ospiti %d, cancellati %v, senza autore %d", rap.ospiti, rap.cancellati, rap.senzaAutore)
 	}
-	for _, f := range foto[1:] {
+	for _, f := range foto[1:5] {
 		if strings.Contains(string(f.file), "datazione") {
 			t.Errorf("pid %d: Datazione senza EXIF valido:\n%s", f.pid, f.file)
 		}
@@ -120,11 +125,22 @@ title: Città
 	if !strings.Contains(string(foto[4].file), "data: 18/07/2004") {
 		t.Errorf("user3 non conservato grezzo:\n%s", foto[4].file)
 	}
+	if !strings.Contains(string(foto[5].file), "datazione: 196X") || !strings.Contains(string(foto[6].file), "datazione: \"1985\"") ||
+		strings.Contains(string(foto[7].file), "datazione") {
+		t.Errorf("Datazione da user3:\n%s\n%s\n%s", foto[5].file, foto[6].file, foto[7].file)
+	}
+	if !strings.Contains(string(foto[6].file), "data_exif: 2005:01:01 10:00:00") {
+		t.Errorf("EXIF della scansione non conservato grezzo:\n%s", foto[6].file)
+	}
+	if rap.candidate[candStorica][precDecennio] != 1 || rap.candidate[candScansione][precAnno] != 1 ||
+		rap.candidate[candStorica]["residui"] != 1 || len(rap.residui) != 1 || len(rap.scansioni) != 1 {
+		t.Errorf("candidate %v, residui %v, scansioni %v", rap.candidate, rap.residui, rap.scansioni)
+	}
 	if rap.datazioneExif != 1 || rap.soloUser3 != 1 || rap.senzaData != 3 || len(rap.exifScartati) != 2 {
 		t.Errorf("Datazione nel rapporto: %d dall'EXIF, %d solo user3, %d senza, scartati %v",
 			rap.datazioneExif, rap.soloUser3, rap.senzaData, rap.exifScartati)
 	}
-	if rap.formati["altro"] != 1 || rap.formati["pdf"] != 1 || rap.formati["immagine"] != 3 {
+	if rap.formati["altro"] != 1 || rap.formati["pdf"] != 1 || rap.formati["immagine"] != 6 {
 		t.Errorf("formati %v", rap.formati)
 	}
 	if len(rap.cp1252) != 1 || rap.cp1252[0] != 1 {

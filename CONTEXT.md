@@ -61,7 +61,7 @@ La scelta di chi carica di non pubblicare il GPS di una Foto: il GPS si toglie d
 _Avoid_: anonimizzazione
 
 **Datazione**:
-Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo), in EDTF. Distinta dalla Data di scansione e dalla Data di caricamento.
+Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo), in EDTF. Distinta dalla Data di scansione e dalla Data di caricamento. Nelle Foto importate viene dall'EXIF (#18); da `user3` di Coppermine, con regole fisse, solo per le candidate: le Foto senza EXIF con `user3` più di un anno prima della Data di caricamento, e le scansioni, con l'EXIF più di un anno dopo `user3`. Per le scansioni importate la Data di scansione non si conserva: l'EXIF resta solo grezzo (#39). Per le altre Foto `user3` si mostra come testo, se manca la Datazione.
 _Avoid_: data, periodo
 
 **Data di scansione**:
