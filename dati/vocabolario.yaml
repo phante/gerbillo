@@ -1,5 +1,5 @@
 # Vocabolario controllato del Livello di arricchimento (#1, ADR 0013).
-# gerbillo abbina rifiuta le categories che non sono qui. I valori sono della gallery:
+# gerbillo importa -vocabolario rifiuta le categories di mappature.yaml che non sono qui. I valori sono della gallery:
 # dove il sito ha un valore equivalente si usa quello, ma la gallery non lo aspetta.
 categories:
     - documenti

@@ -6,6 +6,7 @@ package main
 // Il build scrive una cartella nuova e la sostituisce alla vecchia in un colpo solo.
 
 import (
+	"bytes"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -65,6 +66,9 @@ type opzioniBuild struct {
 	// anteprima: URL dei file statici senza estensione. Il vhost di dev intercetta .css e
 	// .svg prima di /gerbillo/; gerbillo serve li risolve (fino al ^~ nello snippet nginx).
 	anteprima bool
+	// confronta: una Gallery già generata. Il build scrive solo i file diversi da quelli lì:
+	// nell'anteprima il /tmp del container non contiene la Gallery intera (#43).
+	confronta string
 }
 
 func build(args []string) error {
@@ -72,7 +76,10 @@ func build(args []string) error {
 	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
 	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
 	dist := fs.String("dist", "dist", "cartella di uscita")
+	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
+	dirContenuti := fs.String("contenuti", "", "Repository dei contenuti, al posto di quello della configurazione")
 	var o opzioniBuild
+	fs.StringVar(&o.confronta, "confronta", "", "Gallery già generata: scrive solo i file diversi (anteprima)")
 	fs.StringVar(&o.base, "base", "/gallery/", "prefisso degli URL")
 	fs.StringVar(&o.media, "media", "", "URL di albums/ di Coppermine al posto delle Varianti (anteprima)")
 	fs.StringVar(&o.pubblico, "pubblico", "https://progettodighe.it/gallery/", "URL pubblico della Gallery")
@@ -81,19 +88,24 @@ func build(args []string) error {
 	fs.BoolVar(&o.anteprima, "anteprima", false, "URL dei file statici senza estensione (anteprima dev)")
 	fs.Parse(args)
 	var c configImporta
-	if _, err := toml.DecodeFile(*conf, &c); err != nil {
+	if *dirContenuti != "" {
+		c.Contenuti = *dirContenuti
+	} else if _, err := toml.DecodeFile(*conf, &c); err != nil {
 		return err
 	}
 	if c.Contenuti == "" || *indice == "" {
 		return errors.New("servono contenuti nella configurazione e -indice")
 	}
 	inizio := time.Now()
-	cont, err := leggiContenuti(c.Contenuti, *indice)
+	cont, err := leggiContenuti(c.Contenuti, *indice, nuovoLivello(c.Contenuti, *arr))
 	if err != nil {
 		return err
 	}
 	nuova := strings.TrimSuffix(*dist, "/") + ".nuova"
 	os.RemoveAll(nuova)
+	if err := os.MkdirAll(nuova, 0o755); err != nil { // con -confronta può restare vuota
+		return err
+	}
 	b := &builder{opzioniBuild: o, c: cont, dir: nuova}
 	pagine.Funcs(template.FuncMap{"statico": b.statico})
 	if err := b.tutto(); err != nil {
@@ -115,6 +127,9 @@ func build(args []string) error {
 	runtime.ReadMemStats(&m)
 	fmt.Printf("build: %d Foto, %d pagine in %s; memoria Go massima %d MiB\n",
 		len(cont.foto), b.scritte, time.Since(inizio).Round(time.Millisecond), m.Sys>>20)
+	if o.confronta != "" {
+		fmt.Printf("build: %d file diversi da %s\n", b.diversi, o.confronta)
+	}
 	return nil
 }
 
@@ -123,8 +138,10 @@ type builder struct {
 	c       *contenuti
 	dir     string
 	scritte int
+	diversi int // file scritti con -confronta
 	// per ogni Foto: l'elenco in cui sta (per precedente e successiva) e la sua posizione
 	contesto map[int]contestoFoto
+	mappe    map[string]int // map_ids → Entità che la hanno (stessaMappa)
 }
 
 type contestoFoto struct {
@@ -177,15 +194,16 @@ type sottogruppo struct {
 }
 
 type corpoFoto struct {
-	Schermo, Mini, Originale, Alt, Formato           string
-	Description, Authors, Datazione, Luogo, Caricata string
-	BBCode                                           string
-	Larghezza, Altezza                               int
-	Dighe, SulSito                                   []voce
-	Licenza                                          voce
-	Link, LinkBreve                                  string
-	Contributore                                     *voce
-	Tags                                             []string
+	Schermo, Mini, Originale, Alt, Formato        string
+	Description, Authors, Fonte, Datazione, Luogo string
+	Caricata                                      string
+	BBCode                                        string
+	Larghezza, Altezza                            int
+	Dighe, SulSito                                []voce
+	Licenza                                       voce
+	Link, LinkBreve                               string
+	Contributore                                  *voce
+	Tags                                          []string
 }
 
 func (b *builder) url(parti ...string) string {
@@ -204,17 +222,27 @@ func (b *builder) scrivi(modello string, p paginaSito, parti ...string) error {
 		}
 		p.Menu = append(p.Menu, v)
 	}
-	dir := filepath.Join(append([]string{b.dir}, parti...)...)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	var out bytes.Buffer
+	if err := pagine.ExecuteTemplate(&out, modello, p); err != nil {
 		return err
 	}
-	f, err := os.Create(filepath.Join(dir, "index.html"))
-	if err != nil {
-		return err
-	}
-	defer f.Close()
 	b.scritte++
-	return pagine.ExecuteTemplate(f, modello, p)
+	return b.scriviFile(filepath.Join(append(parti, "index.html")...), out.Bytes())
+}
+
+// scriviFile scrive rel nella Gallery nuova; con -confronta solo se è diverso.
+func (b *builder) scriviFile(rel string, d []byte) error {
+	if b.confronta != "" {
+		if v, err := os.ReadFile(filepath.Join(b.confronta, rel)); err == nil && bytes.Equal(v, d) {
+			return nil
+		}
+		b.diversi++
+	}
+	p := filepath.Join(b.dir, rel)
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(p, d, 0o644)
 }
 
 func (b *builder) statico(nome string) string {
@@ -431,8 +459,8 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 	pid := strconv.Itoa(f.Pid)
 	c := corpoFoto{
 		Schermo: b.schermo(f), Mini: b.mini(f), Formato: f.Formato,
-		Alt: f.Alt, Description: f.Description, Authors: strings.Join(f.Authors, ", "),
-		Datazione: f.Datazione, Luogo: f.Coppermine.Luogo, Tags: f.tagPubblici(),
+		Alt: f.Alt, Description: f.Description, Authors: strings.Join(f.Authors, ", "), Fonte: f.Fonte,
+		Datazione: f.datazioneTesto(), Luogo: f.Coppermine.Luogo, Tags: f.tagPubblici(),
 		BBCode: fmt.Sprintf("[url=%sf/%s/][img]%sf/%s/mini.webp[/img][/url]", b.pubblico, pid, b.pubblico, pid),
 	}
 	c.Licenza = voce{Testo: f.Licenza}
@@ -577,10 +605,6 @@ func (b *builder) elencoAltre(cids []int, altre map[int][]*fotoPubblicata, casa 
 
 // statici scrive CSS, JavaScript e icone del sito e l'Indice delle Foto per il Sito principale (ADR 0002).
 func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
-	dir := filepath.Join(b.dir, "statico")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
 	var css []byte
 	for _, n := range fileSito {
 		d, err := modelli.ReadFile("modelli/" + n)
@@ -594,7 +618,7 @@ func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 		}
 		css = append(css, '\n')
 	}
-	if err := os.WriteFile(filepath.Join(dir, "stile.css"), css, 0o644); err != nil {
+	if err := b.scriviFile(filepath.Join("statico", "stile.css"), css); err != nil {
 		return err
 	}
 	for orig, dest := range map[string]string{"documento.svg": "documento.svg", "sito/PDLogo.svg": "PDLogo.svg",
@@ -603,7 +627,7 @@ func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile(filepath.Join(dir, dest), d, 0o644); err != nil {
+		if err := b.scriviFile(filepath.Join("statico", dest), d); err != nil {
 			return err
 		}
 	}
@@ -617,7 +641,7 @@ func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(b.dir, "indice-foto.json"), d, 0o644)
+	return b.scriviFile("indice-foto.json", d)
 }
 
 func chiaviOrdinate[K int | string, V any](m map[K]V) []K {

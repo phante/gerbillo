@@ -7,7 +7,6 @@ package main
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -78,11 +77,7 @@ func (b *builder) cerca(perEntita map[string][]*fotoPubblicata, slugs []string, 
 	if err != nil {
 		return err
 	}
-	dir := filepath.Join(b.dir, "statico")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-	if err := os.WriteFile(filepath.Join(dir, "cerca.json"), d, 0o644); err != nil {
+	if err := b.scriviFile(filepath.Join("statico", "cerca.json"), d); err != nil {
 		return err
 	}
 	corpo := corpoCerca{Indice: b.statico("cerca.json"), FlexSearch: b.statico("flexsearch.js"), Foto: b.url("f"), Dighe: b.url("dighe")}
@@ -110,7 +105,7 @@ func (b *builder) fotoRicerca(f *fotoPubblicata, pos map[string]int) fotoRicerca
 		Titolo:  b.titolo(f),
 		Meta:    strings.Join(meta, " "),
 		Tags:    strings.Join(slices.Concat(f.tagPubblici(), f.Categories), " "),
-		Content: strings.Join(strings.Fields(strings.Join([]string{f.Description, g.Provincia, g.Regione, g.Stato, f.Datazione}, " ")), " "),
+		Content: strings.Join(strings.Fields(strings.Join([]string{f.Description, g.Provincia, g.Regione, g.Stato, f.datazioneTesto()}, " ")), " "),
 		Entita:  e,
 		Mini:    mini,
 	}

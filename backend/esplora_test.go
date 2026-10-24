@@ -48,10 +48,11 @@ func TestIntorno(t *testing.T) {
 		return x
 	}
 	idx := []entita{
-		e("dighe/agaro", "Gravità ordinaria", "1940", 46.29, 8.30, "devero"),
-		e("dighe/codelago", "Gravità ordinaria", "1912", 46.29, 8.20, "devero"),
+		e("dighe/agaro", "Gravità ordinaria", "1940", 46.29, 8.30, "italia", "devero"),
+		e("dighe/codelago", "Gravità ordinaria", "1912", 46.29, 8.20, "italia", "devero"),
 		e("dighe/vicina", "Arco semplice", "1960", 46.20, 8.30),
-		e("dighe/lontana", "Gravità ordinaria", "1945", 40.0, 15.0),
+		// La mappa italia è di quasi tutte le dighe: non le lega (#36).
+		e("dighe/lontana", "Gravità ordinaria", "1945", 40.0, 15.0, "italia"),
 	}
 	c := &contenuti{entita: map[string]*entita{}}
 	per := map[string][]*fotoPubblicata{}
@@ -69,7 +70,7 @@ func TestIntorno(t *testing.T) {
 			nomi[v.Testo] = x.Nome
 		}
 	}
-	if nomi["dighe/codelago"] != "Stesso impianto" || nomi["dighe/vicina"] != "Vicine" {
+	if nomi["dighe/codelago"] != "Stessa mappa" || nomi["dighe/vicina"] != "Vicine" {
 		t.Errorf("intorno: %v", nomi)
 	}
 	if nomi["dighe/lontana"] != "Simili: gravità, anni 1940" {
@@ -91,6 +92,6 @@ func TestIntorno(t *testing.T) {
 		}
 	}
 	if strings.Contains(geo, "lontana") {
-		t.Error("la diga lontana e di un altro impianto non va sulla mappa")
+		t.Error("la diga lontana e senza mappe in comune, a parte italia, non va sulla mappa")
 	}
 }

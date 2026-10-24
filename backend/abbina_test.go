@@ -89,28 +89,24 @@ func TestMappature(t *testing.T) {
 			500: {3, 99, "Ponte Antoi"}, // fuori da Dighe
 		},
 	}
-	vecchie := fileMappature{Album: map[int]*mappatura{
-		22: {Origine: manuale, Slug: []string{"dighe/ravedis"}, Tags: []string{"cellina"}},
-		21: {Origine: daFare},
+	manuali := fileMappature{Album: map[int]*mappatura{
+		22: {Slug: []string{"dighe/ravedis"}, Tags: []string{"cellina"}},
 	}}
-	m, rap := mappature(cpg, indiceProva(), vecchie, vocabolario{})
-	if c := m.Categorie[10]; c == nil || !slices.Equal(c.Slug, []string{"dighe/vajont"}) {
-		t.Errorf("categoria Vajont: %+v", c)
+	m, rap := mappature(cpg, indiceProva(), manuali)
+	if a := m[14]; a == nil || !slices.Equal(a.Slug, []string{"dighe/vajont"}) || !a.auto {
+		t.Errorf("album 14 eredita dalla categoria Vajont, due livelli sopra: %+v", a)
 	}
-	if m.Album[14] != nil {
-		t.Errorf("album 14 eredita, non deve avere una riga: %+v", m.Album[14])
-	}
-	if a := m.Album[20]; a == nil || a.Origine != automatica {
+	if a := m[20]; a == nil || !a.auto || !slices.Equal(a.Slug, []string{"dighe/ponte-antoi"}) {
 		t.Errorf("album 20: %+v", a)
 	}
-	if a := m.Album[21]; a == nil || a.Origine != daFare {
+	if a := m[21]; a == nil || a.auto || !slices.Equal(a.Tags, []string{daCollegare}) {
 		t.Errorf("album 21: %+v", a)
 	}
-	if a := m.Album[22]; a == nil || a.Origine != manuale || a.Tags[0] != "cellina" || a.Coppermine == "" {
-		t.Errorf("album 22 manuale non conservato: %+v", a)
+	if a := m[22]; a == nil || a.auto || a.Tags[0] != "cellina" {
+		t.Errorf("album 22 manuale non applicato: %+v", a)
 	}
 	// Sotto Centrali si cercano solo le centrali: la diga Ponte Antoi non conta.
-	if a := m.Album[500]; a == nil || a.Origine != daFare || !slices.Equal(a.Tags, []string{daCollegare}) {
+	if a := m[500]; a == nil || len(a.Slug) > 0 || !slices.Equal(a.Tags, []string{daCollegare}) {
 		t.Errorf("album 500 sotto Centrali: %+v", a)
 	}
 	d := rap.radici[cidDighe]
@@ -119,6 +115,9 @@ func TestMappature(t *testing.T) {
 	}
 	if !slices.Equal(rap.sconosciuti, []string{"album 22: dighe/ravedis"}) {
 		t.Errorf("sconosciuti %v", rap.sconosciuti)
+	}
+	if rap.interni[daCollegare] != 104 {
+		t.Errorf("tag interni %v", rap.interni)
 	}
 }
 
@@ -159,39 +158,47 @@ func TestMappatureCategorieNonDighe(t *testing.T) {
 			9: {47, 5, "Locomotive"},                 // riga manuale: vince per intero
 		},
 	}
-	vecchie := fileMappature{
+	manuali := fileMappature{
 		Categorie: map[int]*mappatura{
-			34: {Origine: manuale, Categories: []string{"opere-idrauliche"}},
-			16: {Origine: manuale, Tags: []string{"da-classificare"}},
-			47: {Origine: manuale, Categories: []string{"off-topic"}},
+			34: {Categories: []string{"opere-idrauliche"}},
+			16: {Tags: []string{"da-classificare"}},
+			47: {Categories: []string{"off-topic"}},
 		},
-		Album: map[int]*mappatura{9: {Origine: manuale}},
+		Album: map[int]*mappatura{9: nil}, // "9: # Altro / Locomotive" nel YAML
 	}
-	voc := vocabolario{TagsInterni: []string{"da-classificare", daCollegare}}
-	m, rap := mappature(cpg, indiceProva(), vecchie, voc)
-	if a := m.Album[1]; a == nil || a.Origine != daFare {
+	m, rap := mappature(cpg, indiceProva(), manuali)
+	if a := m[1]; a == nil || len(a.Slug) > 0 || !slices.Equal(a.Tags, []string{daCollegare}) {
 		t.Errorf("album 1: %+v", a)
 	}
-	if a := m.Album[2]; a == nil || !slices.Equal(a.Slug, []string{"centrali/ligonchio-ligonchio-re"}) {
+	if a := m[2]; a == nil || !slices.Equal(a.Slug, []string{"centrali/ligonchio-ligonchio-re"}) {
 		t.Errorf("album 2: %+v", a)
 	}
-	if a := m.Album[3]; a == nil || a.Origine != automatica || !slices.Equal(a.Slug, []string{"dighe/vajont"}) ||
+	if a := m[3]; a == nil || !a.auto || !slices.Equal(a.Slug, []string{"dighe/vajont"}) ||
 		!slices.Equal(a.Categories, []string{"opere-idrauliche"}) {
 		t.Errorf("album 3: %+v", a)
 	}
-	for _, aid := range []int{4, 5, 6} {
-		if m.Album[aid] != nil {
-			t.Errorf("album %d eredita, non deve avere una riga: %+v", aid, m.Album[aid])
-		}
+	if a := m[4]; a == nil || len(a.Slug) > 0 || !slices.Equal(a.Categories, []string{"opere-idrauliche"}) {
+		t.Errorf("album 4 eredita dalla categoria: %+v", a)
 	}
-	if a := m.Album[7]; a == nil || a.Origine != daFare || !slices.Equal(a.Candidati, []string{"reportage/il-guardiano-della-diga"}) ||
-		a.Coppermine != "User galleries / Il guardiano della diga" {
+	if a := m[5]; a == nil || !slices.Equal(a.Tags, []string{"da-classificare"}) {
+		t.Errorf("album 5 eredita il tag interno: %+v", a)
+	}
+	if a := m[6]; a == nil || !slices.Equal(a.Categories, []string{"off-topic"}) {
+		t.Errorf("album 6 eredita off-topic: %+v", a)
+	}
+	if a := m[7]; a == nil || len(a.Slug) > 0 || !slices.Equal(a.Tags, []string{daCollegare}) {
 		t.Errorf("album 7: %+v", a)
 	}
-	if a := m.Album[8]; a == nil || a.Origine != automatica {
+	if v := rap.daFare[0]; v.aid != 1 || rap.daFare[1].aid != 7 ||
+		!slices.Equal(rap.daFare[1].candidati, []string{"reportage/il-guardiano-della-diga"}) ||
+		rap.daFare[1].percorso != "User galleries / Il guardiano della diga" {
+		t.Errorf("da fare: %+v", rap.daFare)
+	}
+	if a := m[8]; a == nil || !a.auto {
 		t.Errorf("album 8: %+v", a)
 	}
-	if a := m.Album[9]; a == nil || a.Origine != manuale || len(a.Categories) > 0 {
+	// Una riga senza slug vuol dire "nessuna Entità": vince per intero, anche sulla categoria.
+	if a := m[9]; a == nil || !a.vuota() {
 		t.Errorf("album 9: %+v", a)
 	}
 	if rap.interni["da-classificare"] != 153 || rap.interni[daCollegare] != 24 {

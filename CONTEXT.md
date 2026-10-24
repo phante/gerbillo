@@ -61,7 +61,7 @@ La scelta di chi carica di non pubblicare il GPS di una Foto: il GPS si toglie d
 _Avoid_: anonimizzazione
 
 **Datazione**:
-Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo), in EDTF. Distinta dalla Data di scansione e dalla Data di caricamento.
+Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo), in EDTF. Distinta dalla Data di scansione e dalla Data di caricamento. Nelle Foto importate viene dall'EXIF (#18); da `user3` di Coppermine, con regole fisse, solo per le candidate: le Foto senza EXIF con `user3` più di un anno prima della Data di caricamento, e le scansioni, con l'EXIF più di un anno dopo `user3`. Per le scansioni importate la Data di scansione non si conserva: l'EXIF resta solo grezzo (#39). Per le altre Foto `user3` si mostra come testo, se manca la Datazione.
 _Avoid_: data, periodo
 
 **Data di scansione**:
@@ -148,7 +148,7 @@ L'esecuzione, ripetibile, che porta le Foto da Coppermine a Gerbillo. Ogni esecu
 _Avoid_: sync, esportazione, migrazione (la Migrazione è il processo complessivo)
 
 **Mappatura**:
-La corrispondenza tra un Album (o una Categoria Coppermine) e gli Slug, i Tag e le Categorie di Gerbillo.
+La corrispondenza tra un Album (o una Categoria Coppermine) e gli Slug, i Tag e le Categorie di Gerbillo. È un dato derivato, calcolato a ogni build: per ogni Album vale la riga manuale, altrimenti l'abbinamento automatico sul nome, altrimenti la Mappatura della categoria. Le righe manuali stanno in `arricchimento/mappature.yaml`, scritto solo a mano: una riga sostituisce in blocco l'abbinamento automatico, una riga senza Slug vuol dire "nessuna Entità". Gli Album senza nessuna delle tre hanno il tag interno `da-collegare`; quelli da fare e gli ambigui sono nel rapporto dell'Importazione (#38).
 
 **Livello di arricchimento**:
 Il lavoro editoriale fatto in Gerbillo (Mappature, correzioni, metadati aggiunti), applicato sopra ogni Importazione.

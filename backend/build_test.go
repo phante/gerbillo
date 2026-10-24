@@ -22,20 +22,28 @@ func contenutiProva(t *testing.T) (dir, indice string) {
     14: {categoria: 10, foto: 2, title: La Forra}
     20: {categoria: 6, foto: 1, title: Sconosciuta}
     30: {categoria: 10074, foto: 1, title: Varie}
+    40: {categoria: 6, foto: 1, title: Pubblicato}
+    41: {categoria: 6, foto: 1, title: Cancellato}
+    42: {categoria: 6, foto: 2, title: Senza decisione}
 categorie:
     2: {nome: Dighe - Dams, parent: 0}
     6: {nome: Friuli, parent: 2}
     10: {nome: Vajont, parent: 6}
 `)
 	scrivi("arricchimento/mappature.yaml", `categorie:
-    10: {coppermine: x, origine: automatica, slug: [dighe/vajont]}
+    10: {slug: [dighe/vajont]} # Dighe - Dams / Friuli / Vajont
 album:
-    20: {coppermine: x, origine: manuale, slug: [dighe/inesistente], tags: [da-separare, cellina]}
+    20: {slug: [dighe/inesistente], tags: [da-separare, cellina]}
 `)
 	foto := map[string]string{
 		"1": "pid: 1\ntitle: Diga\nformato: immagine\ndate: \"2006-12-27T12:23:55+01:00\"\ncontributore: {id: 25, nome: Mario}\ncoppermine: {aid: 14, filepath: userpics/1/, filename: a.jpg}\n",
 		"2": "pid: 2\nauthors: [\"-\"]\nformato: pdf\ncoppermine: {aid: 14, filepath: userpics/1/, filename: b.pdf}\n",
-		"3": "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg}\n",
+		"3": "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ndatazione: \"2004-07-18\"\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg, data: 18/07/2004 circa}\n",
+		"6": "pid: 6\nriservata: true\nformato: immagine\ncoppermine: {aid: 40}\n",
+		"7": "pid: 7\nriservata: true\nformato: immagine\ncoppermine: {aid: 41}\n",
+		"8": "pid: 8\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
+		"9": "pid: 9\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
+		"5": "pid: 5\nformato: immagine\ncoppermine: {aid: 30, filepath: userpics/2/, filename: e.jpg, data: Ottobre 2006}\n",
 		"4": "pid: 4\nauthors: [Grezzo]\nformato: immagine\ncontributore: {id: 74, nome: Pomase}\ncoppermine: {aid: 30, filepath: userpics/2/, filename: d.jpg}\n",
 	}
 	for pid, y := range foto {
@@ -43,6 +51,8 @@ album:
 	}
 	scrivi("arricchimento/autori.yaml", "\"Il gaurdiano & paolog\": [Il guardiano, paolog]\n\"-\": []\n")
 	scrivi("arricchimento/foto/1.yaml", "datazione: 195X\nauthors: [Ente]\nlicenza: CC-BY-4.0\n")
+	scrivi("arricchimento/foto/9.yaml", "riservata: false\n")
+	scrivi("arricchimento/riservati.yaml", "album:\n    40: pubblica\n    41: cancella\n")
 	indice = filepath.Join(dir, "indice.json")
 	scrivi("indice.json", `[{"slug":"dighe/vajont","title":"Vajont","geolocation":{"stato":"Italia","regione":"Friuli-Venezia Giulia"}}]`)
 	return dir, indice
@@ -50,7 +60,7 @@ album:
 
 func TestLeggiContenuti(t *testing.T) {
 	dir, indice := contenutiProva(t)
-	c, err := leggiContenuti(dir, indice)
+	c, err := leggiContenuti(dir, indice, nuovoLivello(dir, ""))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,6 +89,52 @@ func TestLeggiContenuti(t *testing.T) {
 	if tg := f[3].tagPubblici(); len(tg) != 1 || tg[0] != "cellina" {
 		t.Errorf("tag pubblici %v", tg)
 	}
+	// Album riservati (#35): pubblica, cancella, senza riga (resta riservato), eccezione sulla Foto.
+	if f[6] == nil || f[7] != nil || f[8] != nil || f[9] == nil {
+		t.Errorf("riservati: pubblicato %v, cancellato %v, senza decisione %v, eccezione %v", f[6] != nil, f[7] != nil, f[8] != nil, f[9] != nil)
+	}
+	// Album personale senza riga né abbinamento: il tag interno si deriva al build (#38).
+	if tg := f[4].Tags; len(tg) != 1 || tg[0] != daCollegare || len(f[4].tagPubblici()) != 0 {
+		t.Errorf("pid 4 senza da-collegare: %v", tg)
+	}
+}
+
+func TestRiservatiNonValidi(t *testing.T) {
+	for yaml, errore := range map[string]string{
+		"album:\n    40: pubblicare\n": `album 40: "pubblicare", ammessi pubblica o cancella`,
+		"album:\n    999: cancella\n":  "album 999 inesistente",
+	} {
+		dir, indice := contenutiProva(t)
+		os.WriteFile(filepath.Join(dir, "arricchimento", "riservati.yaml"), []byte(yaml), 0o644)
+		if _, err := leggiContenuti(dir, indice, nuovoLivello(dir, "")); err == nil || !strings.Contains(err.Error(), errore) {
+			t.Errorf("%q: errore %v, atteso %q", yaml, err, errore)
+		}
+	}
+}
+
+// La cartella di -arricchimento si sovrappone file per file a quella dei contenuti (#38, #39).
+func TestLeggiContenutiArricchimentoSovrapposto(t *testing.T) {
+	dir, indice := contenutiProva(t)
+	sopra := t.TempDir()
+	os.MkdirAll(filepath.Join(sopra, "foto"), 0o755)
+	os.WriteFile(filepath.Join(sopra, "mappature.yaml"), []byte("album:\n    20: {slug: [dighe/vajont]}\n"), 0o644)
+	os.WriteFile(filepath.Join(sopra, "foto", "3.yaml"), []byte("title: Sopra\n"), 0o644)
+	c, err := leggiContenuti(dir, indice, nuovoLivello(dir, sopra))
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := map[int]*fotoPubblicata{}
+	for _, x := range c.foto {
+		f[x.Pid] = x
+	}
+	if s := f[3].Slug; len(s) != 1 || s[0] != "dighe/vajont" || f[3].Title != "Sopra" {
+		t.Errorf("pid 3 senza la cartella sovrapposta: %+v", f[3])
+	}
+	// mappature.yaml sovrapposto sostituisce quello dei contenuti: la categoria 10 non ha più riga,
+	// e Vajont a due livelli da Dighe non si abbina in automatico.
+	if len(f[1].Slug) != 0 || f[1].Datazione != "195X" {
+		t.Errorf("pid 1: %+v", f[1])
+	}
 }
 
 func TestBuild(t *testing.T) {
@@ -101,7 +157,7 @@ func TestBuild(t *testing.T) {
 		`src="/g/f/1/schermo.webp"`,
 		"[url=https://progettodighe.it/gallery/f/1/][img]https://progettodighe.it/gallery/f/1/mini.webp[/img][/url]",
 		`href="/g/f/2/"`, // successiva nello stesso elenco (Vajont)
-		"195X", "27/12/2006", `href="/g/contributori/25/"`,
+		"anni &#39;50", "27/12/2006", `href="/g/contributori/25/"`,
 		`href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0`, // scelta per la Foto
 		`data-copy-url="https://progettodighe.it/gallery/f/1/"`,
 	} {
@@ -114,6 +170,13 @@ func TestBuild(t *testing.T) {
 	}
 	if strings.Contains(leggi("f/3/index.html"), "da-separare") {
 		t.Error("tag interno pubblicato")
+	}
+	// La Datazione in italiano; senza, user3 come testo (#18). Lo stesso testo va nell'Indice di ricerca.
+	if f3 := leggi("f/3/index.html"); !strings.Contains(f3, "18/07/2004</span>") || strings.Contains(f3, "circa") {
+		t.Error("f/3 senza la Datazione in italiano")
+	}
+	if !strings.Contains(leggi("f/5/index.html"), "Ottobre 2006</span>") {
+		t.Error("f/5 senza user3")
 	}
 	if !strings.Contains(leggi("f/2/index.html"), "statico/documento.svg") {
 		t.Error("PDF senza icona")
@@ -141,6 +204,9 @@ func TestBuild(t *testing.T) {
 	}
 	if f := foto[2]; f.Titolo != "Vajont · foto 2" || f.Mini != "/g/statico/documento.svg" {
 		t.Errorf("PDF senza titolo nell'Indice di ricerca: %+v", f)
+	}
+	if !strings.HasSuffix(foto[3].Content, "18/07/2004") || !strings.HasSuffix(foto[5].Content, "Ottobre 2006") {
+		t.Errorf("Datazione nell'Indice di ricerca: %q, %q", foto[3].Content, foto[5].Content)
 	}
 	if strings.Contains(foto[3].Tags, "da-separare") {
 		t.Error("tag interno nell'Indice di ricerca")

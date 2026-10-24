@@ -1,23 +1,17 @@
 package main
 
-// Mappatura degli Album di Coppermine verso Slug, categories e tags (G2, #10, #1). Le proposte
-// automatiche vanno in arricchimento/mappature.yaml nel Repository dei contenuti, accanto alle
-// righe scritte a mano, che non vengono mai toccate.
+// Mappatura degli Album di Coppermine verso Slug, categories e tags (G2, #10, #1, #38). È un
+// dato derivato: si calcola a ogni build e a ogni Importazione, con la catena riga manuale →
+// abbinamento automatico sul nome → Mappatura della categoria. Le righe manuali stanno in
+// arricchimento/mappature.yaml, scritto solo a mano come autori.yaml (#19).
 
 import (
 	"bytes"
 	"cmp"
-	"errors"
-	"flag"
 	"fmt"
-	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
-
-	"github.com/BurntSushi/toml"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -27,13 +21,8 @@ const (
 	cidPersonali = 10000 // gli album delle User galleries hanno categoria 10000 + owner
 )
 
-const (
-	automatica = "automatica" // proposta dal confronto dei nomi
-	manuale    = "manuale"    // scritta o confermata a mano: mai riscritta
-	daFare     = "da-fare"    // nessun abbinamento certo
-)
-
-// daCollegare è il tag interno delle righe da-fare: manca lo Slug, lo si sceglie dal Backend.
+// daCollegare è il tag interno degli album senza riga manuale né abbinamento certo:
+// manca lo Slug, lo si sceglie dal Backend.
 const daCollegare = "da-collegare"
 
 // vocabolario è dati/vocabolario.yaml: i valori ammessi di categories e i tag interni,
@@ -51,6 +40,9 @@ func fuoriVocabolario(m fileMappature, voc vocabolario) []string {
 		m    map[int]*mappatura
 	}{{"categoria", m.Categorie}, {"album", m.Album}} {
 		for id, r := range righe.m {
+			if r == nil {
+				continue
+			}
 			for _, c := range r.Categories {
 				if !slices.Contains(voc.Categories, c) {
 					fuori = append(fuori, fmt.Sprintf("%s %d: %s", righe.tipo, id, c))
@@ -62,113 +54,20 @@ func fuoriVocabolario(m fileMappature, voc vocabolario) []string {
 	return fuori
 }
 
-// Le chiavi sono in ordine alfabetico, come nei YAML delle Foto.
+// mappatura è una riga di arricchimento/mappature.yaml. Una riga sostituisce in blocco
+// l'abbinamento automatico; una riga senza slug vuol dire "nessuna Entità".
 type mappatura struct {
-	Candidati  []string `yaml:"candidati,omitempty"`
 	Categories []string `yaml:"categories,omitempty"`
-	Coppermine string   `yaml:"coppermine"` // percorso dell'album, solo per orientarsi
-	Origine    string   `yaml:"origine"`
 	Slug       []string `yaml:"slug,omitempty"`
 	Tags       []string `yaml:"tags,omitempty"`
+	auto       bool     // abbinamento automatico, non una riga manuale
 }
+
+func (m *mappatura) vuota() bool { return len(m.Slug)+len(m.Categories)+len(m.Tags) == 0 }
 
 type fileMappature struct {
 	Album     map[int]*mappatura `yaml:"album"`
 	Categorie map[int]*mappatura `yaml:"categorie"`
-}
-
-const intestazioneMappature = `# Mappature degli Album di Coppermine (G2, #10; ADR 0009, 0013).
-# Le righe "origine: automatica" e "da-fare" le riscrive gerbillo abbina.
-# Per correggerne o completarne una, scrivi "origine: manuale": da lì non viene più toccata.
-# Un album senza riga eredita la Mappatura della sua categoria. I commenti non si conservano.
-
-`
-
-func abbina(args []string) error {
-	fs := flag.NewFlagSet("abbina", flag.ExitOnError)
-	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
-	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
-	manuali := fs.String("manuali", "", "righe manuali da aggiungere (es. dati/mappature-manuali.yaml): vincono su quelle esistenti")
-	pVoc := fs.String("vocabolario", "", "vocabolario controllato (dati/vocabolario.yaml)")
-	fs.Parse(args)
-	var c configImporta
-	if _, err := toml.DecodeFile(*conf, &c); err != nil {
-		return err
-	}
-	if c.Contenuti == "" || *indice == "" || *pVoc == "" {
-		return errors.New("servono contenuti nella configurazione, -indice e -vocabolario")
-	}
-	var voc vocabolario
-	if b, err := os.ReadFile(*pVoc); err != nil {
-		return err
-	} else if err := yaml.Unmarshal(b, &voc); err != nil {
-		return fmt.Errorf("%s: %w", *pVoc, err)
-	}
-	idx, err := leggiIndice(*indice)
-	if err != nil {
-		return err
-	}
-	b, err := os.ReadFile(filepath.Join(c.Contenuti, "importazione", "album.yaml"))
-	if err != nil {
-		return fmt.Errorf("manca l'Importazione: %w", err)
-	}
-	var cpg albumCoppermine
-	if err := yaml.Unmarshal(b, &cpg); err != nil {
-		return err
-	}
-	p := filepath.Join(c.Contenuti, "arricchimento", "mappature.yaml")
-	var vecchie fileMappature
-	if b, err := os.ReadFile(p); err == nil {
-		if err := yaml.Unmarshal(b, &vecchie); err != nil {
-			return fmt.Errorf("%s: %w", p, err)
-		}
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
-	if *manuali != "" {
-		b, err := os.ReadFile(*manuali)
-		if err != nil {
-			return err
-		}
-		var m fileMappature
-		if err := yaml.Unmarshal(b, &m); err != nil {
-			return fmt.Errorf("%s: %w", *manuali, err)
-		}
-		vecchie.Album, vecchie.Categorie = unisciManuali(vecchie.Album, m.Album), unisciManuali(vecchie.Categorie, m.Categorie)
-	}
-	if fuori := fuoriVocabolario(vecchie, voc); len(fuori) > 0 {
-		return fmt.Errorf("categories fuori dal vocabolario, niente scritto:\n%s", strings.Join(fuori, "\n"))
-	}
-	nuove, rap := mappature(cpg, idx, vecchie, voc)
-	out, err := yaml.Marshal(nuove)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
-		return err
-	}
-	if err := os.WriteFile(p, append([]byte(intestazioneMappature), out...), 0o644); err != nil {
-		return err
-	}
-	if err := os.WriteFile(filepath.Join(c.Contenuti, "arricchimento", "rapporto-mappature.md"), rap.markdown(), 0o644); err != nil {
-		return err
-	}
-	t := rap.totale()
-	fmt.Printf("album: %d, abbinati in automatico %.1f%% (foto %.1f%%), da collegare %d (foto %d)\n",
-		t.album, perc(t.autoAlbum, t.album), perc(t.autoFoto, t.foto), t.faAlbum+t.ambAlbum, rap.interni[daCollegare])
-	return registra(c.Contenuti, "arricchimento", fmt.Sprintf("mappature: %d album, %d da fare", t.album, t.faAlbum+t.ambAlbum))
-}
-
-func unisciManuali(dst, src map[int]*mappatura) map[int]*mappatura {
-	if dst == nil {
-		dst = map[int]*mappatura{}
-	}
-	for k, v := range src {
-		if v.Origine == manuale {
-			dst[k] = v
-		}
-	}
-	return dst
 }
 
 func perc(a, b int) float64 {
@@ -228,8 +127,10 @@ func sezioneIncerta(slug string) bool {
 	return strings.HasPrefix(slug, "reportage/") || strings.HasPrefix(slug, "tecnica/")
 }
 
-// mappature produce le Mappature: le righe manuali restano, le altre si rigenerano.
-func mappature(cpg albumCoppermine, idx []entita, vecchie fileMappature, voc vocabolario) (fileMappature, *rapportoMappature) {
+// mappature risolve la Mappatura di ogni album: la riga manuale, se c'è, altrimenti
+// l'abbinamento automatico sul nome, altrimenti la Mappatura della categoria antenata più
+// vicina. Gli album senza nessuna delle tre hanno il tag interno da-collegare.
+func mappature(cpg albumCoppermine, idx []entita, manuali fileMappature) (map[int]*mappatura, *rapportoMappature) {
 	perSezione := func(sez []string) map[string][]*entita {
 		var v []entita
 		for _, e := range idx {
@@ -281,7 +182,8 @@ func mappature(cpg albumCoppermine, idx []entita, vecchie fileMappature, voc voc
 		}
 		return cid
 	}
-	out := fileMappature{Album: map[int]*mappatura{}, Categorie: map[int]*mappatura{}}
+	categorie := map[int]*mappatura{}
+	out := map[int]*mappatura{}
 	rap := &rapportoMappature{radici: map[int]*contoRadice{}, interni: map[string]int{}}
 	controlla := func(dove string, m *mappatura) {
 		for _, s := range m.Slug {
@@ -291,30 +193,36 @@ func mappature(cpg albumCoppermine, idx []entita, vecchie fileMappature, voc voc
 		}
 	}
 
+	// Una riga vuota ("33: # Svizzera / Verzasca") nel YAML è nil: è comunque una riga manuale.
+	manuale := func(m map[int]*mappatura, id int) *mappatura {
+		v, ok := m[id]
+		if ok && v == nil {
+			v = &mappatura{}
+		}
+		return v
+	}
 	for cid, c := range cpg.Categorie {
-		p := percorso(cid)
-		desc := strings.Join(p, " / ")
-		if v := vecchie.Categorie[cid]; v != nil && v.Origine == manuale {
-			v.Coppermine = desc
-			out.Categorie[cid] = v
+		if v := manuale(manuali.Categorie, cid); v != nil {
+			categorie[cid] = v
 			controlla(fmt.Sprintf("categoria %d", cid), v)
 			continue
 		}
 		// In automatico solo dal terzo livello sotto Dighe e Centrali (Dighe > Italia > regione > diga),
 		// perché stati e regioni non sono dighe.
+		p := percorso(cid)
 		r := radice(cid)
 		if sezioniRadice[r] == nil || len(p) < 4 {
 			continue
 		}
 		if s, certo := trova(c.Nome, p, chiavi[r]); certo && len(s) == 1 {
-			out.Categorie[cid] = &mappatura{Coppermine: desc, Origine: automatica, Slug: s}
+			categorie[cid] = &mappatura{Slug: s, auto: true}
 		}
 	}
 
 	// ereditata è la Mappatura della categoria antenata più vicina che ha uno Slug, delle categories o dei tags.
 	ereditata := func(cid int) *mappatura {
 		for i := 0; cid != 0 && i < 10; i++ {
-			if m := out.Categorie[cid]; m != nil && (len(m.Slug) > 0 || len(m.Categories) > 0 || len(m.Tags) > 0) {
+			if m := categorie[cid]; m != nil && !m.vuota() {
 				return m
 			}
 			c, ok := padre(cid)
@@ -334,19 +242,17 @@ func mappature(cpg albumCoppermine, idx []entita, vecchie fileMappature, voc voc
 			rap.radici[r] = cont
 		}
 		p := percorso(a.Categoria)
-		desc := strings.Join(append(p, a.Title), " / ")
 		cont.album++
 		cont.foto += a.Foto
 		effettiva := func(m *mappatura) {
+			out[aid] = m
 			for _, t := range m.Tags {
-				if slices.Contains(voc.TagsInterni, t) {
+				if tagInterni[t] {
 					rap.interni[t] += a.Foto
 				}
 			}
 		}
-		if v := vecchie.Album[aid]; v != nil && v.Origine == manuale {
-			v.Coppermine = desc
-			out.Album[aid] = v
+		if v := manuale(manuali.Album, aid); v != nil {
 			cont.manAlbum++
 			cont.manFoto += a.Foto
 			controlla(fmt.Sprintf("album %d", aid), v)
@@ -370,28 +276,25 @@ func mappature(cpg albumCoppermine, idx []entita, vecchie fileMappature, voc voc
 		switch {
 		case certo && len(s) == 1:
 			// Lo Slug viene dal nome, categories e tags dalla categoria (#1).
-			m := &mappatura{Coppermine: desc, Origine: automatica, Slug: s}
+			m := &mappatura{Slug: s, auto: true}
 			if ered != nil {
 				m.Categories, m.Tags = slices.Clone(ered.Categories), slices.Clone(ered.Tags)
 			}
-			out.Album[aid] = m
 			cont.autoAlbum++
 			cont.autoFoto += a.Foto
 			effettiva(m)
 		case ered != nil:
-			// Sottoalbum di una diga ("La Forra" sotto "Vajont"): eredita, nessuna riga.
+			// Sottoalbum di una diga ("La Forra" sotto "Vajont"): eredita dalla categoria.
 			cont.eredAlbum++
 			cont.eredFoto += a.Foto
-			if ered.Origine == automatica {
+			if ered.auto {
 				cont.autoAlbum++
 				cont.autoFoto += a.Foto
 			}
 			effettiva(ered)
 		default:
-			m := &mappatura{Coppermine: desc, Origine: daFare, Candidati: s, Tags: []string{daCollegare}}
-			out.Album[aid] = m
-			effettiva(m)
-			v := voceRapporto{aid, a.Foto, desc, s}
+			effettiva(&mappatura{Tags: []string{daCollegare}})
+			v := voceRapporto{aid, a.Foto, strings.Join(append(p, a.Title), " / "), s}
 			if certo && len(s) > 1 {
 				rap.ambigui = append(rap.ambigui, v)
 				cont.ambAlbum++
@@ -539,7 +442,7 @@ func normLuogo(s string) string {
 func (r *rapportoMappature) markdown() []byte {
 	var b bytes.Buffer
 	p := func(f string, a ...any) { fmt.Fprintf(&b, f, a...) }
-	p("# Mappature\n\nUna riga per radice di Coppermine. Gli abbinati in automatico comprendono gli ereditati da una categoria abbinata in automatico.\n\n")
+	p("## Mappature\n\nUna riga per radice di Coppermine. Gli abbinati in automatico comprendono gli ereditati da una categoria abbinata in automatico.\n\n")
 	p("| Radice | Album | Foto | Automatici | Ereditati | Manuali | Ambigui | Da fare |\n|---|---:|---:|---:|---:|---:|---:|---:|\n")
 	riga := func(c contoRadice) {
 		p("| %s | %d | %d | %d (%.1f%%), %d foto (%.1f%%) | %d | %d | %d | %d, %d foto |\n", c.nome, c.album, c.foto,
@@ -555,7 +458,7 @@ func (r *rapportoMappature) markdown() []byte {
 		riga(*r.radici[id])
 	}
 	riga(r.totale())
-	p("\n## Tag interni\n\nFoto con un tag interno: allo Switch devono essere zero.\n\n")
+	p("\n### Tag interni\n\nFoto con un tag interno: allo Switch devono essere zero.\n\n")
 	tags := make([]string, 0, len(r.interni))
 	for t := range r.interni {
 		tags = append(tags, t)
@@ -566,17 +469,17 @@ func (r *rapportoMappature) markdown() []byte {
 	}
 	p("\n")
 	if len(r.sconosciuti) > 0 {
-		p("## Slug sconosciuti nelle righe manuali\n\n")
+		p("### Slug sconosciuti nelle righe manuali\n\n")
 		for _, s := range r.sconosciuti {
 			p("- %s\n", s)
 		}
 		p("\n")
 	}
-	p("## Ambigui\n\nPiù pagine con lo stesso nome nella stessa regione.\n\n")
+	p("### Ambigui\n\nPiù pagine con lo stesso nome nella stessa regione. Per sceglierne una, scrivi la riga in `arricchimento/mappature.yaml`.\n\n")
 	for _, v := range r.ambigui {
 		p("- %d (%d foto) %s → %s\n", v.aid, v.foto, v.percorso, strings.Join(v.candidati, ", "))
 	}
-	p("\n## Da fare\n\nIn ordine di Foto: i primi sono gli album principali. Dopo la freccia, i candidati da confermare.\n\n")
+	p("\n### Da fare\n\nIn ordine di Foto: i primi sono gli album principali. Dopo la freccia, i candidati da confermare.\n\n")
 	for _, v := range r.daFare {
 		p("- %d (%d foto) %s", v.aid, v.foto, v.percorso)
 		if len(v.candidati) > 0 {

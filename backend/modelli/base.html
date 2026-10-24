@@ -151,6 +151,7 @@ document.addEventListener("click",function(e){
     {{if .Dighe}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "route"}}</span><small class="ttu tracked black-70">Dighe:</small>
       <div class="black-70">{{range $i, $e := .Dighe}}{{if $i}} | {{end}}<a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{$e.URL}}">{{$e.Testo}}</a>{{end}}</div></div>{{end}}
     {{if .Authors}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "at"}}</span><small class="ttu tracked black-70">Autore:</small><span class="black-70 ml1 fw5">{{.Authors}}</span></div>{{end}}
+    {{if .Fonte}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "at"}}</span><small class="ttu tracked black-70">Fonte:</small><span class="black-70 ml1 fw5">{{.Fonte}}</span></div>{{end}}
     {{if .Datazione}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "oclock"}}</span><small class="ttu tracked black-70">Scattata:</small><span class="black-70 ml1 fw5">{{.Datazione}}</span></div>{{end}}
     {{if .Luogo}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "route"}}</span><small class="ttu tracked black-70">Luogo:</small><span class="black-70 ml1 fw5">{{.Luogo}}</span></div>{{end}}
     <div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "send-mail"}}</span><small class="ttu tracked black-70">Caricata:</small>

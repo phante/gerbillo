@@ -2,7 +2,8 @@ package main
 
 // Importazione Coppermine → YAML (G1, #9). Ogni esecuzione rigenera da zero
 // importazione/foto/<pid>.yaml e importazione/anomalie.md nel Repository dei
-// contenuti e ne fa un commit locale (ADR 0004, 0009).
+// contenuti e ne fa un commit locale (ADR 0004, 0009). Con -indice il rapporto
+// comprende la Mappatura degli album, con gli album da fare e quelli ambigui (#38).
 
 import (
 	"bytes"
@@ -45,6 +46,9 @@ type configImporta struct {
 func importa(args []string) error {
 	fs := flag.NewFlagSet("importa", flag.ExitOnError)
 	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
+	indice := fs.String("indice", "", "Indice delle Entità (JSON), per il rapporto sulla Mappatura")
+	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
+	pVoc := fs.String("vocabolario", "", "vocabolario controllato (dati/vocabolario.yaml): rifiuta le categories che non conosce")
 	fs.Parse(args)
 	var c configImporta
 	c.MySQL.Socket = "/var/run/mysqld/mysqld.sock"
@@ -54,6 +58,29 @@ func importa(args []string) error {
 	}
 	if c.Contenuti == "" {
 		return errors.New("contenuti mancante nella configurazione")
+	}
+	liv := nuovoLivello(c.Contenuti, *arr)
+	var manuali fileMappature
+	if err := liv.leggi("mappature.yaml", &manuali); err != nil {
+		return err
+	}
+	if *pVoc != "" {
+		var voc vocabolario
+		if b, err := os.ReadFile(*pVoc); err != nil {
+			return err
+		} else if err := yaml.Unmarshal(b, &voc); err != nil {
+			return fmt.Errorf("%s: %w", *pVoc, err)
+		}
+		if fuori := fuoriVocabolario(manuali, voc); len(fuori) > 0 {
+			return fmt.Errorf("categories fuori dal vocabolario in mappature.yaml:\n%s", strings.Join(fuori, "\n"))
+		}
+	}
+	var idx []entita
+	if *indice != "" {
+		var err error
+		if idx, err = leggiIndice(*indice); err != nil {
+			return err
+		}
 	}
 	sock := c.MySQL.Socket
 	if c.SSH.Host != "" {
@@ -79,6 +106,17 @@ func importa(args []string) error {
 		return err
 	}
 	foto, rap := converti(righe)
+	if rap.alias, err = leggiAlias(liv); err != nil {
+		return err
+	}
+	if idx != nil {
+		_, rap.mappature = mappature(righe.album, idx, manuali)
+	}
+	decisioni, err := leggiRiservati(liv, righe.album)
+	if err != nil {
+		return err
+	}
+	rap.senzaDecisione = senzaDecisione(righe, decisioni)
 	if err := scrivi(c.Contenuti, foto, rap); err != nil {
 		return err
 	}
@@ -94,7 +132,12 @@ func importa(args []string) error {
 	}
 	fmt.Printf("importate %d foto: %d scritte, %d sparite, %d non decodificate, %d mojibake\n",
 		len(foto), rap.scritte, len(rap.spariti), len(rap.nonDecodificati), len(rap.mojibake))
-	return registra(c.Contenuti, "importazione", fmt.Sprintf("importazione: %d foto, %d scritte, %d sparite", rap.totale, rap.scritte, len(rap.spariti)))
+	if m := rap.mappature; m != nil {
+		t := m.totale()
+		fmt.Printf("album: %d, abbinati in automatico %.1f%% (foto %.1f%%), da collegare %d (foto %d)\n",
+			t.album, perc(t.autoAlbum, t.album), perc(t.autoFoto, t.foto), t.faAlbum+t.ambAlbum, m.interni[daCollegare])
+	}
+	return registra(c.Contenuti, "importazione", fmt.Sprintf("importazione: %d foto, %d scritte, %d sparite", rap.totale, rap.scritte, len(rap.spariti)), "")
 }
 
 // tunnel inoltra il socket MySQL del server su un socket locale con ssh -L.
@@ -136,7 +179,7 @@ type datiCoppermine struct {
 	exif      map[int]string // pid → DateTimeOriginal
 	utenti    map[int]string // user_id → username
 	album     albumCoppermine
-	riservati map[int]bool // aid degli album non pubblici (visibility diversa da 0)
+	riservati map[int]int // aid degli album non pubblici → visibility (diversa da 0)
 }
 
 // albumCoppermine è il contenuto di importazione/album.yaml: l'input della Mappatura (G2).
@@ -215,7 +258,7 @@ func leggiCoppermine(db *sql.DB, gallery, forum string) (*datiCoppermine, error)
 
 func leggiAlbum(db *sql.DB, gallery string, d *datiCoppermine) error {
 	d.album = albumCoppermine{Album: map[int]albumYAML{}, Categorie: map[int]categoriaYAML{}}
-	d.riservati = map[int]bool{}
+	d.riservati = map[int]int{}
 	foto := map[int]int{}
 	for _, f := range d.foto {
 		foto[f.aid]++
@@ -233,7 +276,7 @@ func leggiAlbum(db *sql.DB, gallery string, d *datiCoppermine) error {
 		titolo, _ := decodifica(t)
 		d.album.Album[aid] = albumYAML{cat, foto[aid], titolo}
 		if vis != 0 {
-			d.riservati[aid] = true
+			d.riservati[aid] = vis
 		}
 	}
 	if err := r.Err(); err != nil {
@@ -286,8 +329,17 @@ type rapporto struct {
 	autori          map[string]int // valore grezzo → Foto
 	alias           aliasAutori
 	riservate       int
+	senzaDecisione  []string                  // righe di tabella: album riservati senza riga in riservati.yaml (#35)
+	datazioneExif   int                       // Datazione dall'EXIF (#18)
+	soloUser3       int                       // senza Datazione, con user3 mostrato come testo
+	senzaData       int                       // né l'una né l'altro
+	exifScartati    []string                  // "pid valore": EXIF senza una data valida
+	candidate       map[string]map[string]int // Datazione da user3 (#39): tipo → precisione → Foto
+	residui         []string                  // righe di tabella: candidate senza regola
+	scansioni       []string                  // righe di tabella, da controllare
 	spariti         []int
 	scritte         int
+	mappature       *rapportoMappature // solo con importa -indice
 }
 
 func formato(nome string) string {
@@ -301,7 +353,8 @@ func formato(nome string) string {
 }
 
 func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
-	rap := &rapporto{totale: len(d.foto), formati: map[string]int{}, cancellati: map[int]int{}, autori: map[string]int{}}
+	rap := &rapporto{totale: len(d.foto), formati: map[string]int{}, cancellati: map[int]int{}, autori: map[string]int{},
+		candidate: map[string]map[string]int{}}
 	var out []fotoYAML
 	for _, f := range d.foto {
 		cp := false
@@ -346,12 +399,46 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 		metti(cpg, "filename", nome)
 		metti(cpg, "keywords", testo("keywords", f.keywords))
 		metti(cpg, "luogo", testo("user2", f.user2))
-		metti(cpg, "data", testo("user3", f.user3))
+		user3 := testo("user3", f.user3)
+		metti(cpg, "data", user3)
 		metti(cpg, "data_exif", d.exif[f.pid])
+		exif, exifValido := datazioneExif(d.exif[f.pid])
+		if !exifValido && d.exif[f.pid] != "" {
+			rap.exifScartati = append(rap.exifScartati, fmt.Sprintf("%d %s", f.pid, d.exif[f.pid]))
+		}
+		caricata := time.Unix(f.ctime, 0).In(roma)
+		tipo, du, interpretata := candidata(user3, exif, caricata)
+		switch {
+		case tipo != "":
+			// Le regole valgono solo per le candidate (#39). Nelle scansioni l'EXIF è la data di
+			// scansione: si butta, e resta grezzo in coppermine.data_exif.
+			prec := du.prec
+			riga := fmt.Sprintf("| %d | %s | %s | %s |", f.pid, cella(user3), d.exif[f.pid], caricata.Format("02/01/2006"))
+			if interpretata {
+				y["datazione"] = du.edtf
+			} else {
+				prec = "residui"
+				rap.residui = append(rap.residui, riga)
+			}
+			if tipo == candScansione {
+				rap.scansioni = append(rap.scansioni, riga+" "+du.edtf+" |")
+			}
+			if rap.candidate[tipo] == nil {
+				rap.candidate[tipo] = map[string]int{}
+			}
+			rap.candidate[tipo][prec]++
+		case exifValido:
+			y["datazione"] = exif
+			rap.datazioneExif++
+		case user3 != "":
+			rap.soloUser3++
+		default:
+			rap.senzaData++
+		}
 		y["coppermine"] = cpg
 		// Un album non pubblico in Coppermine resta fuori dalla Gallery pubblica (#1). È un dato
 		// dell'Importazione, non del Livello di arricchimento: la protezione non dipende da quello.
-		if d.riservati[f.aid] {
+		if d.riservati[f.aid] != 0 {
 			y["riservata"] = true
 			rap.riservate++
 		}
@@ -420,9 +507,6 @@ func scrivi(dir string, foto []fotoYAML, rap *rapporto) error {
 		}
 	}
 	slices.Sort(rap.spariti)
-	if rap.alias, err = leggiAlias(dir); err != nil {
-		return err
-	}
 	return os.WriteFile(filepath.Join(dir, "importazione", "anomalie.md"), rap.markdown(), 0o644)
 }
 
@@ -495,12 +579,72 @@ func (r *rapporto) markdown() []byte {
 		}
 		p("\n")
 	}
+	p("## Datazione\n\nFoto con Datazione dall'EXIF: %d. Senza Datazione, con `user3` mostrato come testo: %d. Senza nessuna delle due: %d. Candidate, con la Datazione da `user3`: sotto.\n\n",
+		r.datazioneExif, r.soloUser3, r.senzaData)
+	p("EXIF senza una data valida, scartati (pid, valore): %d.\n\n", len(r.exifScartati))
+	elenco(r.exifScartati)
+	if len(r.exifScartati) > 0 {
+		p("\n")
+	}
+	p("### Datazione da user3\n\nFoto candidate (#39): senza EXIF con `user3` più di un anno prima del caricamento (storiche) ")
+	p("e con l'EXIF più di un anno dopo `user3` (scansioni). Per queste la Datazione viene da `user3`.\n\n")
+	p("| Tipo | giorno | mese | anno | decennio | intervallo | incerto | residui |\n|---|---:|---:|---:|---:|---:|---:|---:|\n")
+	for _, t := range []string{candStorica, candScansione} {
+		c := r.candidate[t]
+		p("| %s | %d | %d | %d | %d | %d | %d | %d |\n", t, c[precGiorno], c[precMese], c[precAnno], c[precDecennio], c[precIntervallo], c[precIncerto], c["residui"])
+	}
+	p("\nResidui, da sistemare a mano in `arricchimento/foto/<pid>.yaml` con `datazione:`: %d.\n\n", len(r.residui))
+	if len(r.residui) > 0 {
+		p("| pid | user3 | EXIF | Caricata |\n|---:|---|---|---|\n%s\n\n", strings.Join(r.residui, "\n"))
+	}
+	p("Scansioni da controllare: %d.\n\n", len(r.scansioni))
+	if len(r.scansioni) > 0 {
+		p("| pid | user3 | EXIF | Caricata | Datazione |\n|---:|---|---|---|---|\n%s\n\n", strings.Join(r.scansioni, "\n"))
+	}
 	p("## Riservate\n\nFoto in album non pubblici di Coppermine, con `riservata: true` e fuori dalla Gallery pubblica: %d.\n\n", r.riservate)
+	p("Album riservati senza decisione in `arricchimento/riservati.yaml` (`pubblica` o `cancella`): %d.\n\n", len(r.senzaDecisione))
+	if len(r.senzaDecisione) > 0 {
+		p("| aid | Album | Visibilità | Proprietario | Foto |\n|---:|---|---|---|---:|\n%s\n\n", strings.Join(r.senzaDecisione, "\n"))
+	}
 	p("## Spariti\n\nYAML spariti rispetto all'Importazione precedente: %d.\n", len(r.spariti))
 	if len(r.spariti) > 0 {
 		p("\n%s\n", unisci(r.spariti))
 	}
+	if r.mappature != nil {
+		p("\n")
+		b.Write(r.mappature.markdown())
+	}
 	return b.Bytes()
+}
+
+// senzaDecisione elenca gli album riservati senza riga in riservati.yaml, con proprietario
+// e numero di Foto: sono quelli da decidere in chat sui provini (#35).
+func senzaDecisione(d *datiCoppermine, decisioni map[int]string) []string {
+	var righe []string
+	for _, aid := range chiaviOrdinate(d.riservati) {
+		if decisioni[aid] != "" {
+			continue
+		}
+		a, vis := d.album.Album[aid], d.riservati[aid]
+		// Il proprietario è nella visibility (10000 + user_id) o nella categoria degli album personali.
+		chi := "—"
+		if id := max(vis, a.Categoria) - cidPersonali; id > 0 {
+			chi = fmt.Sprintf("%d %s", id, d.utenti[id])
+		}
+		var v string
+		switch {
+		case vis >= cidPersonali:
+			v = "solo il proprietario"
+		case vis == 2:
+			v = "utenti registrati"
+		case vis == 102:
+			v = "amministratori"
+		default:
+			v = fmt.Sprintf("gruppo %d", vis)
+		}
+		righe = append(righe, fmt.Sprintf("| %d | %s | %s | %s | %d |", aid, cella(a.Title), v, cella(strings.TrimSpace(chi)), a.Foto))
+	}
+	return righe
 }
 
 // cella rende un testo libero sicuro dentro una tabella Markdown.
@@ -517,7 +661,8 @@ func unisci(v []int) string {
 }
 
 // registra fa il commit di percorso nel Repository dei contenuti, che è solo locale.
-func registra(dir, percorso, msg string) error {
+// autore ("Nome <email>") è chi ha fatto la modifica; il committer è sempre gerbillo.
+func registra(dir, percorso, msg, autore string) error {
 	git := func(a ...string) *exec.Cmd {
 		c := exec.Command("git", append([]string{"-C", dir, "-c", "user.name=gerbillo", "-c", "user.email=gerbillo@localhost"}, a...)...)
 		c.Stderr = os.Stderr
@@ -535,5 +680,9 @@ func registra(dir, percorso, msg string) error {
 		fmt.Println("nessun cambiamento da registrare")
 		return nil
 	}
-	return git("commit", "-q", "-m", msg).Run()
+	a := []string{"commit", "-q", "-m", msg}
+	if autore != "" {
+		a = append(a, "--author", autore)
+	}
+	return git(a...).Run()
 }

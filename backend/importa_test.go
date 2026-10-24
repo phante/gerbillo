@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -44,6 +45,26 @@ func TestDataExif(t *testing.T) {
 	}
 }
 
+func TestDatazioneExif(t *testing.T) {
+	for in, out := range map[string]string{
+		"2005:06:03 11:31:56": "2005-06-03",
+		"2012-07-01 11:53:37": "2012-07-01",
+		"2011:6:20 22:33:36":  "2011-06-20",
+		"2010:03:28 10:11: 9": "2010-03-28",
+		"0000:00:00 00:00:00": "", // anno 0000
+		"2005:02:30 10:00:00": "", // data impossibile
+		"2005:00:00 00:00:00": "",
+		"6 Feb 2011 17:13:36": "", // malformato
+		"20050603":            "",
+		"":                    "",
+	} {
+		got, ok := datazioneExif(in)
+		if got != out || ok != (out != "") {
+			t.Errorf("datazioneExif(%q) = %q, %v; atteso %q", in, got, ok, out)
+		}
+	}
+}
+
 func TestConverti(t *testing.T) {
 	d := &datiCoppermine{
 		foto: []rigaFoto{
@@ -53,11 +74,16 @@ func TestConverti(t *testing.T) {
 			{pid: 2, owner: 0, filename: []byte("b.zip")},
 			{pid: 3, owner: 1, filename: []byte("c.pdf")},
 			{pid: 4, owner: 999, filename: []byte("d.png")},
-			{pid: 5, aid: 390, owner: 0, filename: []byte("e.jpg")},
+			{pid: 5, aid: 390, owner: 0, filename: []byte("e.jpg"), user3: []byte("18/07/2004")},
+			// Candidate (#39): storica e scansione, caricate il 27/12/2006.
+			{pid: 6, ctime: 1167214711, filename: []byte("f.jpg"), user3: []byte("anni '60")},
+			{pid: 7, ctime: 1167214711, filename: []byte("g.jpg"), user3: []byte("1985")},
+			{pid: 8, ctime: 1167214711, filename: []byte("h.jpg"), user3: []byte("Inverno 1970")},
 		},
-		exif:      map[int]string{1: "2005:06:03 11:31:56"},
+		exif: map[int]string{1: "2005:06:03 11:31:56", 2: "0000:00:00 00:00:00", 3: "6 Feb 2011 17:13:36",
+			7: "2005:01:01 10:00:00"},
 		utenti:    map[int]string{25: "utente", 1: "Anonymous"},
-		riservati: map[int]bool{390: true},
+		riservati: map[int]int{390: 102},
 	}
 	foto, rap := converti(d)
 	atteso := `altezza: 600
@@ -71,6 +97,7 @@ coppermine:
     data_exif: 2005:06:03 11:31:56
     filename: a.JPG
     filepath: userpics/10025/
+datazione: "2005-06-03"
 date: "2006-12-27T11:18:31+01:00"
 formato: immagine
 larghezza: 800
@@ -88,14 +115,55 @@ title: Città
 	if !strings.Contains(string(foto[4].file), "riservata: true") || strings.Contains(string(foto[0].file), "riservata") || rap.riservate != 1 {
 		t.Errorf("riservata: %d\n%s", rap.riservate, foto[4].file)
 	}
-	if rap.ospiti != 3 || rap.cancellati[999] != 1 || rap.senzaAutore != 4 {
+	if rap.ospiti != 6 || rap.cancellati[999] != 1 || rap.senzaAutore != 7 {
 		t.Errorf("rapporto: ospiti %d, cancellati %v, senza autore %d", rap.ospiti, rap.cancellati, rap.senzaAutore)
 	}
-	if rap.formati["altro"] != 1 || rap.formati["pdf"] != 1 || rap.formati["immagine"] != 3 {
+	for _, f := range foto[1:5] {
+		if strings.Contains(string(f.file), "datazione") {
+			t.Errorf("pid %d: Datazione senza EXIF valido:\n%s", f.pid, f.file)
+		}
+	}
+	if !strings.Contains(string(foto[4].file), "data: 18/07/2004") {
+		t.Errorf("user3 non conservato grezzo:\n%s", foto[4].file)
+	}
+	if !strings.Contains(string(foto[5].file), "datazione: 196X") || !strings.Contains(string(foto[6].file), "datazione: \"1985\"") ||
+		strings.Contains(string(foto[7].file), "datazione") {
+		t.Errorf("Datazione da user3:\n%s\n%s\n%s", foto[5].file, foto[6].file, foto[7].file)
+	}
+	if !strings.Contains(string(foto[6].file), "data_exif: 2005:01:01 10:00:00") {
+		t.Errorf("EXIF della scansione non conservato grezzo:\n%s", foto[6].file)
+	}
+	if rap.candidate[candStorica][precDecennio] != 1 || rap.candidate[candScansione][precAnno] != 1 ||
+		rap.candidate[candStorica]["residui"] != 1 || len(rap.residui) != 1 || len(rap.scansioni) != 1 {
+		t.Errorf("candidate %v, residui %v, scansioni %v", rap.candidate, rap.residui, rap.scansioni)
+	}
+	if rap.datazioneExif != 1 || rap.soloUser3 != 1 || rap.senzaData != 3 || len(rap.exifScartati) != 2 {
+		t.Errorf("Datazione nel rapporto: %d dall'EXIF, %d solo user3, %d senza, scartati %v",
+			rap.datazioneExif, rap.soloUser3, rap.senzaData, rap.exifScartati)
+	}
+	if rap.formati["altro"] != 1 || rap.formati["pdf"] != 1 || rap.formati["immagine"] != 6 {
 		t.Errorf("formati %v", rap.formati)
 	}
 	if len(rap.cp1252) != 1 || rap.cp1252[0] != 1 {
 		t.Errorf("cp1252 %v", rap.cp1252)
+	}
+}
+
+func TestSenzaDecisione(t *testing.T) {
+	d := &datiCoppermine{
+		riservati: map[int]int{390: 102, 959: 12196, 603: 2},
+		utenti:    map[int]string{2196: "proprietario"},
+		album: albumCoppermine{Album: map[int]albumYAML{
+			390: {16, 31, "Riservata"}, 959: {12196, 367, "Val d'Ultimo"}, 603: {6, 17, "Valtellina"},
+		}},
+	}
+	righe := senzaDecisione(d, map[int]string{603: pubblicaAlbum})
+	atteso := []string{
+		"| 390 | Riservata | amministratori | — | 31 |",
+		"| 959 | Val d'Ultimo | solo il proprietario | 2196 proprietario | 367 |",
+	}
+	if !slices.Equal(righe, atteso) {
+		t.Errorf("%q", righe)
 	}
 }
 
@@ -105,10 +173,11 @@ func TestScrivi(t *testing.T) {
 	os.MkdirAll(cart, 0o755)
 	os.WriteFile(filepath.Join(cart, "1.yaml"), []byte("pid: 1\n"), 0o644)
 	os.WriteFile(filepath.Join(cart, "7.yaml"), []byte("pid: 7\n"), 0o644)
-	os.MkdirAll(filepath.Join(dir, "arricchimento"), 0o755)
-	os.WriteFile(filepath.Join(dir, "arricchimento", "autori.yaml"), []byte("\"-\": []\nRossi M.: [Mario Rossi]\n"), 0o644)
 	rap := &rapporto{formati: map[string]int{}, cancellati: map[int]int{},
-		autori: map[string]int{"Mario Rossi": 3, "Rossi M.": 1, "-": 1, "A | B": 1}}
+		autori: map[string]int{"Mario Rossi": 3, "Rossi M.": 1, "-": 1, "A | B": 1},
+		alias:  aliasAutori{"-": {}, "Rossi M.": {"Mario Rossi"}}}
+	rap.mappature = &rapportoMappature{radici: map[int]*contoRadice{}, interni: map[string]int{daCollegare: 5},
+		daFare: []voceRapporto{{aid: 21, foto: 5, percorso: "Dighe - Dams / Sconosciuta"}}}
 	foto := []fotoYAML{{1, []byte("pid: 1\n")}, {2, []byte("pid: 2\n")}}
 	if err := scrivi(dir, foto, rap); err != nil {
 		t.Fatal(err)
@@ -126,6 +195,7 @@ func TestScrivi(t *testing.T) {
 	for _, r := range []string{
 		"Valori distinti di `user1`: 4, di cui 2 con alias",
 		"| Mario Rossi | 3 |  |\n| - | 1 | scartato |\n| A \\| B | 1 |  |\n| Rossi M. | 1 | → Mario Rossi |",
+		"## Mappature", "- da-collegare: 5", "- 21 (5 foto) Dighe - Dams / Sconosciuta",
 	} {
 		if !strings.Contains(string(md), r) {
 			t.Errorf("anomalie.md senza %q:\n%s", r, md)
