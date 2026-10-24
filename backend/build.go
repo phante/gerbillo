@@ -524,7 +524,7 @@ type corpoBussola struct {
 
 // bussola è la home: si restringono le dighe per Dove, Quando, Come e Per cosa (esplora.go).
 func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string, contributori int, altre map[int][]*fotoPubblicata) error {
-	d, err := json.Marshal(b.vociBussola(perEntita, slugs))
+	d, err := json.Marshal(append(b.vociBussola(perEntita, slugs), b.vociGruppi(altre)...))
 	if err != nil {
 		return err
 	}

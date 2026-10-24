@@ -44,13 +44,7 @@ func TestIntorno(t *testing.T) {
 			Longitudine float64 `json:"longitudine"`
 			Zoom        int     `json:"zoom,omitempty"`
 		}{lat, lon, 0}
-		x.Diga = &struct {
-			Tipologia      string   `json:"tipologia,omitempty"`
-			Anno           string   `json:"anno,omitempty"`
-			Uso            []string `json:"uso,omitempty"`
-			Concessionario []string `json:"concessionario,omitempty"`
-			Corsoacqua     string   `json:"corsoacqua,omitempty"`
-		}{Tipologia: tip, Anno: anno}
+		x.Diga = map[string]any{"tipologia": tip, "anno": anno}
 		return x
 	}
 	idx := []entita{
@@ -91,7 +85,7 @@ func TestIntorno(t *testing.T) {
 	if centro != "[46.29,8.3]" {
 		t.Errorf("centro %s", centro)
 	}
-	for _, atteso := range []string{`"id":"main"`, `"name":"dighe/codelago · 1 foto","url":"/g/dighe/codelago/"`, `"dighe/vicina · 1 foto"`, `"coordinates":[8.3,46.29]`} {
+	for _, atteso := range []string{`"id":"main"`, `"name":"dighe/codelago · 1 foto"`, `"url":"/g/dighe/codelago/"`, `"tipologia":"Gravità ordinaria"`, `"dighe/vicina · 1 foto"`, `"coordinates":[8.3,46.29]`} {
 		if !strings.Contains(geo, atteso) {
 			t.Errorf("GeoJSON senza %s:\n%s", atteso, geo)
 		}

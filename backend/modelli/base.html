@@ -86,11 +86,11 @@ document.addEventListener("click",function(e){
   {{if .Sottotitolo}}<p class="f5 black-60 mt0 mb2">{{.Sottotitolo}}</p>{{end}}
   {{range .Link}}<p class="mt0 mb3"><a class="f6 link dim br2 ph3 pv2 dib white bg-dark-gray" href="{{.URL}}">{{.Testo}}</a></p>{{end}}
 </div>
-{{with .Mappa}}<div class="ph3 mb3 mappa-diga">
+{{with .Mappa}}<div class="ph3 mt3 mb5 mappa-diga">
   <div class="pd-maps br3 overflow-hidden" data-center="{{.Centro}}" data-zoom="{{.Zoom}}" data-article="main" data-geojson="{{.GeoJSON}}"></div>
 </div>
 <script src="{{statico "mappa.js"}}" defer></script>{{end}}
-{{if .Esplora}}<section class="ph3 mb3" aria-label="Esplora intorno">
+{{if .Esplora}}<section class="ph3 mb5" aria-label="Esplora intorno">
   <h2 class="f6 ttu tracked black-60 mt2 mb2">Esplora intorno</h2>
   <div class="striscia-esplora flex">
   {{range .Esplora}}{{$g := .Nome}}{{range .Voci}}<a class="scheda-esplora link dim black-80 mr2" href="{{.URL}}">
@@ -100,6 +100,7 @@ document.addEventListener("click",function(e){
   </a>{{end}}{{end}}
   </div>
 </section>{{end}}
+{{if or .Mappa .Esplora}}<h2 class="f6 ttu tracked black-60 ph3 mt0 mb2">Foto</h2>{{end}}
 <ul class="list pa0 ma0 ph2 flex flex-wrap">
 {{range .Foto}}<li class="w-third w-25-m w-20-l pa1">
   <a class="db link grow" href="{{.URL}}" title="{{.Titolo}}">
@@ -231,10 +232,16 @@ document.addEventListener("click",function(e){
   // Bussola (#25): ogni faccetta mostra solo le scelte più frequenti fra le dighe
   // ancora possibili; ogni scelta restringe le altre. Dati calcolati al build.
   var dighe=JSON.parse(document.getElementById("dati-bussola").textContent);
-  var faccette=[["d","Dove"],["q","Quando","Costruita"],["c","Come","Tipologia"],["p","Per cosa","Uso"]];
+  // Cosa conta le foto (dighe e gruppi da classificare non sono confrontabili),
+  // le altre faccette contano le dighe.
+  var faccette=[["k","Cosa"],["d","Dove"],["q","Quando"],["c","Come"],["p","Per cosa"]];
   var scelte={},aperte={},quante=12,MAX=6;
   var box=document.getElementById("bussola"),ris=document.getElementById("risultati"),esito=document.getElementById("esito"),altre=document.getElementById("altre");
-  function passa(x,salta){for(var k in scelte){if(k!==salta&&x[k]!==scelte[k])return false}return true}
+  function passa(x,salta){
+    // I gruppi da classificare compaiono solo scegliendo il loro Cosa.
+    if(x.g&&salta!=="k"&&!scelte.k)return false;
+    for(var k in scelte){if(k!==salta&&x[k]!==scelte[k])return false}return true;
+  }
   function el(tag,cls,testo){var e=document.createElement(tag);if(cls)e.className=cls;if(testo!=null)e.textContent=testo;return e}
   // Pillole come i filtri preimpostati della ricerca del sito (search.css).
   function chip(testo,n,attiva,click){
@@ -249,7 +256,7 @@ document.addEventListener("click",function(e){
     faccette.forEach(function(f){
       var k=f[0],riga=el("div","mb2"),conta={};
       riga.appendChild(el("span","db dib-ns w4-ns mb1 f6 ttu tracked black-60 v-mid",f[1]));
-      dighe.forEach(function(x){if(x[k]&&passa(x,k))conta[x[k]]=(conta[x[k]]||0)+1});
+      dighe.forEach(function(x){if(x[k]&&passa(x,k))conta[x[k]]=(conta[x[k]]||0)+(k==="k"?x.n:1)});
       if(scelte[k]){riga.appendChild(chip(scelte[k],dighe.filter(function(x){return passa(x)}).length,true,function(){delete scelte[k];quante=12;disegna()}));box.appendChild(riga);return}
       var valori=Object.keys(conta).sort(function(a,b){return k==="q"?a.localeCompare(b):conta[b]-conta[a]});
       if(!valori.length){return}
@@ -259,14 +266,17 @@ document.addEventListener("click",function(e){
       box.appendChild(riga);
     });
     var r=dighe.filter(function(x){return passa(x)});
-    esito.textContent=r.length+(r.length===1?" diga":" dighe");
+    var nd=r.filter(function(x){return !x.g}).length,ng=r.length-nd,parti=[];
+    if(nd)parti.push(nd+(nd===1?" diga":" dighe"));
+    if(ng)parti.push(ng+(ng===1?" gruppo":" gruppi")+" di foto da classificare");
+    esito.textContent=parti.join(" e ")||"Nessun risultato";
     ris.innerHTML="";
     r.slice(0,quante).forEach(function(x){
       var a=el("a","w-50 w-third-m w-20-l pa2 link dim black-80");a.href=x.u;
       var q=el("div","aspect-ratio aspect-ratio--1x1"),i=el("img","aspect-ratio--object cover br4 bg-light-gray");
       i.src=x.m;i.alt="";i.loading="lazy";q.appendChild(i);a.appendChild(q);
       a.appendChild(el("span","db f5 b lh-title mt2",x.t));
-      a.appendChild(el("span","db f6 black-60",[x.d,x.n+" foto"].filter(Boolean).join(" · ")));
+      a.appendChild(el("span","db f6 black-60",[x.d,x.n+" foto",x.o].filter(Boolean).join(" · ")));
       ris.appendChild(a);
     });
     altre.className=(r.length>quante?"":"dn ")+"f6 b ttu tracked br2 ph3 pv2 bn pointer white bg-dark-gray dim mt2";

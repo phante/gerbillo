@@ -57,10 +57,7 @@ func dove(e *entita) string {
 }
 
 func usoPrincipale(e *entita) string {
-	if e.Diga != nil && len(e.Diga.Uso) > 0 {
-		return e.Diga.Uso[0]
-	}
-	return ""
+	return e.campo("uso")
 }
 
 // voceBussola è una diga con foto nel JSON della home.
@@ -73,16 +70,49 @@ type voceBussola struct {
 	Quando string `json:"q,omitempty"`
 	Come   string `json:"c,omitempty"`
 	Uso    string `json:"p,omitempty"`
+	Cosa   string `json:"k"`
+	// Gruppo: un insieme di Foto ancora da classificare, non una diga. Compare solo
+	// quando si sceglie il suo Cosa.
+	Gruppo bool   `json:"g,omitempty"`
+	Nota   string `json:"o,omitempty"`
+}
+
+// cosaCoppermine dà il nome della Categoria Coppermine radice nella faccetta Cosa:
+// «Centrali - Powerplants» → «Centrali».
+func cosaCoppermine(cid int, nome string) string {
+	switch cid {
+	case cidDighe:
+		return "Dighe"
+	case 1:
+		return "Album personali"
+	}
+	nome, _, _ = strings.Cut(nome, " - ")
+	nome, _, _ = strings.Cut(nome, ",")
+	return strings.TrimSpace(nome)
+}
+
+// vociGruppi aggiunge alla Bussola le Foto senza slug, una scheda per Categoria Coppermine.
+func (b *builder) vociGruppi(altre map[int][]*fotoPubblicata) []voceBussola {
+	var v []voceBussola
+	for _, cid := range chiaviOrdinate(altre) {
+		fs := altre[cid]
+		cosa := cosaCoppermine(cid, b.c.album.Categorie[cid].Nome)
+		titolo := cosa
+		if cid == cidDighe {
+			titolo = "Altre foto di dighe"
+		}
+		v = append(v, voceBussola{URL: b.url("altre", strconv.Itoa(cid)), Titolo: titolo, Mini: b.mini(fs[0]),
+			N: len(fs), Cosa: cosa, Gruppo: true, Nota: "da classificare"})
+	}
+	return v
 }
 
 func (b *builder) vociBussola(perEntita map[string][]*fotoPubblicata, slugs []string) []voceBussola {
 	var v []voceBussola
 	for _, s := range slugs {
 		e, fs := b.c.entita[s], perEntita[s]
-		x := voceBussola{URL: b.url(s), Titolo: e.Title, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e), Uso: usoPrincipale(e)}
-		if e.Diga != nil {
-			x.Quando, x.Come = decennio(e.Diga.Anno), famiglia(e.Diga.Tipologia)
-		}
+		x := voceBussola{URL: b.url(s), Titolo: e.Title, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e), Uso: usoPrincipale(e), Cosa: "Dighe"}
+		x.Quando, x.Come = decennio(e.campo("anno")), famiglia(e.campo("tipologia"))
 		v = append(v, x)
 	}
 	// Prima le dighe con più foto: sono l'anteprima della Bussola.
@@ -158,15 +188,15 @@ func (b *builder) intorno(s string, perEntita map[string][]*fotoPubblicata, slug
 	}
 	aggiungi("Vicine", vicine)
 	// Simili: stessa famiglia di tipologia e stesso decennio, le più vicine prima.
-	if e.Diga != nil && famiglia(e.Diga.Tipologia) != "" {
+	if fam := famiglia(e.campo("tipologia")); fam != "" {
 		var simili []string
 		for _, x := range slugs {
-			if d := b.c.entita[x].Diga; d != nil && famiglia(d.Tipologia) == famiglia(e.Diga.Tipologia) && decennio(d.Anno) == decennio(e.Diga.Anno) {
+			if o := b.c.entita[x]; famiglia(o.campo("tipologia")) == fam && decennio(o.campo("anno")) == decennio(e.campo("anno")) {
 				simili = append(simili, x)
 			}
 		}
-		nome := "Simili: " + strings.ToLower(famiglia(e.Diga.Tipologia))
-		if q := decennio(e.Diga.Anno); q != "" {
+		nome := "Simili: " + strings.ToLower(fam)
+		if q := decennio(e.campo("anno")); q != "" {
 			nome += ", " + strings.ToLower(q)
 		}
 		aggiungi(nome, perDistanza(simili))
@@ -193,22 +223,27 @@ func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, 
 	if c == nil {
 		return "", "", 0
 	}
-	type proprieta struct {
-		Type string `json:"type"`
-		Name string `json:"name"`
-		URL  string `json:"url,omitempty"`
-	}
 	type feature struct {
-		Type       string    `json:"type"`
-		ID         string    `json:"id,omitempty"`
-		Properties proprieta `json:"properties"`
+		Type       string         `json:"type"`
+		ID         string         `json:"id,omitempty"`
+		Properties map[string]any `json:"properties"`
 		Geometry   struct {
 			Type        string     `json:"type"`
 			Coordinates [2]float64 `json:"coordinates"`
 		} `json:"geometry"`
 	}
 	punto := func(x *entita, id, nome, url string) feature {
-		f := feature{Type: "Feature", ID: id, Properties: proprieta{"diga", nome, url}}
+		// Come le feature della mappa generale del sito: la scheda diga intera, per lo
+		// specchietto del popup, più tipo, nome e collegamento.
+		p := map[string]any{}
+		for k, v := range x.Diga {
+			p[k] = v
+		}
+		p["type"], p["name"] = "diga", nome
+		if url != "" {
+			p["url"] = url
+		}
+		f := feature{Type: "Feature", ID: id, Properties: p}
 		f.Geometry.Type = "Point"
 		f.Geometry.Coordinates = [2]float64{x.Geolocation.Coords.Longitudine, x.Geolocation.Coords.Latitudine}
 		return f

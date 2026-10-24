@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -21,15 +22,9 @@ type entita struct {
 	Title string   `json:"title"`
 	Draft bool     `json:"draft,omitempty"` // pagina in bozza: è comunque un'Entità ("ha o avrà una pagina")
 	Tags  []string `json:"tags,omitempty"`
-	// Diga è la parte della scheda dati che serve a esplorare la Gallery (#25): stessi
-	// nomi del front matter del sito.
-	Diga *struct {
-		Tipologia      string   `json:"tipologia,omitempty"`
-		Anno           string   `json:"anno,omitempty"` // a volte un intervallo: «1900-06»
-		Uso            []string `json:"uso,omitempty"`
-		Concessionario []string `json:"concessionario,omitempty"`
-		Corsoacqua     string   `json:"corsoacqua,omitempty"`
-	} `json:"diga,omitempty"`
+	// Diga è la scheda dati del front matter del sito, intera: serve a esplorare la
+	// Gallery (#28) e allo specchietto della mappa (#27), come nella mappa generale.
+	Diga        map[string]any `json:"diga,omitempty"`
 	Geolocation struct {
 		MapIDs    []string `json:"map_ids,omitempty" yaml:"map_ids"`
 		Stato     string   `json:"stato,omitempty"`
@@ -120,4 +115,24 @@ func leggiIndice(p string) ([]entita, error) {
 	}
 	var idx []entita
 	return idx, json.Unmarshal(b, &idx)
+}
+
+// campo legge un valore testuale della scheda diga: «anno» può essere un numero o un
+// intervallo («1900-06»), gli elenchi come «uso» danno il primo elemento.
+func (e *entita) campo(k string) string {
+	switch v := e.Diga[k].(type) {
+	case string:
+		return v
+	case int:
+		return strconv.Itoa(v)
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	case []any:
+		if len(v) > 0 {
+			if s, ok := v[0].(string); ok {
+				return s
+			}
+		}
+	}
+	return ""
 }
