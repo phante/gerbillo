@@ -114,34 +114,35 @@ func TestBuild(t *testing.T) {
 	for _, p := range []string{"index.html", "dighe/vajont/index.html", "altre/index.html", "altre/2/index.html", "altre/1/index.html", "contributori/74/index.html", "statico/stile.css"} {
 		leggi(p)
 	}
-	var cerca []voceRicerca
+	var cerca indiceRicerca
 	if err := json.Unmarshal([]byte(leggi("statico/cerca.json")), &cerca); err != nil {
 		t.Fatal(err)
 	}
-	voci := map[string]voceRicerca{}
-	for _, v := range cerca {
-		voci[v.ID] = v
+	if len(cerca.Pagine) != 3 || cerca.Pagine[0] != (paginaRicerca{Slug: "dighe/vajont", Titolo: "Vajont", Tipo: "Dighe",
+		Luogo: "Friuli-Venezia Giulia, Italia", URL: "/g/dighe/vajont/", Mini: "/g/f/1/mini.webp", N: 2}) {
+		t.Errorf("Pagine nell'Indice di ricerca: %+v", cerca.Pagine)
 	}
-	if e := voci["e:dighe/vajont"]; e.Section != "Dighe" || e.URL != "/g/dighe/vajont/" || e.Snippet != "2 foto · Friuli-Venezia Giulia, Italia" {
-		t.Errorf("Entità nell'Indice di ricerca: %+v", e)
-	}
-	if c := voci["c:74"]; c.Title != "Pomase" || c.Section != "Contributori" {
+	if c := cerca.Pagine[2]; c.Titolo != "Pomase" || c.Tipo != "Contributori" || c.Slug != "" {
 		t.Errorf("Contributore nell'Indice di ricerca: %+v", c)
 	}
-	if f := voci["f:1"]; f.Title != "Diga" || f.Meta != "Vajont Ente Mario" || f.Snippet != "Vajont · 195X · Ente" || f.Section != "Foto" {
+	foto := map[int]fotoRicerca{}
+	for _, f := range cerca.Foto {
+		foto[f.Pid] = f
+	}
+	if f := foto[1]; f.Titolo != "Diga" || f.Meta != "Vajont Ente Mario" || len(f.Entita) != 1 || f.Entita[0] != 0 || f.Mini != "" {
 		t.Errorf("Foto nell'Indice di ricerca: %+v", f)
 	}
-	if f := voci["f:2"]; f.Title != "Vajont · foto 2" {
-		t.Errorf("Foto senza titolo: %+v", f)
+	if f := foto[2]; f.Titolo != "Vajont · foto 2" || f.Mini != "/g/statico/documento.svg" {
+		t.Errorf("PDF senza titolo nell'Indice di ricerca: %+v", f)
 	}
-	if strings.Contains(voci["f:3"].Tags, "da-separare") {
+	if strings.Contains(foto[3].Tags, "da-separare") {
 		t.Error("tag interno nell'Indice di ricerca")
 	}
-	home := leggi("index.html")
-	for _, atteso := range []string{`window.searchIndexPath="\/g\/statico\/cerca.json"`, `data-section="dighe">Dighe <span class="search-count">1</span>`, `data-section="foto">Foto <span class="search-count">4</span>`} {
-		if !strings.Contains(home, atteso) {
-			t.Errorf("home senza %q", atteso)
-		}
+	if !strings.Contains(leggi("index.html"), `action="/g/cerca/"`) {
+		t.Error("home senza il campo che porta a /cerca/")
+	}
+	if !strings.Contains(leggi("cerca/index.html"), `INDICE="/g/statico/cerca.json",FOTO="/g/f/"`) {
+		t.Error("/cerca/ senza l'Indice di ricerca")
 	}
 	var idx map[string][]int
 	if err := json.Unmarshal([]byte(leggi("indice-foto.json")), &idx); err != nil || len(idx["dighe/vajont"]) != 2 {

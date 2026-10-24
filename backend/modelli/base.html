@@ -211,25 +211,16 @@ document.addEventListener("click",function(e){
 </script>
 {{template "piede" .}}{{end}}
 
+{{define "campo-cerca"}}<div class="search-input-group relative w-100">
+<div class="search-icona absolute left-0 pl3 flex items-center h-100"><img id="search-icon" src="{{statico "search-svgrepo-com.svg"}}" alt="" width="20" height="20"><div id="search-loader"><div class="search-loader-spinner"></div></div></div>
+<label for="search-input" class="clip">Cerca</label>
+<input type="search" id="search-input" name="q" value="{{.}}" class="input-reset ba b--black-20 pv3 pl5 pr4 db w-100 br2 f4 lh-copy" placeholder="Cerca dighe, foto, autori o luoghi..." autocomplete="off" spellcheck="false" enterkeyhint="search">
+</div>{{end}}
+
 {{define "bussola"}}{{template "testa" .}}
 {{with .Corpo}}
-{{/* Ricerca (#26, ADR 0014): il markup di site-search del sito, per search.js copiato
-     dal sito. Nascosta finché lo script sotto non la mostra: senza JavaScript non va. */}}
-<section id="site-search" class="ph3 mb4" role="search" hidden>
-<div id="search-filters" class="mb2 flex flex-wrap" style="display:none">
-{{range .Pillole}}<button class="search-filter-btn{{if eq .Sezione "all"}} is-active{{end}}" data-section="{{.Sezione}}">{{.Testo}} <span class="search-count">{{.N}}</span></button>
-{{end}}</div>
-<div id="search-container" class="search-input-group relative w-100">
-<div class="search-icona absolute left-0 pl3 flex items-center h-100"><img id="search-icon" src="{{statico "search-svgrepo-com.svg"}}" alt="Cerca" width="20" height="20"><div id="search-loader"><div class="search-loader-spinner"></div></div></div>
-<label for="search-input" class="clip">Ricerca</label>
-<input type="search" id="search-input" class="input-reset ba b--black-20 pv3 pl5 pr4 db w-100 br2 f4 lh-copy" placeholder="Cerca dighe, foto, autori o luoghi..." autocomplete="off" spellcheck="false">
-<button type="button" id="search-clear" aria-label="Cancella ricerca">&#215;</button>
-<div id="search-meta" class="f7 gray mt2 ph2" style="display:none"></div>
-<ul id="search-results" class="search-results-list pl0"></ul>
-</div>
-</section>
-<script>document.getElementById("site-search").hidden=false;window.searchIndexPath="{{.Indice}}";</script>
-<script src="{{statico "search.js"}}" defer></script>
+{{/* Ricerca (#26, ADR 0014): un modulo che apre /cerca/, senza caricare l'indice qui. */}}
+<form class="ph3 mb4" role="search" action="{{.Cerca}}" method="get">{{template "campo-cerca" ""}}</form>
 <div class="ph3">
   <p class="f5 black-60 mt0 mb3">{{.Sottotitolo}}</p>
   <div id="bussola" class="mb3"></div>
@@ -302,4 +293,115 @@ document.addEventListener("click",function(e){
   disegna();
 })();
 </script>
+{{template "piede" .}}{{end}}
+
+{{define "cerca"}}{{template "testa" .}}
+{{with .Corpo}}
+{{/* Ricerca (#26, ADR 0014): Pagine il cui nome corrisponde, filtro «Dove» con le
+     Entità delle Foto trovate, griglia delle Foto per pertinenza. L'indice si
+     costruisce nel browser a ogni apertura della pagina. */}}
+<form class="ph3 mb3" role="search" action="" method="get" id="cerca">{{template "campo-cerca" ""}}</form>
+<noscript><p class="ph3">La ricerca richiede JavaScript. Puoi partire da <a href="{{.Dighe}}">Tutte le dighe</a>.</p></noscript>
+<div class="ph3">
+  <p id="esito" class="f5 b black-80 mt0 mb2" aria-live="polite"></p>
+  <div id="pagine" class="flex flex-wrap nl2 nr2"></div>
+  <div id="dove" class="mt3 mb2"></div>
+</div>
+<ul id="griglia" class="list pa0 ma0 ph2 flex flex-wrap"></ul>
+<div class="ph3 tc"><button type="button" id="altre" class="dn f6 b ttu tracked br2 ph3 pv2 bn pointer white bg-dark-gray dim mt3">Mostra altre</button></div>
+<script src="{{.FlexSearch}}"></script>
+<script>
+(function(){
+  var INDICE={{.Indice}},FOTO={{.Foto}},BLOCCO=60,MAX=6;
+  var campo=document.getElementById("search-input"),esito=document.getElementById("esito"),pagine=document.getElementById("pagine"),
+      dove=document.getElementById("dove"),griglia=document.getElementById("griglia"),altre=document.getElementById("altre"),
+      icona=document.querySelector(".search-icona");
+  var dati,ixFoto,ixPagine,trovate=[],conta={},filtro,quante=BLOCCO,aperto=false,attesa;
+  function el(tag,cls,testo){var e=document.createElement(tag);if(cls)e.className=cls;if(testo!=null)e.textContent=testo;return e}
+  // Pillole come i filtri preimpostati della ricerca del sito (search.css), come nella Bussola.
+  function chip(testo,n,attiva,click){
+    var b=el("button","search-filter-btn mr1 mb1"+(attiva?" is-active":""),testo);
+    b.type="button";b.onclick=click;
+    if(n!=null)b.appendChild(el("span","search-count",String(n)));
+    if(attiva){b.appendChild(el("span","ml2","×"));b.setAttribute("aria-label",testo+": togli il filtro")}
+    return b;
+  }
+  function campi(){return [{field:"t",tokenize:"forward"},{field:"a",tokenize:"forward"},{field:"g",tokenize:"forward"},{field:"c",tokenize:"forward"}]}
+  function carica(){
+    icona.parentNode.classList.add("is-loading");
+    return fetch(INDICE).then(function(r){return r.json()}).then(function(d){
+      dati=d;
+      ixFoto=new FlexSearch.Document({document:{id:"i",index:campi()}});
+      d.foto.forEach(function(f,i){f.i=i;ixFoto.add(f)});
+      ixPagine=new FlexSearch.Document({document:{id:"i",index:[{field:"t",tokenize:"forward"}]}});
+      d.pagine.forEach(function(p,i){p.i=i;ixPagine.add(p)});
+      icona.parentNode.classList.remove("is-loading");
+    });
+  }
+  // Pertinenza: prima il titolo, poi Entità e Autori, poi Tag, poi il resto; a parità il pid.
+  function trova(q){
+    var visti={},r=[];
+    var per={};ixFoto.search(q,{limit:100000}).forEach(function(x){per[x.field]=x.result});
+    ["t","a","g","c"].forEach(function(k){
+      (per[k]||[]).slice().sort(function(a,b){return dati.foto[a].p-dati.foto[b].p}).forEach(function(i){if(!visti[i]){visti[i]=1;r.push(dati.foto[i])}});
+    });
+    return r;
+  }
+  function cerca(){
+    var q=campo.value.trim();
+    var u=new URL(location.href);u.searchParams.set("q",q);
+    if(filtro!=null)u.searchParams.set("in",dati.pagine[filtro].s);else u.searchParams.delete("in");
+    history.replaceState(null,"",q?u:location.pathname);
+    pagine.innerHTML="";dove.innerHTML="";griglia.innerHTML="";trovate=[];conta={};
+    if(!q){esito.textContent="";altre.className="dn";return}
+    var res=ixPagine.search(q,{limit:12});
+    (res[0]?res[0].result:[]).forEach(function(i){
+      var p=dati.pagine[i],a=el("a","w-50 w-third-m w-25-l pa2 link dim black-80");a.href=p.u;
+      var q2=el("div","aspect-ratio aspect-ratio--4x3"),img=el("img","aspect-ratio--object cover br3 bg-light-gray");
+      img.src=p.m;img.alt="";img.loading="lazy";q2.appendChild(img);a.appendChild(q2);
+      a.appendChild(el("span","db f7 ttu tracked black-50 mt1",p.k));
+      a.appendChild(el("span","db f5 b lh-title",p.t));
+      a.appendChild(el("span","db f6 black-60",[p.n+" foto",p.l].filter(Boolean).join(" · ")));
+      pagine.appendChild(a);
+    });
+    trovate=trova(q);
+    trovate.forEach(function(f){(f.e||[]).forEach(function(i){conta[i]=(conta[i]||0)+1})});
+    if(filtro!=null&&!conta[filtro])filtro=null;
+    disegna();
+  }
+  function disegna(){
+    var vis=filtro==null?trovate:trovate.filter(function(f){return (f.e||[]).indexOf(filtro)>=0});
+    esito.textContent=trovate.length?(vis.length===1?"1 foto":vis.length+" foto")+(filtro!=null?" a "+dati.pagine[filtro].t:""):"Nessuna foto trovata";
+    dove.innerHTML="";
+    var ent=Object.keys(conta).map(Number).sort(function(a,b){return conta[b]-conta[a]||dati.pagine[a].t.localeCompare(dati.pagine[b].t)});
+    if(ent.length>1||filtro!=null){
+      dove.appendChild(el("span","db dib-ns w4-ns mb1 f6 ttu tracked black-60 v-mid","Dove"));
+      if(filtro!=null)dove.appendChild(chip(dati.pagine[filtro].t,conta[filtro],true,function(){filtro=null;quante=BLOCCO;cerca()}));
+      else{
+        (aperto?ent:ent.slice(0,MAX)).forEach(function(i){dove.appendChild(chip(dati.pagine[i].t,conta[i],false,function(){filtro=i;quante=BLOCCO;cerca()}))});
+        if(ent.length>MAX)dove.appendChild(chip(aperto?"Meno":"Altre",aperto?null:ent.length-MAX,false,function(){aperto=!aperto;disegna()}));
+      }
+    }
+    griglia.innerHTML="";
+    vis.slice(0,quante).forEach(function(f){
+      var li=el("li","w-third w-25-m w-20-l pa1"),a=el("a","db link grow");a.href=FOTO+f.p+"/";a.title=f.t;
+      var q2=el("div","aspect-ratio aspect-ratio--1x1"),img=el("img","aspect-ratio--object cover br2 shadow-4 bg-light-gray");
+      img.src=f.m||FOTO+f.p+"/mini.webp";img.alt=f.t;img.loading="lazy";img.decoding="async";
+      q2.appendChild(img);a.appendChild(q2);li.appendChild(a);griglia.appendChild(li);
+    });
+    altre.className=(vis.length>quante?"":"dn ")+"f6 b ttu tracked br2 ph3 pv2 bn pointer white bg-dark-gray dim mt3";
+  }
+  altre.onclick=function(){quante+=BLOCCO;disegna()};
+  document.getElementById("cerca").onsubmit=function(e){e.preventDefault();campo.blur()};
+  campo.addEventListener("input",function(){clearTimeout(attesa);attesa=setTimeout(function(){filtro=null;quante=BLOCCO;aperto=false;cerca()},250)});
+  var u=new URL(location.href);campo.value=u.searchParams.get("q")||"";
+  carica().then(function(){
+    var s=u.searchParams.get("in");
+    if(s)dati.pagine.forEach(function(p,i){if(p.s===s)filtro=i});
+    cerca();
+  });
+  if(!campo.value)campo.focus();
+})();
+</script>
+{{end}}
 {{template "piede" .}}{{end}}

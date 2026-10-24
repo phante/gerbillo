@@ -326,11 +326,10 @@ func (b *builder) tutto() error {
 	if err := b.home(perEntita, slugs); err != nil {
 		return err
 	}
-	pillole, err := b.cerca(perEntita, slugs, perContributore, ids, nomi)
-	if err != nil {
+	if err := b.cerca(perEntita, slugs, perContributore, ids, nomi); err != nil {
 		return err
 	}
-	if err := b.bussola(perEntita, slugs, len(ids), altre, pillole); err != nil {
+	if err := b.bussola(perEntita, slugs, len(ids), altre); err != nil {
 		return err
 	}
 	if err := b.elencoContributori(ids, nomi, perContributore, casa); err != nil {
@@ -524,12 +523,11 @@ type corpoBussola struct {
 	Sottotitolo string
 	Dati        template.JS // le dighe con foto, in JSON, lette dallo script della pagina
 	Porte       []voce
-	Pillole     []pillola // della ricerca, sopra la Bussola (#26)
-	Indice      string    // URL dell'Indice di ricerca
+	Cerca       string // la pagina /cerca/, a cui porta il campo sopra la Bussola (#26)
 }
 
 // bussola è la home: si restringono le dighe per Dove, Quando, Come e Per cosa (esplora.go).
-func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string, contributori int, altre map[int][]*fotoPubblicata, pillole []pillola) error {
+func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string, contributori int, altre map[int][]*fotoPubblicata) error {
 	d, err := json.Marshal(append(b.vociBussola(perEntita, slugs), b.vociGruppi(altre)...))
 	if err != nil {
 		return err
@@ -543,8 +541,7 @@ func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string
 	corpo := corpoBussola{
 		Sottotitolo: "Scegli da dove partire: ogni scelta restringe le altre.",
 		Dati:        template.JS(d),
-		Pillole:     pillole,
-		Indice:      b.statico("cerca.json"),
+		Cerca:       b.url("cerca"),
 		Porte: []voce{
 			{URL: b.url("dighe"), Testo: "Tutte le dighe", N: len(slugs), Sito: "dighe"},
 			{URL: b.url("contributori"), Testo: "Contributori", N: contributori, Sito: "contributori"},
@@ -601,7 +598,7 @@ func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 		return err
 	}
 	for orig, dest := range map[string]string{"documento.svg": "documento.svg", "sito/PDLogo.svg": "PDLogo.svg",
-		"sito/mappa.js": "mappa.js", "sito/search.js": "search.js", "sito/search-svgrepo-com.svg": "search-svgrepo-com.svg", "sito/icone/cc.svg": "cc.svg", "sito/icone/by.svg": "by.svg", "sito/icone/sa.svg": "sa.svg"} {
+		"sito/mappa.js": "mappa.js", "flexsearch.js": "flexsearch.js", "sito/search-svgrepo-com.svg": "search-svgrepo-com.svg", "sito/icone/cc.svg": "cc.svg", "sito/icone/by.svg": "by.svg", "sito/icone/sa.svg": "sa.svg"} {
 		d, err := modelli.ReadFile("modelli/" + orig)
 		if err != nil {
 			return err

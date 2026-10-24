@@ -10,7 +10,6 @@ se il sito non risponde (#25).
 | `tachyons.css`, `main.css`, `map.css`, `search.css` | `assets/asset/css/` |
 | `map.control.verticalexpand.css` | `assets/asset/css/` |
 | `mappa.js`, `leaflet.css` | costruiti da `scripts/mappa-sito.sh`: `map*.js` del sito più Leaflet alle versioni del suo `package-lock.json` |
-| `search.js` | il bundle servito in produzione (`/asset/js/search.<hash>.js`, FlexSearch incluso), scaricato così com'è: la ricerca della Gallery (ADR 0014) |
 | `search-svgrepo-com.svg` | `static/asset/images/` |
 | `PDLogo.svg` | `static/asset/brand/` |
 | `icone/cc.svg`, `by.svg`, `sa.svg` | `static/asset/brand/cc/` |

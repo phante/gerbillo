@@ -102,7 +102,7 @@ Il file prodotto dal Sito principale che elenca le Entità per la gallery.
 Il file prodotto dalla gallery che elenca le Foto per Entità, usato dal Sito principale.
 
 **Indice di ricerca**:
-Il file (`cerca.json`) che la ricerca della Gallery pubblica carica nel browser: Entità, Contributori e Foto, nel formato della ricerca del Sito principale (ADR 0014).
+Il file (`cerca.json`) che la pagina di ricerca della Gallery pubblica (`/cerca/`) scarica e indicizza nel browser: Entità, Contributori e Foto (ADR 0014).
 _Avoid_: indice (da solo), Indice delle Foto (che è per il Sito principale)
 
 **Repository dei contenuti**:

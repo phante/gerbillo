@@ -1,8 +1,9 @@
 package main
 
-// Indice di ricerca (ADR 0014, #26): statico/cerca.json nel formato di /index.json del Sito
-// principale, letto da search.js copiato dal sito. Contiene le pagine delle Entità,
-// i Contributori e ogni Foto; i campi pesano come nel sito (title 5, meta 4, tags 3).
+// Ricerca della Gallery (ADR 0014, #26): la pagina /cerca/ e l'Indice di ricerca,
+// statico/cerca.json, che la pagina indicizza nel browser con FlexSearch. In cima le
+// Pagine il cui nome corrisponde (Entità e Contributori), poi il filtro «Dove» con le
+// Entità delle Foto trovate e la griglia delle Foto.
 
 import (
 	"encoding/json"
@@ -13,22 +14,34 @@ import (
 	"strings"
 )
 
-type voceRicerca struct {
-	ID      string `json:"id"`
-	Title   string `json:"title"`
-	Meta    string `json:"meta"`
-	Tags    string `json:"tags"`
-	Content string `json:"content"`
-	Section string `json:"section"`
-	URL     string `json:"url"`
-	Snippet string `json:"snippet"`
+// indiceRicerca ha chiavi corte: le Foto sono decine di migliaia.
+type indiceRicerca struct {
+	Pagine []paginaRicerca `json:"pagine"`
+	Foto   []fotoRicerca   `json:"foto"`
 }
 
-// Le pillole della ricerca, nell'ordine in cui compaiono.
-var sezioniRicerca = []string{"Dighe", "Centrali", "Altre pagine", "Contributori", "Foto"}
+type paginaRicerca struct {
+	Slug   string `json:"s,omitempty"` // solo le Entità, per il filtro «Dove»
+	Titolo string `json:"t"`
+	Tipo   string `json:"k"` // Dighe, Centrali, Altre pagine, Contributori
+	Luogo  string `json:"l,omitempty"`
+	URL    string `json:"u"`
+	Mini   string `json:"m"`
+	N      int    `json:"n"`
+}
 
-// sezioneEntita mette ogni sezione del sito diversa da dighe e centrali in «Altre pagine».
-func sezioneEntita(slug string) string {
+type fotoRicerca struct {
+	Pid     int    `json:"p"`
+	Titolo  string `json:"t"`
+	Meta    string `json:"a,omitempty"` // Entità, Autori, Contributore
+	Tags    string `json:"g,omitempty"` // Tag e Categorie
+	Content string `json:"c,omitempty"` // descrizione, luogo, Datazione
+	Entita  []int  `json:"e,omitempty"` // posizioni in Pagine
+	Mini    string `json:"m,omitempty"` // solo se non è f/<pid>/mini.webp (anteprima, PDF)
+}
+
+// tipoEntita mette ogni sezione del sito diversa da dighe e centrali in «Altre pagine».
+func tipoEntita(slug string) string {
 	switch strings.SplitN(slug, "/", 2)[0] {
 	case "dighe":
 		return "Dighe"
@@ -38,96 +51,67 @@ func sezioneEntita(slug string) string {
 	return "Altre pagine"
 }
 
-type pillola struct {
-	Sezione, Testo string // data-section (in minuscolo, come lo confronta search.js) ed etichetta
-	N              int
+type corpoCerca struct {
+	Indice, FlexSearch, Foto string // URL dell'Indice di ricerca, della libreria, prefisso delle pagine Foto
+	Dighe                    string // ripiego senza JavaScript
 }
 
-// cerca scrive cerca.json e restituisce le pillole, «Tutti» per prima, con il numero di voci.
-func (b *builder) cerca(perEntita map[string][]*fotoPubblicata, slugs []string, perContributore map[int][]*fotoPubblicata, ids []int, nomi map[int]string) ([]pillola, error) {
-	var v []voceRicerca
+// cerca scrive l'Indice di ricerca e la pagina /cerca/.
+func (b *builder) cerca(perEntita map[string][]*fotoPubblicata, slugs []string, perContributore map[int][]*fotoPubblicata, ids []int, nomi map[int]string) error {
+	var x indiceRicerca
+	pos := map[string]int{}
 	for _, s := range slugs {
-		e, luogo := b.c.entita[s], luogoEntita(b.c.entita[s])
-		v = append(v, voceRicerca{ID: "e:" + s, Title: e.Title, Meta: luogo, Tags: strings.Join(e.Tags, " "),
-			Section: sezioneEntita(s), URL: b.url(s), Snippet: conteggio(len(perEntita[s]), luogo)})
+		e, fs := b.c.entita[s], perEntita[s]
+		pos[s] = len(x.Pagine)
+		x.Pagine = append(x.Pagine, paginaRicerca{Slug: s, Titolo: e.Title, Tipo: tipoEntita(s), Luogo: luogoEntita(e),
+			URL: b.url(s), Mini: b.mini(fs[0]), N: len(fs)})
 	}
 	for _, id := range ids {
-		v = append(v, voceRicerca{ID: "c:" + strconv.Itoa(id), Title: nomi[id], Section: "Contributori",
-			URL: b.url("contributori", strconv.Itoa(id)), Snippet: conteggio(len(perContributore[id]), "")})
+		fs := perContributore[id]
+		x.Pagine = append(x.Pagine, paginaRicerca{Titolo: nomi[id], Tipo: "Contributori",
+			URL: b.url("contributori", strconv.Itoa(id)), Mini: b.mini(fs[0]), N: len(fs)})
 	}
 	for _, f := range b.c.foto {
-		v = append(v, b.vociFoto(f))
+		x.Foto = append(x.Foto, b.fotoRicerca(f, pos))
 	}
-	n := map[string]int{}
-	for _, x := range v {
-		n[x.Section]++
-	}
-	p := []pillola{{"all", "Tutti", len(v)}}
-	for _, s := range sezioniRicerca {
-		if n[s] > 0 {
-			p = append(p, pillola{strings.ToLower(s), s, n[s]})
-		}
-	}
-	d, err := json.Marshal(v)
+	d, err := json.Marshal(x)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	dir := filepath.Join(b.dir, "statico")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return nil, err
+		return err
 	}
-	return p, os.WriteFile(filepath.Join(dir, "cerca.json"), d, 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "cerca.json"), d, 0o644); err != nil {
+		return err
+	}
+	corpo := corpoCerca{Indice: b.statico("cerca.json"), FlexSearch: b.statico("flexsearch.js"), Foto: b.url("f"), Dighe: b.url("dighe")}
+	return b.scrivi("cerca", paginaSito{Titolo: "Cerca", Corpo: corpo, Briciole: []voce{{URL: b.url(), Testo: "Gallery"}}}, "cerca")
 }
 
-func (b *builder) vociFoto(f *fotoPubblicata) voceRicerca {
+func (b *builder) fotoRicerca(f *fotoPubblicata, pos map[string]int) fotoRicerca {
 	var entita []string
+	var e []int
 	for _, s := range f.Slug {
 		entita = append(entita, b.c.entita[s].Title)
+		e = append(e, pos[s])
 	}
 	meta := slices.Concat(entita, f.Authors)
 	if f.Contributore != nil {
 		meta = append(meta, f.Contributore.Nome)
 	}
 	g := f.Geolocation
-	// Snippet: Entità · Datazione · Autore — descrizione, per riconoscere la Foto senza miniatura.
-	var testa []string
-	if len(entita) > 0 {
-		testa = append(testa, entita[0])
+	mini := b.mini(f)
+	if mini == b.url("f", strconv.Itoa(f.Pid))+"mini.webp" {
+		mini = ""
 	}
-	if f.Datazione != "" {
-		testa = append(testa, f.Datazione)
-	}
-	if len(f.Authors) > 0 {
-		testa = append(testa, f.Authors[0])
-	}
-	snippet := strings.Join(testa, " · ")
-	if d := tronca(f.Description, 120); d != "" {
-		if snippet != "" {
-			snippet += " — "
-		}
-		snippet += d
-	}
-	return voceRicerca{
-		ID:      "f:" + strconv.Itoa(f.Pid),
-		Title:   b.titolo(f),
+	return fotoRicerca{
+		Pid:     f.Pid,
+		Titolo:  b.titolo(f),
 		Meta:    strings.Join(meta, " "),
 		Tags:    strings.Join(slices.Concat(f.tagPubblici(), f.Categories), " "),
-		Content: strings.Join([]string{f.Description, g.Provincia, g.Regione, g.Stato, f.Datazione}, " "),
-		Section: "Foto",
-		URL:     b.url("f", strconv.Itoa(f.Pid)),
-		Snippet: snippet,
+		Content: strings.Join(strings.Fields(strings.Join([]string{f.Description, g.Provincia, g.Regione, g.Stato, f.Datazione}, " ")), " "),
+		Entita:  e,
+		Mini:    mini,
 	}
-}
-
-// tronca taglia s a n caratteri, sull'ultimo spazio, con i puntini.
-func tronca(s string, n int) string {
-	r := []rune(strings.Join(strings.Fields(s), " "))
-	if len(r) <= n {
-		return string(r)
-	}
-	t := string(r[:n])
-	if i := strings.LastIndex(t, " "); i > n/2 {
-		t = t[:i]
-	}
-	return t + "…"
 }
