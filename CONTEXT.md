@@ -118,6 +118,10 @@ Il repository git solo locale sul server, separato dal codice, che contiene i me
 Una Foto caricata e non ancora pubblicata. Può essere in coda, in bozza o rifiutata.
 _Avoid_: upload, submission
 
+**Correzione**:
+Una modifica proposta da un utente del forum a una Foto già pubblicata: valori nuovi per uno o più campi, con una nota facoltativa. Una Correzione con la sola nota è una segnalazione. Può essere aperta, approvata (anche in parte) o rifiutata.
+_Avoid_: modifica, suggerimento, segnalazione
+
 **Moderatore**:
 Un amministratore o moderatore del forum, autorizzato ad approvare, rifiutare e organizzare le Foto.
 _Avoid_: admin, revisore
