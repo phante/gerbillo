@@ -23,6 +23,7 @@ Come si sviluppa Gerbillo senza computer: sessioni cloud di Claude Code, avviate
   - `gh api repos/phante/gerbillo/issues?state=open`
   - `gh api repos/phante/gerbillo/issues/9/comments -f body=...`
   - `gh api -X PUT repos/phante/gerbillo/pulls/N/merge`
+- **I branch non si cancellano da qui**: il proxy rifiuta sia `git push --delete` sia l'API (403). Dopo il merge si cancellano a mano dalla pagina Branches del repo (24/10/2026).
 
 ## Anteprima
 
