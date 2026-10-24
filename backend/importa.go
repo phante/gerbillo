@@ -127,10 +127,11 @@ type rigaFoto struct {
 }
 
 type datiCoppermine struct {
-	foto   []rigaFoto
-	exif   map[int]string // pid → DateTimeOriginal
-	utenti map[int]string // user_id → username
-	album  albumCoppermine
+	foto      []rigaFoto
+	exif      map[int]string // pid → DateTimeOriginal
+	utenti    map[int]string // user_id → username
+	album     albumCoppermine
+	riservati map[int]bool // aid degli album non pubblici (visibility diversa da 0)
 }
 
 // albumCoppermine è il contenuto di importazione/album.yaml: l'input della Mappatura (G2).
@@ -209,22 +210,26 @@ func leggiCoppermine(db *sql.DB, gallery, forum string) (*datiCoppermine, error)
 
 func leggiAlbum(db *sql.DB, gallery string, d *datiCoppermine) error {
 	d.album = albumCoppermine{Album: map[int]albumYAML{}, Categorie: map[int]categoriaYAML{}}
+	d.riservati = map[int]bool{}
 	foto := map[int]int{}
 	for _, f := range d.foto {
 		foto[f.aid]++
 	}
-	r, err := db.Query(`SELECT aid, category, BINARY title FROM ` + gallery + `.cpg1410_albums`)
+	r, err := db.Query(`SELECT aid, category, visibility, BINARY title FROM ` + gallery + `.cpg1410_albums`)
 	if err != nil {
 		return err
 	}
 	for r.Next() {
-		var aid, cat int
+		var aid, cat, vis int
 		var t []byte
-		if err := r.Scan(&aid, &cat, &t); err != nil {
+		if err := r.Scan(&aid, &cat, &vis, &t); err != nil {
 			return err
 		}
 		titolo, _ := decodifica(t)
 		d.album.Album[aid] = albumYAML{cat, foto[aid], titolo}
+		if vis != 0 {
+			d.riservati[aid] = true
+		}
 	}
 	if err := r.Err(); err != nil {
 		return err
@@ -273,6 +278,7 @@ type rapporto struct {
 	ospiti          int
 	cancellati      map[int]int // owner_id → foto
 	senzaAutore     int
+	riservate       int
 	spariti         []int
 	scritte         int
 }
@@ -335,6 +341,12 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 		metti(cpg, "data", testo("user3", f.user3))
 		metti(cpg, "data_exif", d.exif[f.pid])
 		y["coppermine"] = cpg
+		// Un album non pubblico in Coppermine resta fuori dalla Gallery pubblica (#1). È un dato
+		// dell'Importazione, non del Livello di arricchimento: la protezione non dipende da quello.
+		if d.riservati[f.aid] {
+			y["riservata"] = true
+			rap.riservate++
+		}
 
 		fm := formato(nome)
 		y["formato"] = fm
@@ -445,6 +457,7 @@ func (r *rapporto) markdown() []byte {
 		p("\n")
 	}
 	p("## Autore\n\nFoto senza Autore (`user1` vuoto): %d.\n\n", r.senzaAutore)
+	p("## Riservate\n\nFoto in album non pubblici di Coppermine, con `riservata: true` e fuori dalla Gallery pubblica: %d.\n\n", r.riservate)
 	p("## Spariti\n\nYAML spariti rispetto all'Importazione precedente: %d.\n", len(r.spariti))
 	if len(r.spariti) > 0 {
 		p("\n%s\n", unisci(r.spariti))
