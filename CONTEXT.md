@@ -101,6 +101,10 @@ Il file prodotto dal Sito principale che elenca le Entità per la gallery.
 **Indice delle Foto**:
 Il file prodotto dalla gallery che elenca le Foto per Entità, usato dal Sito principale.
 
+**Indice di ricerca**:
+Il file (`cerca.json`) che la ricerca della Gallery pubblica carica nel browser: Entità, Contributori e Foto, nel formato della ricerca del Sito principale (ADR 0014).
+_Avoid_: indice (da solo), Indice delle Foto (che è per il Sito principale)
+
 **Repository dei contenuti**:
 Il repository git solo locale sul server, separato dal codice, che contiene i metadati pubblicati delle Foto (ADR 0004).
 

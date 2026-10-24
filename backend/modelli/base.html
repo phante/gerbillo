@@ -213,6 +213,23 @@ document.addEventListener("click",function(e){
 
 {{define "bussola"}}{{template "testa" .}}
 {{with .Corpo}}
+{{/* Ricerca (#26, ADR 0014): il markup di site-search del sito, per search.js copiato
+     dal sito. Nascosta finché lo script sotto non la mostra: senza JavaScript non va. */}}
+<section id="site-search" class="ph3 mb4" role="search" hidden>
+<div id="search-filters" class="mb2 flex flex-wrap" style="display:none">
+{{range .Pillole}}<button class="search-filter-btn{{if eq .Sezione "all"}} is-active{{end}}" data-section="{{.Sezione}}">{{.Testo}} <span class="search-count">{{.N}}</span></button>
+{{end}}</div>
+<div id="search-container" class="search-input-group relative w-100">
+<div class="search-icona absolute left-0 pl3 flex items-center h-100"><img id="search-icon" src="{{statico "search-svgrepo-com.svg"}}" alt="Cerca" width="20" height="20"><div id="search-loader"><div class="search-loader-spinner"></div></div></div>
+<label for="search-input" class="clip">Ricerca</label>
+<input type="search" id="search-input" class="input-reset ba b--black-20 pv3 pl5 pr4 db w-100 br2 f4 lh-copy" placeholder="Cerca dighe, foto, autori o luoghi..." autocomplete="off" spellcheck="false">
+<button type="button" id="search-clear" aria-label="Cancella ricerca">&#215;</button>
+<div id="search-meta" class="f7 gray mt2 ph2" style="display:none"></div>
+<ul id="search-results" class="search-results-list pl0"></ul>
+</div>
+</section>
+<script>document.getElementById("site-search").hidden=false;window.searchIndexPath="{{.Indice}}";</script>
+<script src="{{statico "search.js"}}" defer></script>
 <div class="ph3">
   <p class="f5 black-60 mt0 mb3">{{.Sottotitolo}}</p>
   <div id="bussola" class="mb3"></div>

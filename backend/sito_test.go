@@ -22,6 +22,7 @@ func TestCopieSito(t *testing.T) {
 		"search.css":                     "assets/asset/css/search.css",
 		"map.control.verticalexpand.css": "assets/asset/css/map.control.verticalexpand.css",
 		"PDLogo.svg":                     "static/asset/brand/PDLogo.svg",
+		"search-svgrepo-com.svg":         "static/asset/images/search-svgrepo-com.svg",
 	}
 	icone, _ := filepath.Glob("modelli/sito/icone/*.svg")
 	for _, p := range icone {

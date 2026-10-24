@@ -171,7 +171,7 @@ func stato(w http.ResponseWriter, r *http.Request) {
 func staticiSenzaEstensione(dist string, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/statico/") && filepath.Ext(r.URL.Path) == "" {
-			for _, ext := range []string{".css", ".svg", ".js"} {
+			for _, ext := range []string{".css", ".svg", ".js", ".json"} {
 				if p := filepath.Join(dist, filepath.FromSlash(r.URL.Path)+ext); esiste(p) {
 					http.ServeFile(w, r, p)
 					return

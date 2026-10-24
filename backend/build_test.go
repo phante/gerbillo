@@ -114,6 +114,35 @@ func TestBuild(t *testing.T) {
 	for _, p := range []string{"index.html", "dighe/vajont/index.html", "altre/index.html", "altre/2/index.html", "altre/1/index.html", "contributori/74/index.html", "statico/stile.css"} {
 		leggi(p)
 	}
+	var cerca []voceRicerca
+	if err := json.Unmarshal([]byte(leggi("statico/cerca.json")), &cerca); err != nil {
+		t.Fatal(err)
+	}
+	voci := map[string]voceRicerca{}
+	for _, v := range cerca {
+		voci[v.ID] = v
+	}
+	if e := voci["e:dighe/vajont"]; e.Section != "Dighe" || e.URL != "/g/dighe/vajont/" || e.Snippet != "2 foto · Friuli-Venezia Giulia, Italia" {
+		t.Errorf("Entità nell'Indice di ricerca: %+v", e)
+	}
+	if c := voci["c:74"]; c.Title != "Pomase" || c.Section != "Contributori" {
+		t.Errorf("Contributore nell'Indice di ricerca: %+v", c)
+	}
+	if f := voci["f:1"]; f.Title != "Diga" || f.Meta != "Vajont Ente Mario" || f.Snippet != "Vajont · 195X · Ente" || f.Section != "Foto" {
+		t.Errorf("Foto nell'Indice di ricerca: %+v", f)
+	}
+	if f := voci["f:2"]; f.Title != "Vajont · foto 2" {
+		t.Errorf("Foto senza titolo: %+v", f)
+	}
+	if strings.Contains(voci["f:3"].Tags, "da-separare") {
+		t.Error("tag interno nell'Indice di ricerca")
+	}
+	home := leggi("index.html")
+	for _, atteso := range []string{`window.searchIndexPath="\/g\/statico\/cerca.json"`, `data-section="dighe">Dighe <span class="search-count">1</span>`, `data-section="foto">Foto <span class="search-count">4</span>`} {
+		if !strings.Contains(home, atteso) {
+			t.Errorf("home senza %q", atteso)
+		}
+	}
 	var idx map[string][]int
 	if err := json.Unmarshal([]byte(leggi("indice-foto.json")), &idx); err != nil || len(idx["dighe/vajont"]) != 2 {
 		t.Errorf("Indice delle Foto %v %v", idx, err)

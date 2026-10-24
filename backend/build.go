@@ -326,7 +326,11 @@ func (b *builder) tutto() error {
 	if err := b.home(perEntita, slugs); err != nil {
 		return err
 	}
-	if err := b.bussola(perEntita, slugs, len(ids), altre); err != nil {
+	pillole, err := b.cerca(perEntita, slugs, perContributore, ids, nomi)
+	if err != nil {
+		return err
+	}
+	if err := b.bussola(perEntita, slugs, len(ids), altre, pillole); err != nil {
 		return err
 	}
 	if err := b.elencoContributori(ids, nomi, perContributore, casa); err != nil {
@@ -520,10 +524,12 @@ type corpoBussola struct {
 	Sottotitolo string
 	Dati        template.JS // le dighe con foto, in JSON, lette dallo script della pagina
 	Porte       []voce
+	Pillole     []pillola // della ricerca, sopra la Bussola (#26)
+	Indice      string    // URL dell'Indice di ricerca
 }
 
 // bussola è la home: si restringono le dighe per Dove, Quando, Come e Per cosa (esplora.go).
-func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string, contributori int, altre map[int][]*fotoPubblicata) error {
+func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string, contributori int, altre map[int][]*fotoPubblicata, pillole []pillola) error {
 	d, err := json.Marshal(append(b.vociBussola(perEntita, slugs), b.vociGruppi(altre)...))
 	if err != nil {
 		return err
@@ -537,6 +543,8 @@ func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string
 	corpo := corpoBussola{
 		Sottotitolo: "Scegli da dove partire: ogni scelta restringe le altre.",
 		Dati:        template.JS(d),
+		Pillole:     pillole,
+		Indice:      b.statico("cerca.json"),
 		Porte: []voce{
 			{URL: b.url("dighe"), Testo: "Tutte le dighe", N: len(slugs), Sito: "dighe"},
 			{URL: b.url("contributori"), Testo: "Contributori", N: contributori, Sito: "contributori"},
@@ -570,7 +578,7 @@ func (b *builder) elencoAltre(cids []int, altre map[int][]*fotoPubblicata, casa 
 	return b.scrivi("elenco", paginaSito{Titolo: "Da classificare", Corpo: corpo, Briciole: []voce{casa}}, "altre")
 }
 
-// statici scrive CSS, icona e l'Indice delle Foto per il Sito principale (ADR 0002).
+// statici scrive CSS, JavaScript e icone del sito e l'Indice delle Foto per il Sito principale (ADR 0002).
 func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 	dir := filepath.Join(b.dir, "statico")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -593,7 +601,7 @@ func (b *builder) statici(perEntita map[string][]*fotoPubblicata) error {
 		return err
 	}
 	for orig, dest := range map[string]string{"documento.svg": "documento.svg", "sito/PDLogo.svg": "PDLogo.svg",
-		"sito/mappa.js": "mappa.js", "sito/icone/cc.svg": "cc.svg", "sito/icone/by.svg": "by.svg", "sito/icone/sa.svg": "sa.svg"} {
+		"sito/mappa.js": "mappa.js", "sito/search.js": "search.js", "sito/search-svgrepo-com.svg": "search-svgrepo-com.svg", "sito/icone/cc.svg": "cc.svg", "sito/icone/by.svg": "by.svg", "sito/icone/sa.svg": "sa.svg"} {
 		d, err := modelli.ReadFile("modelli/" + orig)
 		if err != nil {
 			return err
