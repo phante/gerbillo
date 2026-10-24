@@ -66,7 +66,7 @@ func TestTrova(t *testing.T) {
 	}
 }
 
-func TestAbbina(t *testing.T) {
+func TestMappature(t *testing.T) {
 	cpg := albumCoppermine{
 		Categorie: map[int]categoriaYAML{
 			2:  {"Dighe - Dams", 0},
@@ -88,7 +88,7 @@ func TestAbbina(t *testing.T) {
 		22: {Origine: manuale, Slug: []string{"dighe/ravedis"}, Tags: []string{"cellina"}},
 		21: {Origine: daFare},
 	}}
-	m, rap := abbina(cpg, indiceProva(), vecchie)
+	m, rap := mappature(cpg, indiceProva(), vecchie)
 	if c := m.Categorie[10]; c == nil || !slices.Equal(c.Slug, []string{"dighe/vajont"}) {
 		t.Errorf("categoria Vajont: %+v", c)
 	}

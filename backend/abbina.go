@@ -44,14 +44,14 @@ type fileMappature struct {
 }
 
 const intestazioneMappature = `# Mappature degli Album di Coppermine (G2, #10; ADR 0009, 0013).
-# Le righe "origine: automatica" e "da-fare" le riscrive gerbillo mappa.
+# Le righe "origine: automatica" e "da-fare" le riscrive gerbillo abbina.
 # Per correggerne o completarne una, scrivi "origine: manuale": da lì non viene più toccata.
 # Un album senza riga eredita la Mappatura della sua categoria. I commenti non si conservano.
 
 `
 
-func mappa(args []string) error {
-	fs := flag.NewFlagSet("mappa", flag.ExitOnError)
+func abbina(args []string) error {
+	fs := flag.NewFlagSet("abbina", flag.ExitOnError)
 	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
 	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
 	manuali := fs.String("manuali", "", "righe manuali da aggiungere (es. dati/mappature-manuali.yaml): vincono su quelle esistenti")
@@ -95,7 +95,7 @@ func mappa(args []string) error {
 		}
 		vecchie.Album, vecchie.Categorie = unisciManuali(vecchie.Album, m.Album), unisciManuali(vecchie.Categorie, m.Categorie)
 	}
-	nuove, rap := abbina(cpg, idx, vecchie)
+	nuove, rap := mappature(cpg, idx, vecchie)
 	out, err := yaml.Marshal(nuove)
 	if err != nil {
 		return err
@@ -147,8 +147,8 @@ type rapportoMappature struct {
 	sconosciuti                              []string // "album 12: dighe/xxx"
 }
 
-// abbina produce le Mappature: le righe manuali restano, le altre si rigenerano.
-func abbina(cpg albumCoppermine, idx []entita, vecchie fileMappature) (fileMappature, *rapportoMappature) {
+// mappature produce le Mappature: le righe manuali restano, le altre si rigenerano.
+func mappature(cpg albumCoppermine, idx []entita, vecchie fileMappature) (fileMappature, *rapportoMappature) {
 	chiavi := chiaviEntita(idx)
 	noti := map[string]bool{}
 	for _, e := range idx {
