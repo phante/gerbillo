@@ -1,0 +1,98 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Sigillo",
+        "stato": "Esercizio normale",
+        "gestore": ["ENEL Green Power"],
+        "potenza": 5
+      },
+      "geometry": { "type": "Point", "coordinates": [13.0861997, 42.4728127] },
+      "id": "centrale-3m2g6q"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Derivazione Velino per la galleria Salto-Cotilia"
+      },
+      "geometry": { "type": "Point", "coordinates": [13.0858312, 42.472045] },
+      "id": "presa-6z5p37"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Collegamento Salto-Cotilia"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.0253381, 42.2800553],
+          [13.0107307, 42.2981353],
+          [13.0000877, 42.3392601],
+          [12.9657454, 42.3707072]
+        ]
+      },
+      "id": "condotta-6e4n1y"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "pozzo", "name": "Pozzo piezometrico" },
+      "geometry": { "type": "Point", "coordinates": [12.9657465, 42.3707079] },
+      "id": "pozzo-5z361i"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.9657475, 42.3707079],
+          [12.9670465, 42.3723928]
+        ]
+      },
+      "id": "condotta-2k6u22"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa", "name": "Opera di presa sul Velino" },
+      "geometry": { "type": "Point", "coordinates": [12.9681157, 42.3745168] },
+      "id": "presa-3g4b0i"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Cotilia" },
+      "geometry": { "type": "Point", "coordinates": [12.968495, 42.3726276] },
+      "id": "cotilia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale di scarico della centrale di Cotilla"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.9670641, 42.3726328],
+          [12.9619374, 42.3720976],
+          [12.9562426, 42.3736143],
+          [12.9505969, 42.3792819],
+          [12.9501189, 42.3799275],
+          [12.9491297, 42.3805731],
+          [12.9482338, 42.380776],
+          [12.9451791, 42.3826254],
+          [12.9406933, 42.3857247],
+          [12.9342474, 42.3905907],
+          [12.9286689, 42.3903336],
+          [12.9133515, 42.3841597]
+        ]
+      },
+      "id": "canale-di-scarico-della-centrale-di-cotilla"
+    }
+  ]
+}

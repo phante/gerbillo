@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.707009243410283, 46.029919345643805]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale San Foca – Villa Rinaldi"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.702523342118269, 46.05858021104723],
+          [12.70146395691549, 46.05457703091601],
+          [12.701263328223305, 46.05329319035427],
+          [12.704131817496432, 46.04190165178448],
+          [12.70699468740304, 46.02999031901936]
+        ]
+      },
+      "id": "canale-san-foca-villa-rinaldi"
+    }
+  ]
+}

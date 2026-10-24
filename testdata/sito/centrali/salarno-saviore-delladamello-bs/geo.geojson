@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.4594377, 46.1300659],
+          [10.4722881, 46.1139586],
+          [10.4726529, 46.1122108]
+        ]
+      },
+      "id": "condotta-43560r"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa" },
+      "geometry": { "type": "Point", "coordinates": [10.4790902, 46.1145276] },
+      "id": "presa-5r0j4t"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "Dosazzo - Salarno" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.4790902, 46.1145276],
+          [10.4786021, 46.114033],
+          [10.4726529, 46.1122108]
+        ]
+      },
+      "id": "condotta-dosazzo-salarno"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [10.4726529, 46.1122108] },
+      "id": "salarno-saviore-delladamello-bs"
+    }
+  ]
+}

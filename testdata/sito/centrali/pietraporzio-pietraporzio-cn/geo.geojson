@@ -1,0 +1,37 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Centrale di Pietraporzio" },
+      "geometry": { "type": "Point", "coordinates": [7.0310783, 44.3440617] },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "canale", "name": "Pietraporzio-Rio Freddo" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.171669, 44.2808192],
+          [7.1098709, 44.2857656],
+          [7.0394897, 44.3364958],
+          [7.0354664, 44.3425098]
+        ]
+      },
+      "id": "canale-pietraporzio-rio-freddo"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "Condotta Pietraporzio" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.0236862, 44.3398722],
+          [7.030955, 44.3439696]
+        ]
+      },
+      "id": "condotta-pietraporzio"
+    }
+  ]
+}

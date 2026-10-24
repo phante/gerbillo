@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.2461861, 44.4873978],
+          [7.2324532, 44.4768534],
+          [7.2308224, 44.4771865],
+          [7.0944858, 44.4912706]
+        ]
+      },
+      "id": "condotta-732m2z"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [7.2468125, 44.4873039] },
+      "id": "san-damiano-cn"
+    }
+  ]
+}

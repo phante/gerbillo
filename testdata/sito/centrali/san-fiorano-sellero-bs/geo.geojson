@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [10.3647745, 46.0519916] },
+      "id": "san-fiorano-sellero-bs"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.3656971, 46.0514109],
+          [10.3836679, 46.0471367]
+        ]
+      },
+      "id": "condotta-5q4g19"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.4373121, 46.0470548],
+          [10.4316902, 46.0497355],
+          [10.3862429, 46.0463102],
+          [10.3836679, 46.0471367]
+        ]
+      },
+      "id": "condotta-044348"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "pozzo" },
+      "geometry": { "type": "Point", "coordinates": [10.3862429, 46.0463102] },
+      "id": "pozzo-3u3w4r"
+    }
+  ]
+}

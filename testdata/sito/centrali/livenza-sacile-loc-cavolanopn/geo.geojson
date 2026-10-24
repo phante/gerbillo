@@ -1,0 +1,88 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Livenza"
+      },
+      "geometry": {
+        "coordinates":           [
+            12.455878,
+            45.942988
+          ],
+        "type": "Point"
+      },
+      "id": "presa-livenza"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Alimentazione Livenza"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.455878,
+            45.942988
+          ],
+          [
+            12.45708,
+            45.940079
+          ],
+          [
+            12.460663,
+            45.937721
+          ],
+          [
+            12.46738,
+            45.934856
+          ],
+          [
+            12.471757,
+            45.932259
+          ],
+          [
+            12.478731,
+            45.930065
+          ],
+          [
+            12.483473,
+            45.93014
+          ],
+          [
+            12.490189,
+            45.928737
+          ],
+          [
+            12.496305,
+            45.92623
+          ],
+          [
+            12.506229,
+            45.92561
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "canale-livenza"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Livenza"
+      },
+      "geometry": {
+        "coordinates": [
+          12.506229,
+          45.92561
+        ],
+        "type": "Point"
+      },
+      "id": "livenza-sacile-loc-cavolanopn"
+    }
+  ]
+}

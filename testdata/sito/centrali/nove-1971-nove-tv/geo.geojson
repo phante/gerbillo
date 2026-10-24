@@ -1,0 +1,83 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Prese per le centrali di Nove 1925 e Nove 1971"
+      },
+      "geometry": {
+        "coordinates": [
+          12.317777,
+          46.061827
+        ],
+        "type": "Point"
+      },
+      "id": "presa-nove"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Fadalto - Nove"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.317777,
+            46.061827
+          ],
+          [
+            12.31465955725832,
+            46.062163918547796
+          ],
+          [
+            12.299967,
+            46.04077
+          ],
+          [
+            12.301991575879505,
+            46.03711420831645
+          ],
+          [
+            12.302613297119189,
+            46.03660111818593
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "condotta-nove"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pozzo",
+        "name": "Pozzo piezometrico di Nove 1971"
+      },
+      "geometry": {
+        "coordinates": [
+          12.301677437030293,
+          46.03700838524887
+        ],
+        "type": "Point"
+      },
+      "id": "pozzo-nove_1971"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Nove 1971"
+      },
+      "geometry": {
+        "coordinates": [
+          12.302625909875696,
+          46.036592563292444
+        ],
+        "type": "Point"
+      },
+      "id": "nove-1971-nove-tv"
+    }
+  ]
+}

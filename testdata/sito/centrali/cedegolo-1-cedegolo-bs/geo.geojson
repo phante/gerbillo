@@ -1,0 +1,72 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.3630793, 46.0657648],
+          [10.3515673, 46.066338]
+        ]
+      },
+      "id": "condotta-6l4n15"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "bacino", "name": "Cedegolo 1" },
+      "geometry": { "type": "Point", "coordinates": [10.3631651, 46.0654372] },
+      "id": "bacino-cedegolo-1"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [10.3511, 46.06624] },
+      "id": "cedegolo-1-cedegolo-bs"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa" },
+      "geometry": { "type": "Point", "coordinates": [10.4173619, 46.0642015] },
+      "id": "presa-092j0c"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa" },
+      "geometry": { "type": "Point", "coordinates": [10.4193467, 46.0656717] },
+      "id": "presa-3n2d0t"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "canale" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.3636909, 46.0656978],
+          [10.3745162, 46.0670079],
+          [10.3754282, 46.0667213],
+          [10.3779012, 46.066498],
+          [10.3857064, 46.066271],
+          [10.3896922, 46.0663826],
+          [10.3924066, 46.066539],
+          [10.3932595, 46.0667995],
+          [10.3938979, 46.0667921],
+          [10.3946918, 46.0666841],
+          [10.3948957, 46.0667697],
+          [10.3951478, 46.0670526],
+          [10.3952712, 46.0671494],
+          [10.3954536, 46.0671531],
+          [10.396505, 46.0668367],
+          [10.40968, 46.0665538],
+          [10.4108173, 46.0660998],
+          [10.4120082, 46.0660104],
+          [10.414744, 46.0650055],
+          [10.4156774, 46.0647784],
+          [10.4173619, 46.0642015]
+        ]
+      },
+      "id": "canale-3m3030"
+    }
+  ]
+}

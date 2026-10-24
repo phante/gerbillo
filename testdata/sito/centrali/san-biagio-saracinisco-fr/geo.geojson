@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [13.9208418, 41.6148688] },
+      "id": "san-biagio-saracinisco-fr"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Selva - San Biagio Saracinisco"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.9692879, 41.6071319],
+          [13.9670992, 41.6103086],
+          [13.922596, 41.6182978],
+          [13.9217591, 41.6167698],
+          [13.9208043, 41.6151175]
+        ]
+      },
+      "id": "condotta-selva-san-biagio-saracinisco"
+    }
+  ]
+}

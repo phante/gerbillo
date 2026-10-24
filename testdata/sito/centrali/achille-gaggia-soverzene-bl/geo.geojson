@@ -1,0 +1,68 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Achille Gaggia"
+      },
+      "geometry": {
+        "coordinates": [
+          12.302582804449997,
+          46.201015066425896
+        ],
+        "type": "Point"
+      },
+      "id": 0
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pozzo",
+        "name": "Pozzi Piezometrici"
+      },
+      "geometry": {
+        "coordinates": [
+          12.310557489684157,
+          46.20260953370439
+        ],
+        "type": "Point"
+      },
+      "id": 1
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Traversa sul Piave"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.29960045368354, 46.20018216538697]
+      },
+      "id": "traversa-piave"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta Sottocastello – Vajont – Val Gallina – Soverzene"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.389467, 46.422224],
+          [12.34726, 46.344321],
+          [12.33696, 46.317533],
+          [12.32769, 46.296188],
+          [12.328457, 46.268316],
+          [12.332432, 46.217154],
+          [12.308089, 46.201926],
+          [12.302907, 46.201106]
+        ]
+      },
+      "id": "condotta-sottocastello-vajont-valgallina-soverzene"
+    }
+  ]
+}

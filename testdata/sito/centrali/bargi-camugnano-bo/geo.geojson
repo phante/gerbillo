@@ -1,0 +1,32 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [11.0430587, 44.1168113] },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa", "name": "Opera di presa Ottagono" },
+      "geometry": { "type": "Point", "coordinates": [11.107988, 44.1216264] },
+      "id": "presa-ottagono"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "Brasimone – Bargi" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [11.1079839, 44.1215922],
+          [11.0552589, 44.1155044],
+          [11.0526698, 44.1158761],
+          [11.0448423, 44.1174077],
+          [11.0432607, 44.1167255]
+        ]
+      },
+      "id": "condotta-brasimone-bargi"
+    }
+  ]
+}

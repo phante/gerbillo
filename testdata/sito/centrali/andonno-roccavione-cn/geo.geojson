@@ -1,0 +1,42 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Andonno" },
+      "geometry": { "type": "Point", "coordinates": [7.4463045, 44.2945686] },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta", "name": "Piastra-Andonno" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.3910093, 44.2238287],
+          [7.3920178, 44.2235043],
+          [7.3930049, 44.2255812],
+          [7.3987341, 44.2274577],
+          [7.4006224, 44.228903],
+          [7.3999158, 44.2308849],
+          [7.4016346, 44.2322366],
+          [7.402398, 44.2329121],
+          [7.4681282, 44.2596189],
+          [7.4747801, 44.2653782],
+          [7.4705744, 44.2715705],
+          [7.4480867, 44.2853355],
+          [7.4456406, 44.2900972],
+          [7.4458994, 44.2921304],
+          [7.4462228, 44.2945794]
+        ]
+      },
+      "id": "condotta-piastra-andonno"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "pozzo" },
+      "geometry": { "type": "Point", "coordinates": [7.4456406, 44.2900972] },
+      "id": "pozzo-0h4t05"
+    }
+  ]
+}

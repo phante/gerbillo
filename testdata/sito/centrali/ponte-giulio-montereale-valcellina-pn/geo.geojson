@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.678903553087594, 46.135348013462874]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "presa",
+        "name": "Rugo Stella"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.6260885, 46.1672154]
+      },
+      "id": "rugo-stella"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Canale Ravedis – Ponte Giulio"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [12.678896544853956, 46.13540186374473],
+          [12.67935492681923, 46.13890858439214],
+          [12.676060811100626, 46.14346983035378],
+          [12.672183966797533, 46.14989275662036],
+          [12.669857494408415, 46.15335655184492],
+          [12.666238392196966, 46.15982004449992],
+          [12.663071710423115, 46.16840934571134],
+          [12.655380824271077, 46.16929966178333]
+        ]
+      },
+      "id": "canale-ravedis-ponte-giulio"
+    }
+  ]
+}

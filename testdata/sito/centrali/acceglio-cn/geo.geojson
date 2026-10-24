@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.0158353, 44.4752726],
+          [7.0133543, 44.4797701],
+          [6.9329309, 44.4799423]
+        ]
+      },
+      "id": "condotta-0z5m6d"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [7.0158032, 44.4753274] },
+      "id": "acceglio-cn"
+    }
+  ]
+}

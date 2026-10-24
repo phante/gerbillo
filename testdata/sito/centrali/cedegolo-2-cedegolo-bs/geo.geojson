@@ -1,0 +1,67 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale" },
+      "geometry": { "type": "Point", "coordinates": [10.3511435, 46.064972] },
+      "id": "cedegolo-2-cedegolo-bs"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Galleria in pressione Poglia - Cedegolo 2"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.3668988, 46.0722705],
+          [10.3591204, 46.0661091]
+        ]
+      },
+      "id": "condotta-galleria-in-pressione-poglia-cedegolo-2"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "pozzo", "name": "Cedegolo 2" },
+      "geometry": { "type": "Point", "coordinates": [10.3591204, 46.0661091] },
+      "id": "pozzo-cedegolo-2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta forzata Cedegolo 2"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [10.3591204, 46.0661091],
+          [10.3557998, 46.06623]
+        ]
+      },
+      "id": "condotta-forzata-cedegolo-2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Sala macchine Cedegolo 2 (ipotizzata)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.3554672, 46.0662896],
+            [10.3559607, 46.0658206],
+            [10.3555959, 46.0656494],
+            [10.3551024, 46.066137],
+            [10.3554672, 46.0662896]
+          ]
+        ]
+      },
+      "id": "centrale-sala-macchine-cedegolo-2-ipotizzata"
+    }
+  ]
+}

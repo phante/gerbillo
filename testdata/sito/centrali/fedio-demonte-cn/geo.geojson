@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Fedio"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.2666842, 44.3295008]
+      },
+      "id": "main"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotta forzata"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [7.2671037, 44.3294505],
+          [7.2670847, 44.3298075],
+          [7.266635, 44.334926],
+          [7.2664116, 44.3372497],
+          [7.2032905, 44.3453693]
+        ]
+      },
+      "id": "condotta-fedio"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "bacino",
+        "name": "San Giacomo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.2018421, 44.34561175]
+      },
+      "id": "bacino-san-giacomo"
+    }
+  ]
+}

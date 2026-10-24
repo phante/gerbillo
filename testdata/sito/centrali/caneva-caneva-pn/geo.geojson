@@ -1,0 +1,197 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Carron - Lago Madruk"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.344733,
+            45.983414
+          ],
+          [
+            12.349534,
+            45.984386
+          ],
+          [
+            12.351776,
+            45.98587
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "canale-madruk"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "bacino",
+        "name": "Lago Madruk"
+      },
+      "geometry": {
+        "coordinates": [
+          12.35198,
+          45.986302
+        ],
+        "type": "Point"
+      },
+      "id": "bacino-madruk"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pontecanale",
+        "name": "Sifone della Val Friga"
+      },
+      "geometry": {
+        "coordinates": [
+          12.36873476021691,
+          45.988280325016746
+        ],
+        "type": "Point"
+      },
+      "id": "pontecanale-val_friga"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "pozzo",
+        "name": "Pozzo Piezometrico Caneva"
+      },
+      "geometry": {
+        "coordinates": [
+          12.436867,
+          45.972599
+        ],
+        "type": "Point"
+      },
+      "id": "pozzo-caneva"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Lago Madruk - Caneva"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.352827494376184,
+            45.98581379876034
+          ],
+          [
+            12.363808329592294,
+            45.98708792865433
+          ],
+          [
+            12.364850520848348,
+            45.987013250133685
+          ],
+          [
+            12.37151136928755,
+            45.98916311228951
+          ],
+          [
+            12.37269551942525,
+            45.9892248220401
+          ],
+          [
+            12.436498699848597,
+            45.972625877065894
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "canale-caneva"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Condotte centrale di Caneva"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.436880603549696,
+            45.9724354318966
+          ],
+          [
+            12.440379719902893,
+            45.969177771643984
+          ],
+          [
+            12.441466731781816,
+            45.96723324828265
+          ],
+          [
+            12.442274637576617,
+            45.96701313979952
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "condotte-caneva"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "Caneva"
+      },
+      "geometry": {
+        "coordinates": [
+          12.442548,
+          45.966607
+        ],
+        "type": "Point"
+      },
+      "id": "caneva-caneva-pn"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "canale",
+        "name": "Caneva - Livenza"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.442279,
+            45.9666
+          ],
+          [
+            12.442918,
+            45.966466
+          ],
+          [
+            12.443669,
+            45.965571
+          ],
+          [
+            12.445192,
+            45.963024
+          ],
+          [
+            12.448368,
+            45.960846
+          ],
+          [
+            12.45223,
+            45.955715
+          ],
+          [
+            12.455535,
+            45.947002
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "canale-scario_caneva"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+        {
+      "type": "Feature",
+      "properties": {
+        "type": "pozzo",
+        "name": "Vasca di carico San Floriano Vecchia"
+      },
+      "geometry": {
+        "coordinates": [
+          12.301410985311813,
+          46.029158
+        ],
+        "type": "Point"
+      },
+      "id": "pozzo-san_floriano_vecchia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "condotta",
+        "name": "Lago Restello - San Floriano Vecchia"
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            12.301500261503925,
+            46.03092084389028
+          ],
+          [
+            12.301014581688513,
+            46.03050308950717
+          ],
+          [
+            12.301304378537461,
+            46.02912558317576
+          ],
+          [
+            12.30170619703248,
+            46.02847108999884
+          ]
+        ],
+        "type": "LineString"
+      },
+      "id": "condotta-san_floriano_vecchia"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "centrale",
+        "name": "San Floriano vecchia"
+      },
+      "geometry": {
+        "coordinates": [
+          12.301716,
+          46.028502
+        ],
+        "type": "Point"
+      },
+      "id": "san-floriano-vittorio-veneto-tv"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "type": "centrale", "name": "Grotta Campanaro 1" },
+      "geometry": { "type": "Point", "coordinates": [13.900162, 41.6655145] },
+      "id": "centrale-grotta-campanaro-1"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "presa" },
+      "geometry": { "type": "Point", "coordinates": [13.908906, 41.6788258] },
+      "id": "presa-3g254r"
+    },
+    {
+      "type": "Feature",
+      "properties": { "type": "condotta" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [13.908906, 41.6788258],
+          [13.900162, 41.6655145]
+        ]
+      },
+      "id": "condotta-4y5543"
+    }
+  ]
+}
