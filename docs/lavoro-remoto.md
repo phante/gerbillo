@@ -79,7 +79,7 @@ Al rientro: riportare in Ansible (`progettodighe-server`) la `location`, le unit
 
 ## Livello di arricchimento dell'anteprima
 
-Finché non c'è il rientro, il lavoro editoriale deciso in chat sta in `dati/arricchimento/`, con la stessa struttura del Livello di arricchimento (`mappature.yaml`, `autori.yaml`, `foto/<pid>.yaml`). L'anteprima lo applica con `importa -arricchimento` e `build -arricchimento`, sovrapposto file per file a quello dei contenuti (#38, #39).
+Finché non c'è il rientro, il lavoro editoriale deciso in chat sta in `dati/arricchimento/`, con la stessa struttura del Livello di arricchimento (`mappature.yaml`, `autori.yaml`, `riservati.yaml`, `foto/<pid>.yaml`). L'anteprima lo applica con `importa -arricchimento` e `build -arricchimento`, sovrapposto file per file a quello dei contenuti (#38, #39).
 
 Al rientro:
 - `gerbillo abbina` non c'è più (#38): dall'`arricchimento/mappature.yaml` del server tieni solo le righe `manuale`, poi sostituiscilo con `dati/arricchimento/mappature.yaml`;

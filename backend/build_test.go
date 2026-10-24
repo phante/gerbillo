@@ -22,6 +22,9 @@ func contenutiProva(t *testing.T) (dir, indice string) {
     14: {categoria: 10, foto: 2, title: La Forra}
     20: {categoria: 6, foto: 1, title: Sconosciuta}
     30: {categoria: 10074, foto: 1, title: Varie}
+    40: {categoria: 6, foto: 1, title: Pubblicato}
+    41: {categoria: 6, foto: 1, title: Cancellato}
+    42: {categoria: 6, foto: 2, title: Senza decisione}
 categorie:
     2: {nome: Dighe - Dams, parent: 0}
     6: {nome: Friuli, parent: 2}
@@ -36,6 +39,10 @@ album:
 		"1": "pid: 1\ntitle: Diga\nformato: immagine\ndate: \"2006-12-27T12:23:55+01:00\"\ncontributore: {id: 25, nome: Mario}\ncoppermine: {aid: 14, filepath: userpics/1/, filename: a.jpg}\n",
 		"2": "pid: 2\nauthors: [\"-\"]\nformato: pdf\ncoppermine: {aid: 14, filepath: userpics/1/, filename: b.pdf}\n",
 		"3": "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ndatazione: \"2004-07-18\"\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg, data: 18/07/2004 circa}\n",
+		"6": "pid: 6\nriservata: true\nformato: immagine\ncoppermine: {aid: 40}\n",
+		"7": "pid: 7\nriservata: true\nformato: immagine\ncoppermine: {aid: 41}\n",
+		"8": "pid: 8\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
+		"9": "pid: 9\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
 		"5": "pid: 5\nformato: immagine\ncoppermine: {aid: 30, filepath: userpics/2/, filename: e.jpg, data: Ottobre 2006}\n",
 		"4": "pid: 4\nauthors: [Grezzo]\nformato: immagine\ncontributore: {id: 74, nome: Pomase}\ncoppermine: {aid: 30, filepath: userpics/2/, filename: d.jpg}\n",
 	}
@@ -44,6 +51,8 @@ album:
 	}
 	scrivi("arricchimento/autori.yaml", "\"Il gaurdiano & paolog\": [Il guardiano, paolog]\n\"-\": []\n")
 	scrivi("arricchimento/foto/1.yaml", "datazione: 195X\nauthors: [Ente]\nlicenza: CC-BY-4.0\n")
+	scrivi("arricchimento/foto/9.yaml", "riservata: false\n")
+	scrivi("arricchimento/riservati.yaml", "album:\n    40: pubblica\n    41: cancella\n")
 	indice = filepath.Join(dir, "indice.json")
 	scrivi("indice.json", `[{"slug":"dighe/vajont","title":"Vajont","geolocation":{"stato":"Italia","regione":"Friuli-Venezia Giulia"}}]`)
 	return dir, indice
@@ -80,9 +89,26 @@ func TestLeggiContenuti(t *testing.T) {
 	if tg := f[3].tagPubblici(); len(tg) != 1 || tg[0] != "cellina" {
 		t.Errorf("tag pubblici %v", tg)
 	}
+	// Album riservati (#35): pubblica, cancella, senza riga (resta riservato), eccezione sulla Foto.
+	if f[6] == nil || f[7] != nil || f[8] != nil || f[9] == nil {
+		t.Errorf("riservati: pubblicato %v, cancellato %v, senza decisione %v, eccezione %v", f[6] != nil, f[7] != nil, f[8] != nil, f[9] != nil)
+	}
 	// Album personale senza riga né abbinamento: il tag interno si deriva al build (#38).
 	if tg := f[4].Tags; len(tg) != 1 || tg[0] != daCollegare || len(f[4].tagPubblici()) != 0 {
 		t.Errorf("pid 4 senza da-collegare: %v", tg)
+	}
+}
+
+func TestRiservatiNonValidi(t *testing.T) {
+	for yaml, errore := range map[string]string{
+		"album:\n    40: pubblicare\n": `album 40: "pubblicare", ammessi pubblica o cancella`,
+		"album:\n    999: cancella\n":  "album 999 inesistente",
+	} {
+		dir, indice := contenutiProva(t)
+		os.WriteFile(filepath.Join(dir, "arricchimento", "riservati.yaml"), []byte(yaml), 0o644)
+		if _, err := leggiContenuti(dir, indice, nuovoLivello(dir, "")); err == nil || !strings.Contains(err.Error(), errore) {
+			t.Errorf("%q: errore %v, atteso %q", yaml, err, errore)
+		}
 	}
 }
 

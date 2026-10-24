@@ -112,6 +112,11 @@ func importa(args []string) error {
 	if idx != nil {
 		_, rap.mappature = mappature(righe.album, idx, manuali)
 	}
+	decisioni, err := leggiRiservati(liv, righe.album)
+	if err != nil {
+		return err
+	}
+	rap.senzaDecisione = senzaDecisione(righe, decisioni)
 	if err := scrivi(c.Contenuti, foto, rap); err != nil {
 		return err
 	}
@@ -174,7 +179,7 @@ type datiCoppermine struct {
 	exif      map[int]string // pid → DateTimeOriginal
 	utenti    map[int]string // user_id → username
 	album     albumCoppermine
-	riservati map[int]bool // aid degli album non pubblici (visibility diversa da 0)
+	riservati map[int]int // aid degli album non pubblici → visibility (diversa da 0)
 }
 
 // albumCoppermine è il contenuto di importazione/album.yaml: l'input della Mappatura (G2).
@@ -253,7 +258,7 @@ func leggiCoppermine(db *sql.DB, gallery, forum string) (*datiCoppermine, error)
 
 func leggiAlbum(db *sql.DB, gallery string, d *datiCoppermine) error {
 	d.album = albumCoppermine{Album: map[int]albumYAML{}, Categorie: map[int]categoriaYAML{}}
-	d.riservati = map[int]bool{}
+	d.riservati = map[int]int{}
 	foto := map[int]int{}
 	for _, f := range d.foto {
 		foto[f.aid]++
@@ -271,7 +276,7 @@ func leggiAlbum(db *sql.DB, gallery string, d *datiCoppermine) error {
 		titolo, _ := decodifica(t)
 		d.album.Album[aid] = albumYAML{cat, foto[aid], titolo}
 		if vis != 0 {
-			d.riservati[aid] = true
+			d.riservati[aid] = vis
 		}
 	}
 	if err := r.Err(); err != nil {
@@ -324,6 +329,7 @@ type rapporto struct {
 	autori          map[string]int // valore grezzo → Foto
 	alias           aliasAutori
 	riservate       int
+	senzaDecisione  []string                  // righe di tabella: album riservati senza riga in riservati.yaml (#35)
 	datazioneExif   int                       // Datazione dall'EXIF (#18)
 	soloUser3       int                       // senza Datazione, con user3 mostrato come testo
 	senzaData       int                       // né l'una né l'altro
@@ -432,7 +438,7 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 		y["coppermine"] = cpg
 		// Un album non pubblico in Coppermine resta fuori dalla Gallery pubblica (#1). È un dato
 		// dell'Importazione, non del Livello di arricchimento: la protezione non dipende da quello.
-		if d.riservati[f.aid] {
+		if d.riservati[f.aid] != 0 {
 			y["riservata"] = true
 			rap.riservate++
 		}
@@ -596,6 +602,10 @@ func (r *rapporto) markdown() []byte {
 		p("| pid | user3 | EXIF | Caricata | Datazione |\n|---:|---|---|---|---|\n%s\n\n", strings.Join(r.scansioni, "\n"))
 	}
 	p("## Riservate\n\nFoto in album non pubblici di Coppermine, con `riservata: true` e fuori dalla Gallery pubblica: %d.\n\n", r.riservate)
+	p("Album riservati senza decisione in `arricchimento/riservati.yaml` (`pubblica` o `cancella`): %d.\n\n", len(r.senzaDecisione))
+	if len(r.senzaDecisione) > 0 {
+		p("| aid | Album | Visibilità | Proprietario | Foto |\n|---:|---|---|---|---:|\n%s\n\n", strings.Join(r.senzaDecisione, "\n"))
+	}
 	p("## Spariti\n\nYAML spariti rispetto all'Importazione precedente: %d.\n", len(r.spariti))
 	if len(r.spariti) > 0 {
 		p("\n%s\n", unisci(r.spariti))
@@ -605,6 +615,36 @@ func (r *rapporto) markdown() []byte {
 		b.Write(r.mappature.markdown())
 	}
 	return b.Bytes()
+}
+
+// senzaDecisione elenca gli album riservati senza riga in riservati.yaml, con proprietario
+// e numero di Foto: sono quelli da decidere in chat sui provini (#35).
+func senzaDecisione(d *datiCoppermine, decisioni map[int]string) []string {
+	var righe []string
+	for _, aid := range chiaviOrdinate(d.riservati) {
+		if decisioni[aid] != "" {
+			continue
+		}
+		a, vis := d.album.Album[aid], d.riservati[aid]
+		// Il proprietario è nella visibility (10000 + user_id) o nella categoria degli album personali.
+		chi := "—"
+		if id := max(vis, a.Categoria) - cidPersonali; id > 0 {
+			chi = fmt.Sprintf("%d %s", id, d.utenti[id])
+		}
+		var v string
+		switch {
+		case vis >= cidPersonali:
+			v = "solo il proprietario"
+		case vis == 2:
+			v = "utenti registrati"
+		case vis == 102:
+			v = "amministratori"
+		default:
+			v = fmt.Sprintf("gruppo %d", vis)
+		}
+		righe = append(righe, fmt.Sprintf("| %d | %s | %s | %s | %d |", aid, cella(a.Title), v, cella(strings.TrimSpace(chi)), a.Foto))
+	}
+	return righe
 }
 
 // cella rende un testo libero sicuro dentro una tabella Markdown.

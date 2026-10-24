@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"slices"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -82,7 +83,7 @@ func TestConverti(t *testing.T) {
 		exif: map[int]string{1: "2005:06:03 11:31:56", 2: "0000:00:00 00:00:00", 3: "6 Feb 2011 17:13:36",
 			7: "2005:01:01 10:00:00"},
 		utenti:    map[int]string{25: "utente", 1: "Anonymous"},
-		riservati: map[int]bool{390: true},
+		riservati: map[int]int{390: 102},
 	}
 	foto, rap := converti(d)
 	atteso := `altezza: 600
@@ -145,6 +146,24 @@ title: Città
 	}
 	if len(rap.cp1252) != 1 || rap.cp1252[0] != 1 {
 		t.Errorf("cp1252 %v", rap.cp1252)
+	}
+}
+
+func TestSenzaDecisione(t *testing.T) {
+	d := &datiCoppermine{
+		riservati: map[int]int{390: 102, 959: 12196, 603: 2},
+		utenti:    map[int]string{2196: "proprietario"},
+		album: albumCoppermine{Album: map[int]albumYAML{
+			390: {16, 31, "Riservata"}, 959: {12196, 367, "Val d'Ultimo"}, 603: {6, 17, "Valtellina"},
+		}},
+	}
+	righe := senzaDecisione(d, map[int]string{603: pubblicaAlbum})
+	atteso := []string{
+		"| 390 | Riservata | amministratori | — | 31 |",
+		"| 959 | Val d'Ultimo | solo il proprietario | 2196 proprietario | 367 |",
+	}
+	if !slices.Equal(righe, atteso) {
+		t.Errorf("%q", righe)
 	}
 }
 

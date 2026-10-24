@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -118,6 +119,10 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 		return nil, err
 	}
 	mappe, _ := mappature(c.album, idx, manuali)
+	decisioni, err := leggiRiservati(l, c.album)
+	if err != nil {
+		return nil, err
+	}
 	alias, err := leggiAlias(l)
 	if err != nil {
 		return nil, err
@@ -135,6 +140,12 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 		if err := yaml.Unmarshal(b, f); err != nil {
 			return nil, fmt.Errorf("%s: %w", p, err)
 		}
+		switch decisioni[f.Coppermine.Aid] {
+		case cancellaAlbum:
+			continue
+		case pubblicaAlbum:
+			f.Riservata = false
+		}
 		f.Authors = alias.applica(f.Authors)
 		if mp := mappe[f.Coppermine.Aid]; mp != nil {
 			f.Slug, f.Tags, f.Categories = mp.Slug, mp.Tags, mp.Categories
@@ -151,6 +162,36 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 	}
 	slices.SortFunc(c.foto, func(a, b *fotoPubblicata) int { return a.Pid - b.Pid })
 	return c, nil
+}
+
+// Decisioni su un album non pubblico di Coppermine, in arricchimento/riservati.yaml (#35).
+// Un album senza riga resta riservato: la protezione di #9 regge anche senza arricchimento.
+// Le eccezioni sulla singola Foto vanno in foto/<pid>.yaml con riservata: false.
+const (
+	pubblicaAlbum = "pubblica" // toglie riservata alle Foto dell'album
+	cancellaAlbum = "cancella" // le Foto restano fuori dal build; Coppermine non si tocca
+)
+
+func leggiRiservati(l livelloArricchimento, album albumCoppermine) (map[int]string, error) {
+	var r struct {
+		Album map[int]string `yaml:"album"`
+	}
+	if err := l.leggi("riservati.yaml", &r); err != nil {
+		return nil, err
+	}
+	var errori []string
+	for _, aid := range chiaviOrdinate(r.Album) {
+		v := r.Album[aid]
+		if _, ok := album.Album[aid]; !ok {
+			errori = append(errori, fmt.Sprintf("album %d inesistente", aid))
+		} else if v != pubblicaAlbum && v != cancellaAlbum {
+			errori = append(errori, fmt.Sprintf("album %d: %q, ammessi %s o %s", aid, v, pubblicaAlbum, cancellaAlbum))
+		}
+	}
+	if len(errori) > 0 {
+		return nil, fmt.Errorf("riservati.yaml:\n%s", strings.Join(errori, "\n"))
+	}
+	return r.Album, nil
 }
 
 // aliasAutori viene da arricchimento/autori.yaml, scritto solo a mano (#19): valore grezzo
