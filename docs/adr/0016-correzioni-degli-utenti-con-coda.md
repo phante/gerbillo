@@ -26,5 +26,5 @@ Chiunque abbia una sessione del forum può proporre una Correzione a una Foto pu
 ## Consequences
 
 - Ogni Foto ha come Contributore un account del forum. Anche il bot Telegram carica a nome di un utente collegato (issue a parte).
-- Gli account si cancellano a mano dalla console del forum, quindi può sparire anche uno con Foto o Correzioni. Gerbillo lo tollera: la Foto tiene `contributore.nome` e resta pubblicata, e le Correzioni ancora aperte si chiudono come rifiutate. Alcune Foto di Coppermine hanno già perso il Contributore: l'Importazione (#9) recupera il nome se Coppermine lo conserva, altrimenti il Contributore è sconosciuto.
+- Gli account si cancellano a mano dalla console del forum, quindi può sparire anche uno con Foto o Correzioni. Gerbillo lo tollera: la Foto tiene `contributore.nome` e resta pubblicata, e le Correzioni ancora aperte si chiudono come rifiutate. Alcune Foto di Coppermine hanno già perso il Contributore: l'Importazione le pubblica senza `contributore` e le conta nel rapporto, perché Coppermine salva solo `owner_id` e il nome viene da `phpbb_users`.
 - Il Backend deve sapere se l'utente è in *Gallery unlimited*: lo dice già il campo `groups` del bridge.
