@@ -69,3 +69,14 @@ func TestPasswordAnteprima(t *testing.T) {
 		t.Errorf("Accedi: HTTP %d, %v", w.Code, w.Header())
 	}
 }
+
+// Dietro nginx il Backend non vede il prefisso /gerbillo/: il redirect deve essere relativo.
+func TestConBarra(t *testing.T) {
+	for in, out := range map[string]string{"/admin": "admin/", "/admin/foto": "foto/"} {
+		w := httptest.NewRecorder()
+		conBarra(w, httptest.NewRequest("GET", in, nil))
+		if w.Code != http.StatusSeeOther || w.Header().Get("Location") != out {
+			t.Errorf("%s: HTTP %d, Location %q", in, w.Code, w.Header().Get("Location"))
+		}
+	}
+}

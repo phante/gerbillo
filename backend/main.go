@@ -56,7 +56,11 @@ func main() {
 	} else {
 		http.HandleFunc("/", home)
 	}
+	// /admin senza barra: il ServeMux di Go rimanderebbe a /admin/ con un percorso assoluto,
+	// e dietro nginx si perderebbe il prefisso /gerbillo/ dell'anteprima.
+	http.HandleFunc("/admin", conBarra)
 	if red != nil {
+		http.HandleFunc("/admin/foto", conBarra)
 		http.HandleFunc("/admin/", soloModeratore(uc, red.admin))
 		// Il browser rimanda l'HTTP Basic anche dai POST di altri siti: si rifiutano.
 		http.Handle("/admin/foto/", http.NewCrossOriginProtection().Handler(soloModeratore(uc, red.foto)))
@@ -147,6 +151,11 @@ func staticiSenzaEstensione(fs sovrapposte, h http.Handler) http.Handler {
 		}
 		h.ServeHTTP(w, r)
 	})
+}
+
+// conBarra rimanda alla stessa pagina con la barra finale, con un Location relativo.
+func conBarra(w http.ResponseWriter, r *http.Request) {
+	rimanda(w, path.Base(r.URL.Path)+"/")
 }
 
 // sovrapposte serve ogni file dalla prima cartella che lo ha.
