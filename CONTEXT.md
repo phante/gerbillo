@@ -19,11 +19,11 @@ Identificativo numerico stabile di una Foto, ereditato da Coppermine e proseguit
 _Avoid_: id, codice
 
 **Originale**:
-Il file caricato così com'è, da cui derivano tutte le Varianti.
+Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione, con gli EXIF ridotti a un elenco chiuso ed eventualmente ricompresso. È conservato su S3 e non è pubblico (ADR 0015).
 _Avoid_: master, sorgente
 
 **Variante**:
-Una versione derivata dell'Originale (miniatura, versione a schermo, ecc.), servita a un URL legato al pid.
+Una versione derivata dell'Originale (miniatura, versione a schermo, ecc.), servita a un URL legato al pid. La più grande (2048 px sul lato lungo) è quella che si scarica dalla pagina della Foto.
 _Avoid_: thumb, normal (termini Coppermine)
 
 **Licenza**:
@@ -54,7 +54,11 @@ Il tipo o sottotipo del soggetto di una Foto, con valori a percorso (es. `tecnic
 _Avoid_: tema
 
 **Punto geografico**:
-Il punto geografico centrale associato alla Foto (`geolocation.coords`), come nel sito lo è per l'articolo. Se manca si eredita dall'Entità.
+Il punto geografico associato alla Foto (`geolocation.coords`), come nel sito lo è per l'articolo. Viene dal GPS dell'EXIF se chi carica lo consente, oppure si inserisce o corregge a mano, e il valore a mano vince. Se manca si eredita dall'Entità.
+
+**Posizione nascosta**:
+La scelta di chi carica di non pubblicare il GPS di una Foto: il GPS si toglie dall'Originale prima di salvarlo, e il Punto geografico si eredita dall'Entità. Riguarda solo la posizione: data, Autore ed EXIF utili restano.
+_Avoid_: anonimizzazione
 
 **Datazione**:
 Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo), in EDTF. Distinta dalla Data di scansione e dalla Data di caricamento.
