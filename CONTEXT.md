@@ -36,8 +36,8 @@ Un oggetto che ha (o avrà) una pagina nel sito principale con uno Slug stabile:
 _Avoid_: oggetto, nodo, album
 
 **Impianto**:
-Un insieme di più Entità che funzionano insieme (es. diga, centrale e opere di presa di uno stesso sistema). Non è un'Entità: non ha una pagina propria nel Sito principale, dove oggi è identificato in modo non standardizzato (tag o id di una mappa). Ogni Entità appartiene al massimo a un Impianto. Una Foto che ritrae l'insieme (schemi, documenti) può essere collegata direttamente all'Impianto.
-_Avoid_: complesso, sistema
+Un insieme di più Entità che funzionano insieme (es. diga, centrale e opere di presa di uno stesso sistema). È un concetto del Sito principale, che in futuro lo ricaverà dalle schede di dighe e centrali (`dighe:`, `centrali:`); oggi vi è identificato in modo non standardizzato (tag o id di una mappa, che non coincide sempre con un Impianto). Nella gallery non è modellato: un insieme di Entità si esprime con un Tag, senza prefisso (#3).
+_Avoid_: complesso, sistema, campo `impianto`
 
 **Slug**:
 Il percorso stabile `sezione/nome` con cui il sito principale identifica una pagina (es. `dighe/agaro`, `centrali/goglio-baceno-vb`).
