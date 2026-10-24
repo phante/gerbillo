@@ -44,6 +44,26 @@ func TestDataExif(t *testing.T) {
 	}
 }
 
+func TestDatazioneExif(t *testing.T) {
+	for in, out := range map[string]string{
+		"2005:06:03 11:31:56": "2005-06-03",
+		"2012-07-01 11:53:37": "2012-07-01",
+		"2011:6:20 22:33:36":  "2011-06-20",
+		"2010:03:28 10:11: 9": "2010-03-28",
+		"0000:00:00 00:00:00": "", // anno 0000
+		"2005:02:30 10:00:00": "", // data impossibile
+		"2005:00:00 00:00:00": "",
+		"6 Feb 2011 17:13:36": "", // malformato
+		"20050603":            "",
+		"":                    "",
+	} {
+		got, ok := datazioneExif(in)
+		if got != out || ok != (out != "") {
+			t.Errorf("datazioneExif(%q) = %q, %v; atteso %q", in, got, ok, out)
+		}
+	}
+}
+
 func TestConverti(t *testing.T) {
 	d := &datiCoppermine{
 		foto: []rigaFoto{
@@ -53,9 +73,9 @@ func TestConverti(t *testing.T) {
 			{pid: 2, owner: 0, filename: []byte("b.zip")},
 			{pid: 3, owner: 1, filename: []byte("c.pdf")},
 			{pid: 4, owner: 999, filename: []byte("d.png")},
-			{pid: 5, aid: 390, owner: 0, filename: []byte("e.jpg")},
+			{pid: 5, aid: 390, owner: 0, filename: []byte("e.jpg"), user3: []byte("18/07/2004")},
 		},
-		exif:      map[int]string{1: "2005:06:03 11:31:56"},
+		exif:      map[int]string{1: "2005:06:03 11:31:56", 2: "0000:00:00 00:00:00", 3: "6 Feb 2011 17:13:36"},
 		utenti:    map[int]string{25: "utente", 1: "Anonymous"},
 		riservati: map[int]bool{390: true},
 	}
@@ -71,6 +91,7 @@ coppermine:
     data_exif: 2005:06:03 11:31:56
     filename: a.JPG
     filepath: userpics/10025/
+datazione: "2005-06-03"
 date: "2006-12-27T11:18:31+01:00"
 formato: immagine
 larghezza: 800
@@ -90,6 +111,18 @@ title: Città
 	}
 	if rap.ospiti != 3 || rap.cancellati[999] != 1 || rap.senzaAutore != 4 {
 		t.Errorf("rapporto: ospiti %d, cancellati %v, senza autore %d", rap.ospiti, rap.cancellati, rap.senzaAutore)
+	}
+	for _, f := range foto[1:] {
+		if strings.Contains(string(f.file), "datazione") {
+			t.Errorf("pid %d: Datazione senza EXIF valido:\n%s", f.pid, f.file)
+		}
+	}
+	if !strings.Contains(string(foto[4].file), "data: 18/07/2004") {
+		t.Errorf("user3 non conservato grezzo:\n%s", foto[4].file)
+	}
+	if rap.datazioneExif != 1 || rap.soloUser3 != 1 || rap.senzaData != 3 || len(rap.exifScartati) != 2 {
+		t.Errorf("Datazione nel rapporto: %d dall'EXIF, %d solo user3, %d senza, scartati %v",
+			rap.datazioneExif, rap.soloUser3, rap.senzaData, rap.exifScartati)
 	}
 	if rap.formati["altro"] != 1 || rap.formati["pdf"] != 1 || rap.formati["immagine"] != 3 {
 		t.Errorf("formati %v", rap.formati)

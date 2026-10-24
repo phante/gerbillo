@@ -434,7 +434,7 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 	c := corpoFoto{
 		Schermo: b.schermo(f), Mini: b.mini(f), Formato: f.Formato,
 		Alt: f.Alt, Description: f.Description, Authors: strings.Join(f.Authors, ", "),
-		Datazione: f.Datazione, Luogo: f.Coppermine.Luogo, Tags: f.tagPubblici(),
+		Datazione: f.datazioneTesto(), Luogo: f.Coppermine.Luogo, Tags: f.tagPubblici(),
 		BBCode: fmt.Sprintf("[url=%sf/%s/][img]%sf/%s/mini.webp[/img][/url]", b.pubblico, pid, b.pubblico, pid),
 	}
 	c.Licenza = voce{Testo: f.Licenza}

@@ -306,6 +306,26 @@ func dataExif(b []byte) string {
 	return strings.TrimSpace(string(m[1]))
 }
 
+// La Datazione dell'Importazione viene solo dall'EXIF, in ISO 8601 senza l'ora (#18).
+// user3 resta grezzo in coppermine.data. Si tollerano i separatori "-" e il mese o il
+// giorno a una cifra; "6 Feb 2011", gli anni 0000 e le date impossibili si scartano.
+var reDatazioneExif = regexp.MustCompile(`^(\d{4})[:-](\d{1,2})[:-](\d{1,2})(\s|$)`)
+
+func datazioneExif(v string) (string, bool) {
+	m := reDatazioneExif.FindStringSubmatch(v)
+	if m == nil || m[1] == "0000" {
+		return "", false
+	}
+	a, _ := strconv.Atoi(m[1])
+	me, _ := strconv.Atoi(m[2])
+	g, _ := strconv.Atoi(m[3])
+	t := time.Date(a, time.Month(me), g, 0, 0, 0, 0, time.UTC)
+	if t.Year() != a || int(t.Month()) != me || t.Day() != g {
+		return "", false
+	}
+	return t.Format("2006-01-02"), true
+}
+
 type fotoYAML struct {
 	pid  int
 	file []byte
@@ -324,6 +344,10 @@ type rapporto struct {
 	autori          map[string]int // valore grezzo → Foto
 	alias           aliasAutori
 	riservate       int
+	datazioneExif   int      // Datazione dall'EXIF (#18)
+	soloUser3       int      // senza Datazione, con user3 mostrato come testo
+	senzaData       int      // né l'una né l'altro
+	exifScartati    []string // "pid valore": EXIF senza una data valida
 	spariti         []int
 	scritte         int
 	mappature       *rapportoMappature // solo con importa -indice
@@ -385,8 +409,22 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 		metti(cpg, "filename", nome)
 		metti(cpg, "keywords", testo("keywords", f.keywords))
 		metti(cpg, "luogo", testo("user2", f.user2))
-		metti(cpg, "data", testo("user3", f.user3))
+		user3 := testo("user3", f.user3)
+		metti(cpg, "data", user3)
 		metti(cpg, "data_exif", d.exif[f.pid])
+		dz, ok := datazioneExif(d.exif[f.pid])
+		switch {
+		case ok:
+			y["datazione"] = dz
+			rap.datazioneExif++
+		case user3 != "":
+			rap.soloUser3++
+		default:
+			rap.senzaData++
+		}
+		if !ok && d.exif[f.pid] != "" {
+			rap.exifScartati = append(rap.exifScartati, fmt.Sprintf("%d %s", f.pid, d.exif[f.pid]))
+		}
 		y["coppermine"] = cpg
 		// Un album non pubblico in Coppermine resta fuori dalla Gallery pubblica (#1). È un dato
 		// dell'Importazione, non del Livello di arricchimento: la protezione non dipende da quello.
@@ -529,6 +567,13 @@ func (r *rapporto) markdown() []byte {
 			}
 			p("| %s | %d | %s |\n", cella(v), r.autori[v], cella(a))
 		}
+		p("\n")
+	}
+	p("## Datazione\n\nFoto con Datazione dall'EXIF: %d. Senza Datazione, con `user3` mostrato come testo: %d. Senza nessuna delle due: %d.\n\n",
+		r.datazioneExif, r.soloUser3, r.senzaData)
+	p("EXIF senza una data valida, scartati (pid, valore): %d.\n\n", len(r.exifScartati))
+	elenco(r.exifScartati)
+	if len(r.exifScartati) > 0 {
 		p("\n")
 	}
 	p("## Riservate\n\nFoto in album non pubblici di Coppermine, con `riservata: true` e fuori dalla Gallery pubblica: %d.\n\n", r.riservate)

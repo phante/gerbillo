@@ -35,7 +35,8 @@ album:
 	foto := map[string]string{
 		"1": "pid: 1\ntitle: Diga\nformato: immagine\ndate: \"2006-12-27T12:23:55+01:00\"\ncontributore: {id: 25, nome: Mario}\ncoppermine: {aid: 14, filepath: userpics/1/, filename: a.jpg}\n",
 		"2": "pid: 2\nauthors: [\"-\"]\nformato: pdf\ncoppermine: {aid: 14, filepath: userpics/1/, filename: b.pdf}\n",
-		"3": "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg}\n",
+		"3": "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ndatazione: \"2004-07-18\"\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg, data: 18/07/2004 circa}\n",
+		"5": "pid: 5\nformato: immagine\ncoppermine: {aid: 30, filepath: userpics/2/, filename: e.jpg, data: Ottobre 2006}\n",
 		"4": "pid: 4\nauthors: [Grezzo]\nformato: immagine\ncontributore: {id: 74, nome: Pomase}\ncoppermine: {aid: 30, filepath: userpics/2/, filename: d.jpg}\n",
 	}
 	for pid, y := range foto {
@@ -144,6 +145,13 @@ func TestBuild(t *testing.T) {
 	if strings.Contains(leggi("f/3/index.html"), "da-separare") {
 		t.Error("tag interno pubblicato")
 	}
+	// La Datazione in italiano; senza, user3 come testo (#18). Lo stesso testo va nell'Indice di ricerca.
+	if f3 := leggi("f/3/index.html"); !strings.Contains(f3, "18/07/2004</span>") || strings.Contains(f3, "circa") {
+		t.Error("f/3 senza la Datazione in italiano")
+	}
+	if !strings.Contains(leggi("f/5/index.html"), "Ottobre 2006</span>") {
+		t.Error("f/5 senza user3")
+	}
 	if !strings.Contains(leggi("f/2/index.html"), "statico/documento.svg") {
 		t.Error("PDF senza icona")
 	}
@@ -170,6 +178,9 @@ func TestBuild(t *testing.T) {
 	}
 	if f := foto[2]; f.Titolo != "Vajont · foto 2" || f.Mini != "/g/statico/documento.svg" {
 		t.Errorf("PDF senza titolo nell'Indice di ricerca: %+v", f)
+	}
+	if !strings.HasSuffix(foto[3].Content, "18/07/2004") || !strings.HasSuffix(foto[5].Content, "Ottobre 2006") {
+		t.Errorf("Datazione nell'Indice di ricerca: %q, %q", foto[3].Content, foto[5].Content)
 	}
 	if strings.Contains(foto[3].Tags, "da-separare") {
 		t.Error("tag interno nell'Indice di ricerca")

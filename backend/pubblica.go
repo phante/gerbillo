@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -208,6 +209,18 @@ func (c *contenuti) completa(f *fotoPubblicata) {
 	if f.Geolocation.Stato == "" {
 		f.Geolocation.Stato, f.Geolocation.Regione, f.Geolocation.Provincia = g.Stato, g.Regione, g.Provincia
 	}
+}
+
+// datazioneTesto è la Datazione come si mostra nella pagina della Foto e nell'Indice di
+// ricerca: in italiano se c'è, altrimenti user3 di Coppermine così com'è (#18).
+func (f *fotoPubblicata) datazioneTesto() string {
+	if f.Datazione == "" {
+		return f.Coppermine.Data
+	}
+	if t, err := time.Parse("2006-01-02", f.Datazione); err == nil {
+		return t.Format("02/01/2006")
+	}
+	return f.Datazione
 }
 
 // tagPubblici sono i tag senza i promemoria interni.

@@ -110,7 +110,7 @@ func (b *builder) fotoRicerca(f *fotoPubblicata, pos map[string]int) fotoRicerca
 		Titolo:  b.titolo(f),
 		Meta:    strings.Join(meta, " "),
 		Tags:    strings.Join(slices.Concat(f.tagPubblici(), f.Categories), " "),
-		Content: strings.Join(strings.Fields(strings.Join([]string{f.Description, g.Provincia, g.Regione, g.Stato, f.Datazione}, " ")), " "),
+		Content: strings.Join(strings.Fields(strings.Join([]string{f.Description, g.Provincia, g.Regione, g.Stato, f.datazioneTesto()}, " ")), " "),
 		Entita:  e,
 		Mini:    mini,
 	}
