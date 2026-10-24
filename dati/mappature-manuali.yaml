@@ -1,6 +1,12 @@
-# Mappature manuali decise in chat (G2, #10). Stesso formato di arricchimento/mappature.yaml:
+# Mappature manuali decise in chat (G2, #10, #1). Stesso formato di arricchimento/mappature.yaml:
 # al rientro si applicano al Repository dei contenuti sul server.
 album:
+    6:
+        coppermine: Dighe - Dams / Italia / Friuli Venezia-Giulia / Barcis - Vecchia
+            diga (PN)
+        origine: manuale
+        slug:
+        - dighe/barcis-o-del-cellina
     33:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Verzasca
         origine: manuale
@@ -9,6 +15,12 @@ album:
         origine: manuale
         slug:
         - dighe/ponte-ghirlo
+    37:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Caprizi
+        origine: manuale
     38:
         coppermine: Dighe - Dams / Italia / Veneto / S. Caterina di Auronzo (BL)
         origine: manuale
@@ -26,6 +38,16 @@ album:
         - dighe/mis-s-giuliana
         tags:
         - mis
+    47:
+        categories:
+        - off-topic/divertenti
+        coppermine: Altro - Other / Divertenti
+        origine: manuale
+    48:
+        categories:
+        - off-topic/ritocchi
+        coppermine: Altro - Other / Ritocchi/Wallpaper
+        origine: manuale
     52:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Emosson
         origine: manuale
@@ -38,8 +60,55 @@ album:
     57:
         coppermine: Dighe - Dams / ... resto del mondo / altre - other
         origine: manuale
+    78:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Lago Negrisiola - Partitore Carron
+        origine: manuale
+    79:
+        categories:
+        - opere-idrauliche/condotta
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Lago Madruc e sifone val Friga - Caneva
+        origine: manuale
+        slug:
+        - centrali/caneva-caneva-pn
+    80:
+        categories:
+        - tecnica/turbine/francis
+        coppermine: Tecnica - Turbine - Elementi elettrici e meccanici / Turbine Francis
+        origine: manuale
+        slug:
+        - tecnica/le-turbine-cenni-generali
     85:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / altre - other
+        origine: manuale
+    92:
+        categories:
+        - tecnica/turbine/pelton
+        coppermine: Tecnica - Turbine - Elementi elettrici e meccanici / Turbine Pelton
+        origine: manuale
+        slug:
+        - tecnica/le-turbine-cenni-generali
+    93:
+        categories:
+        - tecnica/turbine/kaplan
+        coppermine: Tecnica - Turbine - Elementi elettrici e meccanici / Turbine Kaplan
+        origine: manuale
+        slug:
+        - tecnica/le-turbine-cenni-generali
+    94:
+        categories:
+        - tecnica/elettrica
+        coppermine: Tecnica - Turbine - Elementi elettrici e meccanici / Elementi
+            elettrici
+        origine: manuale
+    95:
+        categories:
+        - tecnica/meccanica
+        coppermine: Tecnica - Turbine - Elementi elettrici e meccanici / Elementi
+            meccanici
         origine: manuale
     100:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Luzzone
@@ -50,6 +119,15 @@ album:
     103:
         coppermine: Dighe - Dams / ... resto del mondo / Croazia
         origine: manuale
+    104:
+        categories:
+        - opere-idrauliche/condotta
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Ponte tubo Pontesei - Vajont
+        origine: manuale
+        slug:
+        - dighe/pontesei
+        - dighe/vajont
     106:
         coppermine: Dighe - Dams / Italia / Lombardia / Val Camonica Sistema del Poglia
             / Arno-Campellio-Isola
@@ -101,6 +179,11 @@ album:
     131:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Aiba
         origine: manuale
+    132:
+        categories:
+        - documenti
+        coppermine: Altro - Other / Documenti
+        origine: manuale
     137:
         coppermine: Dighe - Dams / ... resto del mondo / Cina
         origine: manuale
@@ -122,6 +205,18 @@ album:
     147:
         coppermine: Dighe - Dams / ... resto del mondo / Giappone
         origine: manuale
+    149:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Presa sul torrente Degano
+        origine: manuale
+    150:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Presa sul torrente Degano località Ponte Coperto
+        origine: manuale
     155:
         coppermine: Dighe - Dams / Italia / Piemonte / Sabbioni
         origine: manuale
@@ -130,12 +225,47 @@ album:
         tags:
         - toce
         - sabbione
+    160:
+        categories:
+        - opere-idrauliche/condotta
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Vasca di carico di Pramper
+        origine: manuale
+        slug:
+        - dighe/pramper
     161:
         coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Val Contrin
+        origine: manuale
+    167:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Fimon - Canal Bisatto
         origine: manuale
     169:
         coppermine: Dighe - Dams / ... resto del mondo / Congo - Inga
         origine: manuale
+    171:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lombardia / Valtellina - Prese Adda frana 1987
+        origine: manuale
+    174:
+        categories:
+        - eventi/visita
+        coppermine: Meeting, incontri e visite / Centrale Soverzene - 15/05/2007
+        origine: manuale
+        slug:
+        - centrali/achille-gaggia-soverzene-bl
+    177:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Scolmatori e sbarramenti provincia di Udine
+        origine: manuale
+        tags:
+        - da-separare
     180:
         coppermine: Dighe - Dams / ... resto del mondo / USA / Matilija
         origine: manuale
@@ -151,28 +281,113 @@ album:
     196:
         coppermine: Dighe - Dams / ... resto del mondo / Venezuela - Presa El Guapo
         origine: manuale
+    197:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Diga del Chievo
+        origine: manuale
     200:
         coppermine: Dighe - Dams / Italia / Lombardia / Campo Moro (SO)
         origine: manuale
         slug:
         - dighe/campo-moro-i
         - dighe/campo-moro-ii
+    206:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Val Da Rin
+        origine: manuale
     212:
         coppermine: Dighe - Dams / ... resto del mondo / Grecia - Leros
+        origine: manuale
+    215:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Ferron
         origine: manuale
     220:
         coppermine: Dighe - Dams / Italia / Lombardia / Val Camonica Sistema del Poglia
             / San Fiorano
         origine: manuale
+    223:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Consorzio bonifica Ledra-Tagliamento
+        origine: manuale
+        slug:
+        - reportage/ledra-tagliamento
     226:
         coppermine: Dighe - Dams / Italia / Veneto / Ciòu del Conte - Cortina d'Ampezzo
             (BL)
         origine: manuale
+    228:
+        categories:
+        - opere-idrauliche/canale
+        - opere-idrauliche/condotta
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Rugo Stella, canali e condotte della Val Cellina
+        origine: manuale
+        slug:
+        - dighe/rugo-stella
+        tags:
+        - da-separare
+    253:
+        categories:
+        - tecnica/idraulica
+        coppermine: Tecnica - Turbine - Elementi elettrici e meccanici / Idraulica
+        origine: manuale
     265:
         coppermine: Dighe - Dams / Francia / Moncenisio
         origine: manuale
+    286:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Busche
+        origine: manuale
+    291:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Galleria Adige-Garda
+        origine: manuale
+    293:
+        categories:
+        - opere-idrauliche/acquedotto
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Acquedotto di Rovereto
+        origine: manuale
+    294:
+        categories:
+        - eventi/fiera
+        coppermine: Meeting, incontri e visite / Fiera Primiero Energia 2008
+        origine: manuale
+    295:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Traversa di Mori
+        origine: manuale
+    298:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Traversa di Cimego
+        origine: manuale
+        slug:
+        - centrali/cimego
     305:
         coppermine: Dighe - Dams / Italia / Lazio / Tivoli (RM)
+        origine: manuale
+    306:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Consorzio bonifica Cellina-Meduna
         origine: manuale
     308:
         coppermine: Dighe - Dams / Italia / Lombardia / San Giacomo (SO)
@@ -198,6 +413,14 @@ album:
     339:
         coppermine: Dighe - Dams / Austria - Österreich / Schlegeis
         origine: manuale
+    353:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lombardia / Opere secondarie di Cancano
+        origine: manuale
+        slug:
+        - dighe/cancano
     356:
         coppermine: Dighe - Dams / Italia / Toscana / Vagli
         origine: manuale
@@ -205,11 +428,67 @@ album:
         - dighe/vagli-prima-fase
         tags:
         - vagli
+    377:
+        categories:
+        - opere-idrauliche/opifici
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Ex impianto di Vedronza
+        origine: manuale
+    383:
+        categories:
+        - opere-idrauliche/idrovora
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Idrovore Mestre-laguna
+        origine: manuale
+    390:
+        coppermine: Altro - Other / Riservata - solo per gli occhi degli amministratori
+        origine: manuale
+    393:
+        categories:
+        - opere-idrauliche/opifici
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Ex cotonificio Amman - Pordenone
+        origine: manuale
     411:
         coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Delle Piazze (Pinè)
         origine: manuale
         slug:
         - dighe/lago-delle-piazze
+    425:
+        categories:
+        - eventi/visita
+        coppermine: Meeting, incontri e visite / Centrale Soverzene 5-5-2009
+        origine: manuale
+        slug:
+        - centrali/achille-gaggia-soverzene-bl
+    426:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Ponte sbarramento Soverzene
+        origine: manuale
+    427:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Presa Valbona rio Ala
+        origine: manuale
+    429:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Sistema del Biois (Falcade)
+        origine: manuale
+        tags:
+        - da-separare
+    430:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Presa Cismon 2 (lago di Corlo)
+        origine: manuale
+        slug:
+        - dighe/corlo
     433:
         coppermine: Dighe - Dams / Italia / Trentino - Alto Adige / Selva dei Molini
         origine: manuale
@@ -220,6 +499,38 @@ album:
         - dighe/la-stua-o-val-canzoi
         tags:
         - la stua o val canzoi
+    440:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Sistema della val Marzon (Somprade)
+        origine: manuale
+        tags:
+        - da-separare
+    452:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Presa Venzonassa
+        origine: manuale
+    460:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Roggia di Vivaro
+        origine: manuale
+    464:
+        categories:
+        - opere-idrauliche/opifici
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Ex pastificio Tomadini e i salti del Maglio
+        origine: manuale
+    477:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lombardia / Naviglio Grande e Canale Villoresi
+        origine: manuale
     480:
         coppermine: Dighe - Dams / Italia / Piemonte / Devero (Codelago)
         origine: manuale
@@ -232,9 +543,37 @@ album:
         origine: manuale
         slug:
         - dighe/santa-chiara-dula-o-del-tirso
+    490:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Castelviero (Nervesa)
+        origine: manuale
+    500:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Cellina - Impianto Roncon
+        origine: manuale
     514:
         coppermine: Dighe - Dams / Italia / Toscana / Bagnone
         origine: manuale
+    527:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Val Rio del Lago - impianti
+        origine: manuale
+        tags:
+        - da-separare
+    537:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Canale Soverzene - Santa Croce
+        origine: manuale
+        slug:
+        - dighe/santa-croce-o-bastia
     561:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Santa Maria
         origine: manuale
@@ -253,6 +592,12 @@ album:
     591:
         coppermine: Dighe - Dams / Italia / Piemonte / Castel
         origine: manuale
+    599:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lombardia / Ex canale Guzzi - Maggio di Cremeno (LC)
+        origine: manuale
     606:
         coppermine: Dighe - Dams / ... resto del mondo / Slovenia / Che Avce
         origine: manuale
@@ -261,11 +606,39 @@ album:
         origine: manuale
         slug:
         - dighe/vicaglia-silano
+    641:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Valli del Pasubio
+        origine: manuale
+        tags:
+        - da-separare
+    648:
+        categories:
+        - eventi/presentazione
+        coppermine: Meeting, incontri e visite / Presentazione Libro Vajont 1963 di
+            Luigi Rivis
+        origine: manuale
+        slug:
+        - dighe/vajont
     649:
         coppermine: Dighe - Dams / Italia / Toscana / Rio Salita I e II
         origine: manuale
         slug:
         - dighe/rio-salita
+    661:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Toscana / Impianto del Cardoso o Rio di Lucca
+        origine: manuale
+    670:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Stramazzo Rio Freddo - Arsiero
+        origine: manuale
     671:
         coppermine: Dighe - Dams / Italia / Toscana / La Lima
         origine: manuale
@@ -276,8 +649,69 @@ album:
         origine: manuale
         slug:
         - dighe/tistino-sperando
+    677:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Sbarramento sul Brenta - Bassano del Grappa
+        origine: manuale
+    683:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Piccoli impianti della Val Canale
+        origine: manuale
+        tags:
+        - da-separare
+    689:
+        categories:
+        - opere-idrauliche/traversa
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lombardia / Traversa di Concesa e Naviglio Martesana
+        origine: manuale
+    690:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lombardia / Traversa di Canonica d'Adda
+        origine: manuale
+    729:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Alta Carnia
+        origine: manuale
+        tags:
+        - da-separare
+    733:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Piemonte / Canali Piemontesi
+        origine: manuale
+    744:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lazio / Tivoli
+        origine: manuale
+    745:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lazio / Lago e presa Canterno
+        origine: manuale
+        slug:
+        - reportage/il-lago-di-canterno
     746:
         coppermine: Dighe - Dams / Italia / Lazio / Pertuso (RM)
+        origine: manuale
+    747:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lazio / Comunacqua - Trevi nel Lazio (FR)
         origine: manuale
     751:
         coppermine: Dighe - Dams / Italia / Lazio / Roviano (RM)
@@ -317,6 +751,15 @@ album:
     798:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Albigna
         origine: manuale
+    802:
+        categories:
+        - eventi/presentazione
+        coppermine: Meeting, incontri e visite / Presentazione Libro da Molare al
+            Vajont di Giorgio Temporelli
+        origine: manuale
+        slug:
+        - dighe/molare
+        - dighe/vajont
     803:
         coppermine: Dighe - Dams / Italia / Piemonte / Robbio
         origine: manuale
@@ -328,13 +771,57 @@ album:
         - dighe/lago-delio-sud
         tags:
         - da-separare
+    834:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Lago di Raibl
+        origine: manuale
+    847:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Fusine
+        origine: manuale
+    851:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Friuli Venezia-Giulia / Impianti torrente But (Carnia)
+        origine: manuale
+        tags:
+        - da-separare
+    852:
+        categories:
+        - opere-idrauliche/traversa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Sbarramento sul Dese
+        origine: manuale
+    862:
+        categories:
+        - opere-idrauliche/opifici
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Lombardia / Mulino di Rosasco (PV)
+        origine: manuale
     866:
         coppermine: Dighe - Dams / Italia / Piemonte / Busin Inferiore
         origine: manuale
         slug:
         - dighe/busin
+    870:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Trentino - Alto Adige / Rio Flanginech - Giustino
+        origine: manuale
     871:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Lago Bianco Sud
+        origine: manuale
+    874:
+        categories:
+        - opere-idrauliche/presa
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Svizzera
+            - Schweiz - Suisse / Cavaglia
         origine: manuale
     879:
         coppermine: Dighe - Dams / Italia / Valle d'Aosta / Cignana
@@ -366,6 +853,41 @@ album:
     899:
         coppermine: Dighe - Dams / ... resto del mondo / USA / St. Francis
         origine: manuale
+    903:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Canale Biffis
+        origine: manuale
+    958:
+        categories:
+        - opere-idrauliche/canale
+        coppermine: Opere di Presa - Opere Idrauliche - Condotte - Canali / Italia
+            / Veneto / Canal del Maè e dintorni. A valle Pontesei. Opere e impianti
+        origine: manuale
+        slug:
+        - dighe/pontesei
+        tags:
+        - da-separare
     965:
         coppermine: Dighe - Dams / Svizzera - Schweiz - Suisse / Orden
+        origine: manuale
+categorie:
+    16:
+        coppermine: Uploads Temporanei
+        origine: manuale
+        tags:
+        - da-classificare
+    38:
+        categories:
+        - eventi/visita
+        coppermine: Dighe - Dams / Italia / Friuli Venezia-Giulia / Vajont / Visita
+            ProgettoDighe Novembre 2007
+        origine: manuale
+        slug:
+        - dighe/vajont
+    47:
+        categories:
+        - off-topic
+        coppermine: Off-Topics
         origine: manuale
