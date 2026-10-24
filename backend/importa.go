@@ -6,6 +6,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"database/sql"
 	"errors"
 	"flag"
@@ -277,6 +278,8 @@ type rapporto struct {
 	ospiti          int
 	cancellati      map[int]int // owner_id → foto
 	senzaAutore     int
+	autori          map[string]int // valore grezzo → Foto
+	alias           aliasAutori
 	spariti         []int
 	scritte         int
 }
@@ -292,7 +295,7 @@ func formato(nome string) string {
 }
 
 func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
-	rap := &rapporto{totale: len(d.foto), formati: map[string]int{}, cancellati: map[int]int{}}
+	rap := &rapporto{totale: len(d.foto), formati: map[string]int{}, cancellati: map[int]int{}, autori: map[string]int{}}
 	var out []fotoYAML
 	for _, f := range d.foto {
 		cp := false
@@ -327,9 +330,10 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 		metti(y, "title", testo("title", f.titolo))
 		metti(y, "description", testo("caption", f.descrizione))
 		autore := testo("user1", f.user1)
-		// authors è una lista come nel sito (ADR 0013); la separazione dei nomi arriva con #19.
+		// authors è una lista come nel sito (ADR 0013); gli alias (#19) si applicano al build.
 		if autore != "" {
 			y["authors"] = []string{autore}
+			rap.autori[autore]++
 		}
 		nome := testo("filename", f.filename)
 		metti(cpg, "filepath", testo("filepath", f.filepath))
@@ -404,6 +408,9 @@ func scrivi(dir string, foto []fotoYAML, rap *rapporto) error {
 		}
 	}
 	slices.Sort(rap.spariti)
+	if rap.alias, err = leggiAlias(dir); err != nil {
+		return err
+	}
 	return os.WriteFile(filepath.Join(dir, "importazione", "anomalie.md"), rap.markdown(), 0o644)
 }
 
@@ -449,11 +456,43 @@ func (r *rapporto) markdown() []byte {
 		p("\n")
 	}
 	p("## Autore\n\nFoto senza Autore (`user1` vuoto): %d.\n\n", r.senzaAutore)
+	// Elenco per scrivere a mano arricchimento/autori.yaml (#19): i valori con alias sono segnati.
+	valori := make([]string, 0, len(r.autori))
+	coperti := 0
+	for v := range r.autori {
+		valori = append(valori, v)
+		if _, ok := r.alias[v]; ok {
+			coperti++
+		}
+	}
+	slices.SortFunc(valori, func(a, b string) int {
+		return cmp.Or(r.autori[b]-r.autori[a], strings.Compare(a, b))
+	})
+	p("Valori distinti di `user1`: %d, di cui %d con alias in `arricchimento/autori.yaml`.\n\n", len(valori), coperti)
+	if len(valori) > 0 {
+		p("| Autore | Foto | Alias |\n|---|---:|---|\n")
+		for _, v := range valori {
+			a := ""
+			if x, ok := r.alias[v]; ok {
+				a = "→ " + strings.Join(x, ", ")
+				if len(x) == 0 {
+					a = "scartato"
+				}
+			}
+			p("| %s | %d | %s |\n", cella(v), r.autori[v], cella(a))
+		}
+		p("\n")
+	}
 	p("## Spariti\n\nYAML spariti rispetto all'Importazione precedente: %d.\n", len(r.spariti))
 	if len(r.spariti) > 0 {
 		p("\n%s\n", unisci(r.spariti))
 	}
 	return b.Bytes()
+}
+
+// cella rende un testo libero sicuro dentro una tabella Markdown.
+func cella(s string) string {
+	return strings.NewReplacer("|", "\\|", "\n", " ").Replace(s)
 }
 
 func unisci(v []int) string {

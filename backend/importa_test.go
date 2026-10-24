@@ -100,7 +100,10 @@ func TestScrivi(t *testing.T) {
 	os.MkdirAll(cart, 0o755)
 	os.WriteFile(filepath.Join(cart, "1.yaml"), []byte("pid: 1\n"), 0o644)
 	os.WriteFile(filepath.Join(cart, "7.yaml"), []byte("pid: 7\n"), 0o644)
-	rap := &rapporto{formati: map[string]int{}, cancellati: map[int]int{}}
+	os.MkdirAll(filepath.Join(dir, "arricchimento"), 0o755)
+	os.WriteFile(filepath.Join(dir, "arricchimento", "autori.yaml"), []byte("\"-\": []\nRossi M.: [Mario Rossi]\n"), 0o644)
+	rap := &rapporto{formati: map[string]int{}, cancellati: map[int]int{},
+		autori: map[string]int{"Mario Rossi": 3, "Rossi M.": 1, "-": 1, "A | B": 1}}
 	foto := []fotoYAML{{1, []byte("pid: 1\n")}, {2, []byte("pid: 2\n")}}
 	if err := scrivi(dir, foto, rap); err != nil {
 		t.Fatal(err)
@@ -111,7 +114,16 @@ func TestScrivi(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(cart, "7.yaml")); !os.IsNotExist(err) {
 		t.Error("7.yaml non rimosso")
 	}
-	if _, err := os.Stat(filepath.Join(dir, "importazione", "anomalie.md")); err != nil {
-		t.Error(err)
+	md, err := os.ReadFile(filepath.Join(dir, "importazione", "anomalie.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range []string{
+		"Valori distinti di `user1`: 4, di cui 2 con alias",
+		"| Mario Rossi | 3 |  |\n| - | 1 | scartato |\n| A \\| B | 1 |  |\n| Rossi M. | 1 | → Mario Rossi |",
+	} {
+		if !strings.Contains(string(md), r) {
+			t.Errorf("anomalie.md senza %q:\n%s", r, md)
+		}
 	}
 }

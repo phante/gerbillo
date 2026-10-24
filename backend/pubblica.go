@@ -1,8 +1,8 @@
 package main
 
-// Foto pubblicata (ADR 0009, 0013): l'Importazione, poi la Mappatura della categoria
-// antenata, poi quella dell'album, poi arricchimento/foto/<pid>.yaml. Per ogni campo
-// vince il livello più specifico.
+// Foto pubblicata (ADR 0009, 0013): l'Importazione con gli alias degli Autori, poi la
+// Mappatura della categoria antenata, poi quella dell'album, poi arricchimento/foto/<pid>.yaml.
+// Per ogni campo vince il livello più specifico.
 
 import (
 	"errors"
@@ -87,6 +87,10 @@ func leggiContenuti(dir, indice string) (*contenuti, error) {
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return nil, err
 	}
+	alias, err := leggiAlias(dir)
+	if err != nil {
+		return nil, err
+	}
 	file, err := filepath.Glob(filepath.Join(dir, "importazione", "foto", "*.yaml"))
 	if err != nil {
 		return nil, err
@@ -100,6 +104,7 @@ func leggiContenuti(dir, indice string) (*contenuti, error) {
 		if err := yaml.Unmarshal(b, f); err != nil {
 			return nil, fmt.Errorf("%s: %w", p, err)
 		}
+		f.Authors = alias.applica(f.Authors)
 		if mp := c.mappaturaAlbum(f.Coppermine.Aid, m); mp != nil {
 			f.Slug, f.Tags, f.Categories = mp.Slug, mp.Tags, mp.Categories
 		}
@@ -116,6 +121,37 @@ func leggiContenuti(dir, indice string) (*contenuti, error) {
 	}
 	slices.SortFunc(c.foto, func(a, b *fotoPubblicata) int { return a.Pid - b.Pid })
 	return c, nil
+}
+
+// aliasAutori viene da arricchimento/autori.yaml, scritto solo a mano (#19): valore grezzo
+// di Coppermine → Autori. Più Autori per i composti, nessuno per scartare il valore.
+type aliasAutori map[string][]string
+
+func leggiAlias(dir string) (aliasAutori, error) {
+	a := aliasAutori{}
+	b, err := os.ReadFile(filepath.Join(dir, "arricchimento", "autori.yaml"))
+	if errors.Is(err, os.ErrNotExist) {
+		return a, nil
+	} else if err != nil {
+		return nil, err
+	}
+	if err := yaml.Unmarshal(b, &a); err != nil {
+		return nil, fmt.Errorf("autori.yaml: %w", err)
+	}
+	return a, nil
+}
+
+// applica sostituisce i valori che hanno un alias; gli altri passano grezzi.
+func (a aliasAutori) applica(grezzi []string) []string {
+	var out []string
+	for _, g := range grezzi {
+		if v, ok := a[g]; ok {
+			out = append(out, v...)
+		} else {
+			out = append(out, g)
+		}
+	}
+	return out
 }
 
 // mappaturaAlbum è la riga dell'album se ha qualcosa, altrimenti quella della categoria

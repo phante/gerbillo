@@ -34,13 +34,14 @@ album:
 `)
 	foto := map[string]string{
 		"1": "pid: 1\ntitle: Diga\nformato: immagine\ndate: \"2006-12-27T12:23:55+01:00\"\ncontributore: {id: 25, nome: Mario}\ncoppermine: {aid: 14, filepath: userpics/1/, filename: a.jpg}\n",
-		"2": "pid: 2\nformato: pdf\ncoppermine: {aid: 14, filepath: userpics/1/, filename: b.pdf}\n",
-		"3": "pid: 3\ntitle: Altrove\nformato: immagine\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg}\n",
-		"4": "pid: 4\nformato: immagine\ncontributore: {id: 74, nome: Pomase}\ncoppermine: {aid: 30, filepath: userpics/2/, filename: d.jpg}\n",
+		"2": "pid: 2\nauthors: [\"-\"]\nformato: pdf\ncoppermine: {aid: 14, filepath: userpics/1/, filename: b.pdf}\n",
+		"3": "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg}\n",
+		"4": "pid: 4\nauthors: [Grezzo]\nformato: immagine\ncontributore: {id: 74, nome: Pomase}\ncoppermine: {aid: 30, filepath: userpics/2/, filename: d.jpg}\n",
 	}
 	for pid, y := range foto {
 		scrivi("importazione/foto/"+pid+".yaml", y)
 	}
+	scrivi("arricchimento/autori.yaml", "\"Il gaurdiano & paolog\": [Il guardiano, paolog]\n\"-\": []\n")
 	scrivi("arricchimento/foto/1.yaml", "datazione: 195X\nauthors: [Ente]\nlicenza: CC-BY-4.0\n")
 	indice = filepath.Join(dir, "indice.json")
 	scrivi("indice.json", `[{"slug":"dighe/vajont","title":"Vajont","geolocation":{"stato":"Italia","regione":"Friuli-Venezia Giulia"}}]`)
@@ -62,6 +63,12 @@ func TestLeggiContenuti(t *testing.T) {
 	}
 	if f[1].Datazione != "195X" || f[1].Authors[0] != "Ente" || f[1].Title != "Diga" {
 		t.Errorf("arricchimento della Foto non applicato: %+v", f[1])
+	}
+	if a := f[3].Authors; len(a) != 2 || a[0] != "Il guardiano" || a[1] != "paolog" {
+		t.Errorf("alias composto: %v", a)
+	}
+	if len(f[2].Authors) != 0 || len(f[4].Authors) != 1 || f[4].Authors[0] != "Grezzo" {
+		t.Errorf("alias scartato o assente: %v, %v", f[2].Authors, f[4].Authors)
 	}
 	if f[1].Geolocation.Regione != "Friuli-Venezia Giulia" {
 		t.Errorf("geolocation non ereditata: %+v", f[1].Geolocation)
