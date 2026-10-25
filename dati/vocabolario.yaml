@@ -1,5 +1,6 @@
 # Vocabolario controllato del Livello di arricchimento (#1, ADR 0013).
-# gerbillo importa -vocabolario rifiuta le categories di mappature.yaml che non sono qui. I valori sono della gallery:
+# gerbillo importa -vocabolario rifiuta le categories di mappature.yaml che non sono qui, e il Backend
+# quelle delle Foto (#52). Si modifica solo qui, con un commit. I valori sono della gallery:
 # dove il sito ha un valore equivalente si usa quello, ma la gallery non lo aspetta.
 categories:
     - documenti
@@ -23,7 +24,11 @@ categories:
     - tecnica/turbine/kaplan
     - tecnica/turbine/pelton
 # Segnali di lavoro editoriale: il build non li mostra mai e allo Switch non devono restare Foto che li hanno.
+# La descrizione è l'aiuto che il Backend mostra accanto al tag (#52).
 tags_interni:
-    - da-classificare # manca la classificazione
-    - da-collegare # manca lo Slug
-    - da-separare # l'album copre più pagine: le Foto vanno divise
+    - nome: da-classificare
+      descrizione: manca la classificazione
+    - nome: da-collegare
+      descrizione: manca lo Slug
+    - nome: da-separare
+      descrizione: "l'album copre più pagine: le Foto vanno divise"

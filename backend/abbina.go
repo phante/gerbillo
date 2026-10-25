@@ -9,9 +9,12 @@ import (
 	"bytes"
 	"cmp"
 	"fmt"
+	"os"
 	"regexp"
 	"slices"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -28,8 +31,25 @@ const daCollegare = "da-collegare"
 // vocabolario è dati/vocabolario.yaml: i valori ammessi di categories e i tag interni,
 // che il build non mostra e che vanno azzerati prima dello Switch (#1).
 type vocabolario struct {
-	Categories  []string `yaml:"categories"`
-	TagsInterni []string `yaml:"tags_interni"`
+	Categories  []string     `yaml:"categories"`
+	TagsInterni []tagInterno `yaml:"tags_interni"`
+}
+
+type tagInterno struct {
+	Nome        string `yaml:"nome"`
+	Descrizione string `yaml:"descrizione"`
+}
+
+func leggiVocabolario(p string) (vocabolario, error) {
+	var voc vocabolario
+	b, err := os.ReadFile(p)
+	if err != nil {
+		return voc, err
+	}
+	if err := yaml.Unmarshal(b, &voc); err != nil {
+		return voc, fmt.Errorf("%s: %w", p, err)
+	}
+	return voc, nil
 }
 
 // fuoriVocabolario elenca le categories delle righe che il vocabolario non conosce.

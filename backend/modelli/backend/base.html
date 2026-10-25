@@ -1,0 +1,42 @@
+{{/* Modello unico delle pagine del Backend (ADR 0017): la barra in alto e il contenuto.
+     Ogni pagina è {{define "nome"}}{{template "testa" .}}…{{template "piede" .}}{{end}}.
+     I link sono relativi a /admin/, che è la <base> (paginaBackend.R). */}}
+{{define "testa"}}<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<base href="{{.R}}">
+<title>{{.Titolo}} · Backend Gerbillo</title>
+<link rel="stylesheet" href="statico/tachyons">
+<link rel="stylesheet" href="statico/tom-select-stile">
+<link rel="stylesheet" href="statico/leaflet-stile">
+<link rel="stylesheet" href="statico/backend-stile">
+<script src="statico/htmx" defer></script>
+<script src="statico/tom-select" defer></script>
+<script src="statico/mappa" defer></script>
+<script src="statico/backend" defer></script>
+<script src="statico/alpine" defer></script>
+</head>
+<body class="sans-serif bg-near-white black-80">
+{{if .Striscia}}<div class="striscia">{{.Striscia}}</div>{{end}}
+<header class="barra">
+  <a class="marchio link black-80" href="./"><img src="statico/logo" alt="" width="28" height="28"><span>Backend</span></a>
+  <div id="widget-stato" class="widget"></div>
+  <form class="cerca" action="foto/" method="get" role="search">
+    <input type="search" name="cerca" placeholder="pid, testo o link della Foto" aria-label="Cerca una Foto" enterkeyhint="go">
+  </form>
+  {{with .Utente}}<span class="utente" title="user_id {{.ID}}">{{.Nome}}</span>{{end}}
+  <a class="link black-60 f6" href="../">Gallery</a>
+  <a class="link black-60 f6" href="esci">Esci</a>
+</header>
+<main class="contenuto">
+<h1 class="f3 lh-title mt3 mb3">{{.Titolo}}</h1>
+{{end}}
+
+{{define "piede"}}
+</main>
+</body>
+</html>
+{{end}}

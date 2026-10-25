@@ -1,5 +1,7 @@
 # Builda l'immagine dell'anteprima dev e la pubblica su ghcr (ADR 0011).
 # Il server la scarica da solo: questo workflow non tocca mai il server.
+# In parallelo il job test lancia i test Go e quelli end-to-end (ADR 0017): se fallisce
+# avvisa su Telegram, ma non blocca l'anteprima.
 name: anteprima
 on:
   push:
@@ -57,3 +59,56 @@ jobs:
           [ -n "$TELEGRAM_TOKEN" ] || exit 0
           curl -s -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
             -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — build dev fallita ❌\nBranch: %s\nCommit: %.7s\n%s' "${{ github.ref_name }}" "${{ github.sha }}" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")"
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports: ["3306:3306"]
+        options: --health-cmd "mysqladmin ping -h 127.0.0.1" --health-interval 5s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: go test
+        working-directory: backend
+        run: go test ./...
+      # Gli stessi dati dell'anteprima, in dist/ e seme/, per il Backend dei test.
+      - name: gallery
+        run: |
+          gunzip -c testdata/coppermine.sql.gz | mysql -h 127.0.0.1 -u root
+          mysql -h 127.0.0.1 -u root -e "CREATE USER 'gerbillo_ro'@'%' IDENTIFIED BY 'gerbillo';
+            GRANT SELECT ON progettodighe_it_gallery.* TO 'gerbillo_ro'@'%';
+            GRANT SELECT ON progettodighe_it_forum.* TO 'gerbillo_ro'@'%';"
+          scripts/anteprima-gallery.sh 127.0.0.1:3306 "test"
+      - name: playwright
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright
+          path: |
+            e2e/test-results/
+            e2e/playwright-report/
+          retention-days: 14
+      - name: notifica
+        if: failure()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        run: |
+          [ -n "$TELEGRAM_TOKEN" ] || exit 0
+          curl -s -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
+            -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — test falliti ❌ (anteprima non bloccata)\nBranch: %s\nCommit: %.7s\n%s' "${{ github.ref_name }}" "${{ github.sha }}" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")"

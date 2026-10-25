@@ -8,14 +8,12 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 	_ "time/tzdata" // l'immagine distroless non ha i fusi orari
@@ -41,36 +39,32 @@ func main() {
 		os.Exit(2)
 	}
 	// Nell'anteprima l'utente corrente è solo l'admin, con la password usa e getta (#42).
-	var uc utenteCorrente = nuovaPasswordAnteprima()
+	var uc utenteCorrente = nuovaPasswordAnteprima(os.Getenv("GERBILLO_PASSWORD"))
 	// Nell'anteprima la Gallery pubblica generata in CI sta in /dist (ADR 0011, 0012); quella
 	// rigenerata dopo una modifica (#43) sta in /tmp/dist, con i soli file cambiati, e vince.
 	dist := envOr("GERBILLO_DIST", "/dist")
 	modifiche := envOr("GERBILLO_DIST_MODIFICHE", "/tmp/dist")
-	red, err := redazioneAnteprima(envOr("GERBILLO_SEME", "/seme"), envOr("GERBILLO_CONTENUTI", "/tmp/contenuti"), dist, modifiche)
+	red, err := redazioneAnteprima(envOr("GERBILLO_SEME", "/seme"), envOr("GERBILLO_CONTENUTI", "/tmp/contenuti"), dist, modifiche,
+		envOr("GERBILLO_REDAZIONE", "/tmp/redazione.json"))
 	if err != nil {
 		log.Printf("modifica delle Foto non disponibile: %v", err)
 	}
+	mux := http.NewServeMux()
 	if esiste(filepath.Join(dist, "index.html")) {
 		cartelle := sovrapposte{http.Dir(modifiche), http.Dir(dist)}
-		http.Handle("/", staticiSenzaEstensione(cartelle, http.FileServer(cartelle)))
+		mux.Handle("/", staticiSenzaEstensione(cartelle, http.FileServer(cartelle)))
 	} else {
-		http.HandleFunc("/", home)
+		mux.HandleFunc("/", home)
 	}
-	// /admin senza barra: il ServeMux di Go rimanderebbe a /admin/ con un percorso assoluto,
-	// e dietro nginx si perderebbe il prefisso /gerbillo/ dell'anteprima.
-	http.HandleFunc("/admin", conBarra)
-	if red != nil {
-		http.HandleFunc("/admin/foto", conBarra)
-		http.HandleFunc("/admin/", soloModeratore(uc, red.admin))
-		// Il browser rimanda l'HTTP Basic anche dai POST di altri siti: si rifiutano.
-		http.Handle("/admin/foto/", http.NewCrossOriginProtection().Handler(soloModeratore(uc, red.foto)))
-	} else {
-		http.HandleFunc("/admin/", soloModeratore(uc, admin))
+	rotteBackend(mux, uc, red)
+	var h http.Handler = mux
+	// Come nginx nell'anteprima, che toglie /gerbillo/: serve ai test end-to-end (e2e/).
+	if p := os.Getenv("GERBILLO_PREFISSO"); p != "" {
+		h = http.StripPrefix(strings.TrimSuffix(p, "/"), mux)
 	}
-	http.HandleFunc("/admin/stato", soloModeratore(uc, stato))
 	addr := envOr("GERBILLO_ADDR", ":8080")
 	log.Printf("gerbillo %s@%s in ascolto su %s", branch, commit, addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(http.ListenAndServe(addr, h))
 }
 
 func telegram(testo string) error {
@@ -90,50 +84,21 @@ func telegram(testo string) error {
 	return nil
 }
 
-var pagina = template.Must(template.New("p").Parse(`<!doctype html>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<meta name="robots" content="noindex">
-<title>Gerbillo dev</title>
-<style>pre{white-space:pre-wrap}</style>
-<p style="font:12px monospace;background:#fe0;padding:4px">{{.Branch}} @ {{.Commit}}</p>
-<h1>{{.Titolo}}</h1>
-<pre>{{.Corpo}}</pre>`))
-
-func mostra(w http.ResponseWriter, titolo, corpo string) {
-	pagina.Execute(w, map[string]string{"Branch": branch, "Commit": commit, "Titolo": titolo, "Corpo": corpo})
-}
-
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
-	mostra(w, "Gerbillo: anteprima dev", "Gallery pubblica in arrivo (prova remota).\nAdmin: admin/")
+	fmt.Fprintf(w, "Gerbillo %s: la Gallery pubblica non è stata generata. Backend: admin/\n", striscia())
 }
 
-func admin(w http.ResponseWriter, r *http.Request) {
-	u := utenteDi(r)
-	mostra(w, "Gerbillo: admin", fmt.Sprintf("Utente: %s (%d), gruppi %s\nStato: admin/stato", u.Nome, u.ID, strings.Join(u.Gruppi, ", ")))
-}
-
-// stato mostra la memoria del processo, quella del container (cgroup v2)
-// e il file scritto dall'host dal timer (montato in sola lettura).
-func stato(w http.ResponseWriter, r *http.Request) {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	var b strings.Builder
-	fmt.Fprintf(&b, "avvio: %s (%s fa)\n", avvio.In(roma).Format(time.RFC3339), time.Since(avvio).Round(time.Second))
-	fmt.Fprintf(&b, "go: heap %d MiB, sys %d MiB, goroutine %d\n", m.HeapAlloc>>20, m.Sys>>20, runtime.NumGoroutine())
-	for _, f := range []string{"memory.current", "memory.peak", "memory.max"} {
-		v, _ := os.ReadFile("/sys/fs/cgroup/" + f)
-		fmt.Fprintf(&b, "cgroup %s: %s\n", f, strings.TrimSpace(string(v)))
+// adminSenzaRedazione è la home del Backend quando manca il seme della modifica delle Foto.
+func adminSenzaRedazione(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/admin/" {
+		http.NotFound(w, r)
+		return
 	}
-	host, err := os.ReadFile(envOr("GERBILLO_STATO_HOST", "/stato/stato.json"))
-	if err != nil {
-		host = []byte(err.Error())
-	}
-	fmt.Fprintf(&b, "\nhost:\n%s", host)
-	mostra(w, "Gerbillo: stato", b.String())
+	mostraPagina(w, r, "home", "Backend", corpoHome{})
 }
 
 // staticiSenzaEstensione serve /statico/stile come /statico/stile.css (build -anteprima).

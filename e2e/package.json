@@ -1,0 +1,11 @@
+{
+  "name": "gerbillo-e2e",
+  "private": true,
+  "description": "Test end-to-end del Backend (ADR 0017). npm serve solo a questi test.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

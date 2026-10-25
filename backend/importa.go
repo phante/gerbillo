@@ -65,11 +65,9 @@ func importa(args []string) error {
 		return err
 	}
 	if *pVoc != "" {
-		var voc vocabolario
-		if b, err := os.ReadFile(*pVoc); err != nil {
+		voc, err := leggiVocabolario(*pVoc)
+		if err != nil {
 			return err
-		} else if err := yaml.Unmarshal(b, &voc); err != nil {
-			return fmt.Errorf("%s: %w", *pVoc, err)
 		}
 		if fuori := fuoriVocabolario(manuali, voc); len(fuori) > 0 {
 			return fmt.Errorf("categories fuori dal vocabolario in mappature.yaml:\n%s", strings.Join(fuori, "\n"))

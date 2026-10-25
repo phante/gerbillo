@@ -168,6 +168,8 @@ document.addEventListener("click",function(e){
   </div>
   <p class="mt4">
     <button type="button" id="copia" class="f6 b ttu tracked br2 ph3 pv2 bn pointer white bg-dark-gray dim" data-bbcode="{{.BBCode}}"><span class="svg-inline mr2" aria-hidden="true">{{icona "forum"}}</span><span id="copia-testo">Copia per il forum</span></button>
+    {{/* Solo per i Moderatori, che il Backend segna con un cookie non segreto (#58). */}}
+    <a id="modifica" class="f6 b ttu tracked br2 ph3 pv2 ml2 link black-80 bg-yellow dim" href="{{.Modifica}}" hidden>Modifica</a>
   </p>
 </div>
 {{end}}
@@ -198,6 +200,9 @@ document.addEventListener("click",function(e){
       copia(btn.dataset.copyUrl,function(){mostra("Copiato!")},function(){mostra("Copia non riuscita")});
     });
   });
+  // «Modifica» compare a chi ha il cookie segnale del Backend. Non dà nessun permesso: il
+  // Backend controlla sempre l'utente (#58).
+  if(/(^|;\s*)gerbillo_moderatore=1(;|$)/.test(document.cookie))document.getElementById("modifica").hidden=false;
   // Il BBCode non si mostra: il pulsante lo copia e basta.
   var b=document.getElementById("copia"),s=document.getElementById("copia-testo"),testo=s.textContent;
   var fatto=function(){s.textContent="Copiato";setTimeout(function(){s.textContent=testo},1500)};

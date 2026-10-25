@@ -254,3 +254,41 @@ func (f *fotoPubblicata) datazioneTesto() string {
 	}
 	return datazioneItaliana(f.Datazione)
 }
+
+// normalizzaDatazione è la Datazione scritta nel Backend (#51): EDTF fino al livello 1
+// (giorno, mese, anno, decennio, anno incerto, intervallo) oppure una forma italiana che
+// interpretaUser3 riconosce («maggio 2006», «anni '60»), convertita in EDTF. Un valore
+// che non è né l'uno né l'altro è un errore: non si salva.
+func normalizzaDatazione(s string) (string, error) {
+	s = strings.TrimSpace(s)
+	if s == "" || datazioneValida(s) {
+		return s, nil
+	}
+	if d, ok := interpretaUser3(s, time.Now().Year()); ok {
+		return d.edtf, nil
+	}
+	return "", fmt.Errorf("Datazione %q non valida: scrivi per esempio 2009-06-03, 2009-06, 2009, 195X, 1938/1940, 1950? oppure «maggio 2006», «anni '60»", s)
+}
+
+// datazioneValida dice se s è una Datazione EDTF che la Gallery sa mostrare.
+func datazioneValida(s string) bool {
+	if a, b, ok := strings.Cut(s, "/"); ok {
+		if !puntoValido(a) || !puntoValido(b) || strings.ContainsAny(a+b, "X?~") {
+			return false
+		}
+		return a < b // stesso formato o no, in EDTF l'ordine del testo è quello del tempo
+	}
+	return puntoValido(s) || reEDTFDecennio.MatchString(s) || reEDTFIncerto.MatchString(s)
+}
+
+func puntoValido(s string) bool {
+	switch {
+	case reEDTFGiorno.MatchString(s):
+		_, err := time.Parse("2006-01-02", s)
+		return err == nil
+	case reEDTFMese.MatchString(s):
+		m, _ := strconv.Atoi(s[5:])
+		return m >= 1 && m <= 12
+	}
+	return reEDTFAnno.MatchString(s)
+}

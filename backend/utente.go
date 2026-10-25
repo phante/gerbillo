@@ -37,6 +37,9 @@ func (u *utente) Moderatore() bool {
 	return slices.Contains(u.Gruppi, gruppoAdmin) || slices.Contains(u.Gruppi, gruppoModeratori)
 }
 
+// Admin dice se l'utente è un amministratore del forum: per le azioni sull'intera Gallery.
+func (u *utente) Admin() bool { return u != nil && slices.Contains(u.Gruppi, gruppoAdmin) }
+
 // utenteCorrente riconosce chi fa una richiesta.
 type utenteCorrente interface {
 	// Utente è chi fa la richiesta; nil per un ospite.
@@ -63,9 +66,29 @@ func soloModeratore(uc utenteCorrente, h http.HandlerFunc) http.HandlerFunc {
 		case !u.Moderatore():
 			http.Error(w, "serve un Moderatore", http.StatusForbidden)
 		default:
+			segnalaModeratore(w)
 			h(w, r.WithContext(context.WithValue(r.Context(), chiaveUtente{}, u)))
 		}
 	}
+}
+
+// cookieModeratore segnala alla Gallery pubblica che chi guarda è un Moderatore, per mostrare
+// «Modifica» nella pagina della Foto (#58). Non è segreto e non dà nessun permesso: il Backend
+// controlla sempre l'utente. Path=/ perché la Gallery sta fuori da /admin/. Con l'HTTP
+// Basic dell'anteprima non c'è un login vero: il cookie si mette a ogni pagina del Backend
+// vista da un Moderatore, e /admin/esci lo toglie.
+const cookieModeratore = "gerbillo_moderatore"
+
+func segnalaModeratore(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{Name: cookieModeratore, Value: "1", Path: "/", MaxAge: 30 * 24 * 3600, SameSite: http.SameSiteLaxMode})
+}
+
+// esci toglie il cookie segnale. L'HTTP Basic dell'anteprima resta nel browser fino alla sua chiusura.
+func esci(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{Name: cookieModeratore, Value: "", Path: "/", MaxAge: -1, SameSite: http.SameSiteLaxMode})
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprint(w, `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Uscito</title>`+
+		`<p style="font:16px system-ui;margin:2em">Sei uscito: la Gallery non mostra più «Modifica». <a href="../">Torna alla Gallery</a></p>`)
 }
 
 // passwordAnteprima è l'utente corrente dell'anteprima dev (ADR 0011): HTTP Basic con una
@@ -84,7 +107,12 @@ type passwordAnteprima struct {
 	scadenza time.Time
 }
 
-func nuovaPasswordAnteprima() *passwordAnteprima {
+// nuovaPasswordAnteprima genera la password usa e getta. Con fissa non vuota (GERBILLO_PASSWORD,
+// per i test end-to-end in locale e in CI) la password è quella, non scade e non va su Telegram.
+func nuovaPasswordAnteprima(fissa string) *passwordAnteprima {
+	if fissa != "" {
+		return &passwordAnteprima{password: fissa, scadenza: time.Now().AddDate(100, 0, 0)}
+	}
 	p := &passwordAnteprima{}
 	p.rinnova()
 	return p

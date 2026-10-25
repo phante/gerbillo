@@ -71,14 +71,9 @@ type opzioniBuild struct {
 	confronta string
 }
 
-func build(args []string) error {
-	fs := flag.NewFlagSet("build", flag.ExitOnError)
-	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
-	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
-	dist := fs.String("dist", "dist", "cartella di uscita")
-	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
-	dirContenuti := fs.String("contenuti", "", "Repository dei contenuti, al posto di quello della configurazione")
-	var o opzioniBuild
+// flag registra le opzioni del build. Il Backend le legge anche da seme/build.args, per
+// mostrare nella scheda le stesse immagini della Gallery (#55).
+func (o *opzioniBuild) flag(fs *flag.FlagSet) {
 	fs.StringVar(&o.confronta, "confronta", "", "Gallery già generata: scrive solo i file diversi (anteprima)")
 	fs.StringVar(&o.base, "base", "/gallery/", "prefisso degli URL")
 	fs.StringVar(&o.media, "media", "", "URL di albums/ di Coppermine al posto delle Varianti (anteprima)")
@@ -86,6 +81,18 @@ func build(args []string) error {
 	fs.StringVar(&o.sito, "sito", "https://progettodighe.it/", "URL del Sito principale")
 	fs.StringVar(&o.striscia, "striscia", "", "striscia dell'anteprima")
 	fs.BoolVar(&o.anteprima, "anteprima", false, "URL dei file statici senza estensione (anteprima dev)")
+}
+
+func build(args []string) error {
+	fs := flag.NewFlagSet("build", flag.ExitOnError)
+	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
+	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
+	dist := fs.String("dist", "dist", "cartella di uscita")
+	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
+	dirContenuti := fs.String("contenuti", "", "Repository dei contenuti, al posto di quello della configurazione")
+	redazione := fs.String("redazione", "", "file in cui scrivere l'indice della redazione per il Backend (#49)")
+	var o opzioniBuild
+	o.flag(fs)
 	fs.Parse(args)
 	var c configImporta
 	if *dirContenuti != "" {
@@ -110,6 +117,11 @@ func build(args []string) error {
 	pagine.Funcs(template.FuncMap{"statico": b.statico})
 	if err := b.tutto(); err != nil {
 		return err
+	}
+	if *redazione != "" {
+		if err := b.scriviIndiceRedazione(*redazione); err != nil {
+			return err
+		}
 	}
 	vecchia := strings.TrimSuffix(*dist, "/") + ".vecchia"
 	os.RemoveAll(vecchia)
@@ -202,6 +214,7 @@ type corpoFoto struct {
 	Dighe, SulSito                                []voce
 	Licenza                                       voce
 	Link, LinkBreve                               string
+	Modifica                                      string // la scheda nel Backend, per i Moderatori (#58)
 	Contributore                                  *voce
 	Tags                                          []string
 }
@@ -270,6 +283,15 @@ func (b *builder) schermo(f *fotoPubblicata) string {
 		return b.media + f.Coppermine.Filepath + f.Coppermine.Filename
 	}
 	return b.base + "f/" + strconv.Itoa(f.Pid) + "/schermo.webp"
+}
+
+// originale è l'URL dell'Originale: con -media il file di Coppermine. Dopo lo Switch
+// l'Originale sta su S3 e non è pubblico (ADR 0015): vuoto.
+func (b *builder) originale(f *fotoPubblicata) string {
+	if b.media != "" {
+		return b.media + f.Coppermine.Filepath + f.Coppermine.Filename
+	}
+	return ""
 }
 
 // titolo ripiega sul nome della prima Entità: un terzo delle Foto non ha titolo.
@@ -472,9 +494,8 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 	if c.Alt == "" {
 		c.Alt = f.Title
 	}
-	if b.media != "" {
-		c.Originale = b.media + f.Coppermine.Filepath + f.Coppermine.Filename
-	}
+	c.Originale = b.originale(f)
+	c.Modifica = b.base + "admin/foto/" + pid
 	if t, err := time.Parse(time.RFC3339, f.Date); err == nil {
 		c.Caricata = t.Format("02/01/2006")
 	}

@@ -8,21 +8,22 @@ package main
 // producono uno solo alla fine. La rigenerazione parziale è #15.
 
 import (
-	"bufio"
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -45,12 +46,12 @@ var campiEditoriali = []campoEditoriale{
 	{"slug", "Pagine del sito (slug)", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Slug, "\n") }},
 	{"categories", "Categorie", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Categories, "\n") }},
 	{"tags", "Tag", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Tags, "\n") }},
-	{"datazione", "Datazione (EDTF)", false, 0, func(f *fotoPubblicata) string { return f.Datazione }},
+	{"datazione", "Datazione", false, 0, func(f *fotoPubblicata) string { return f.Datazione }},
 	{"authors", "Autori", true, 2, func(f *fotoPubblicata) string { return strings.Join(f.Authors, "\n") }},
 	{"fonte", "Fonte", false, 0, func(f *fotoPubblicata) string { return f.Fonte }},
-	{"geolocation.coords", "Punto geografico (latitudine, longitudine)", false, 0, func(f *fotoPubblicata) string {
+	{"geolocation.coords", "Punto geografico", false, 0, func(f *fotoPubblicata) string {
 		if c := f.Geolocation.Coords; c != nil {
-			return strconv.FormatFloat(c.Latitudine, 'f', -1, 64) + ", " + strconv.FormatFloat(c.Longitudine, 'f', -1, 64)
+			return testoPunto(c.Latitudine, c.Longitudine)
 		}
 		return ""
 	}},
@@ -77,13 +78,11 @@ func (c campoEditoriale) yaml(s string) (any, error) {
 	case c.lista:
 		return strings.Split(s, "\n"), nil
 	case c.chiave == "geolocation.coords":
-		lat, lon, ok := strings.Cut(s, ",")
-		a, err1 := strconv.ParseFloat(strings.TrimSpace(lat), 64)
-		b, err2 := strconv.ParseFloat(strings.TrimSpace(lon), 64)
-		if !ok || err1 != nil || err2 != nil || a < -90 || a > 90 || b < -180 || b > 180 {
-			return nil, fmt.Errorf("punto geografico %q: scrivi latitudine, longitudine (es. 46.2905, 8.2987)", s)
+		lat, lon, err := interpretaPunto(s)
+		if err != nil {
+			return nil, err
 		}
-		return map[string]any{"latitudine": a, "longitudine": b}, nil
+		return map[string]any{"latitudine": lat, "longitudine": lon}, nil
 	}
 	return s, nil
 }
@@ -95,9 +94,33 @@ type redazione struct {
 
 	salvataggio sync.Mutex // un salvataggio alla volta
 
+	// Indice della redazione (#49): fileIndice lo riscrivono i build del Backend, semeIndice
+	// è quello del seme, finché non ne finisce uno.
+	fileIndice, semeIndice string
+	elenco                 atomic.Pointer[indiceRedazione]
+
+	voc   *vocabolario // nil: le Categorie non si controllano (nessun vocabolario nel seme)
+	cache cacheVoci    // voci note per i chip (#53)
+	opz   opzioniBuild // le opzioni del build, per le immagini nella scheda (#55)
+
 	mu              sync.Mutex
 	inCorso, ancora bool
-	esito           string // dell'ultimo build, per le pagine
+	ultimo          *esitoBuild // nil finché non finisce il primo build
+	dopoBuild       func()      // a fine build riuscito, per esempio per ricaricare l'indice
+}
+
+type esitoBuild struct {
+	Riuscito bool
+	Fine     time.Time
+	Durata   time.Duration
+	Errore   string
+}
+
+func (r *redazione) usaVocabolario(voc vocabolario) {
+	r.voc = &voc
+	for _, t := range voc.TagsInterni {
+		descrizioniTagInterni[t.Nome] = t.Descrizione
+	}
 }
 
 // richiediBuild lancia un build in background. Se ne gira già uno, ne segna un altro da
@@ -114,13 +137,15 @@ func (r *redazione) richiediBuild() {
 		for {
 			inizio := time.Now()
 			err := r.build()
-			esito := fmt.Sprintf("riuscito alle %s, in %s", time.Now().In(roma).Format("15:04"), time.Since(inizio).Round(time.Second))
+			e := &esitoBuild{Riuscito: err == nil, Fine: time.Now(), Durata: time.Since(inizio).Round(time.Second)}
 			if err != nil {
-				esito = "fallito: " + err.Error()
+				e.Errore = err.Error()
 				log.Printf("build: %v", err)
+			} else if r.dopoBuild != nil {
+				r.dopoBuild()
 			}
 			r.mu.Lock()
-			r.esito = esito
+			r.ultimo = e
 			if !r.ancora {
 				r.inCorso = false
 				r.mu.Unlock()
@@ -132,35 +157,76 @@ func (r *redazione) richiediBuild() {
 	}()
 }
 
-func (r *redazione) statoBuild() string {
+// statoDelBuild dice se un build gira, se ne segue un altro e com'è andato l'ultimo.
+func (r *redazione) statoDelBuild() (inCorso, inCoda bool, ultimo *esitoBuild) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	return r.inCorso, r.inCorso && r.ancora, r.ultimo
+}
+
+func (r *redazione) statoBuild() string {
+	inCorso, inCoda, e := r.statoDelBuild()
 	switch {
-	case r.inCorso && r.ancora:
+	case inCoda:
 		return "in corso, poi un altro"
-	case r.inCorso:
+	case inCorso:
 		return "in corso"
-	case r.esito != "":
-		return "ultimo " + r.esito
+	case e == nil:
+		return "nessuno da quando il Backend è partito"
+	case !e.Riuscito:
+		return "ultimo fallito: " + e.Errore
 	}
-	return "nessuno da quando il Backend è partito"
+	return fmt.Sprintf("ultimo riuscito alle %s, in %s", e.Fine.In(roma).Format("15:04"), e.Durata)
 }
 
 // fotoDaModificare è la Foto pubblicata e quella importata, con cui si confronta.
 func (r *redazione) fotoDaModificare(pid int) (pub, imp *fotoPubblicata, idx []entita, err error) {
-	var album albumCoppermine
-	st, idx, err := leggiStrati(r.contenuti, r.indice, nuovoLivello(r.contenuti, ""), &album)
+	st, idx, err := r.strati()
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	p := filepath.Join(r.contenuti, "importazione", "foto", strconv.Itoa(pid)+".yaml")
+	pub, imp, err = st.fotoDaModificare(r.contenuti, pid)
+	return pub, imp, idx, err
+}
+
+// strati sono i livelli sopra l'Importazione, letti una volta per salvataggio: una modifica
+// in blocco (#50) li usa per tutte le sue Foto.
+func (r *redazione) strati() (*strati, []entita, error) {
+	var album albumCoppermine
+	return leggiStrati(r.contenuti, r.indice, nuovoLivello(r.contenuti, ""), &album)
+}
+
+func (st *strati) fotoDaModificare(contenuti string, pid int) (pub, imp *fotoPubblicata, err error) {
+	p := filepath.Join(contenuti, "importazione", "foto", strconv.Itoa(pid)+".yaml")
 	if imp, err = st.importata(p); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 	if pub, err = st.importata(p); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
-	return pub, imp, idx, st.arricchisci(pub)
+	return pub, imp, st.arricchisci(pub)
+}
+
+// fileNuovo è il file di arricchimento di una Foto dopo una modifica, non ancora scritto.
+type fileNuovo struct {
+	pid            int
+	rel            string // relativo al Repository dei contenuti
+	vecchio, nuovo []byte // nuovo vuoto: il file si toglie
+	cambiati       []string
+}
+
+func (f fileNuovo) scrivi(contenuti string) error {
+	p := filepath.Join(contenuti, f.rel)
+	if len(f.nuovo) == 0 {
+		if err := os.Remove(p); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(p, f.nuovo, 0o644)
 }
 
 // salva scrive i valori del modulo e ne fa il commit con autore u. Restituisce i campi
@@ -168,19 +234,46 @@ func (r *redazione) fotoDaModificare(pid int) (pub, imp *fotoPubblicata, idx []e
 func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]string, error) {
 	r.salvataggio.Lock()
 	defer r.salvataggio.Unlock()
-	pub, imp, idx, err := r.fotoDaModificare(pid)
+	st, idx, err := r.strati()
 	if err != nil {
 		return nil, err
 	}
+	f, err := r.prepara(st, idx, pid, func(map[string]string) map[string]string { return modulo })
+	if err != nil || len(f.cambiati) == 0 {
+		return nil, err
+	}
+	if err := f.scrivi(r.contenuti); err != nil {
+		return nil, err
+	}
+	msg := fmt.Sprintf("foto %d: %s\n\nModifica diretta dal Backend (#43).", pid, strings.Join(f.cambiati, ", "))
+	if err := registra(r.contenuti, f.rel, msg, autoreCommit(u)); err != nil {
+		return nil, err
+	}
+	return f.cambiati, nil
+}
+
+// prepara calcola il file di arricchimento di pid con i valori che modifica ricava da quelli
+// pubblicati: in arricchimento/foto/<pid>.yaml va solo ciò che differisce dall'Importazione.
+// Nessun campo cambiato vuol dire nessun file da scrivere.
+func (r *redazione) prepara(st *strati, idx []entita, pid int, modifica func(attuali map[string]string) map[string]string) (fileNuovo, error) {
+	pub, imp, err := st.fotoDaModificare(r.contenuti, pid)
+	if err != nil {
+		return fileNuovo{}, err
+	}
+	attuali := map[string]string{}
+	for _, c := range campiEditoriali {
+		attuali[c.chiave] = c.valore(pub)
+	}
+	modulo := modifica(attuali)
 	rel := filepath.Join("arricchimento", fileFoto(pid))
 	p := filepath.Join(r.contenuti, rel)
 	vecchio, err := os.ReadFile(p)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return nil, err
+		return fileNuovo{}, err
 	}
 	arr := map[string]any{}
 	if err := yaml.Unmarshal(vecchio, &arr); err != nil {
-		return nil, fmt.Errorf("%s: %w", rel, err)
+		return fileNuovo{}, fmt.Errorf("%s: %w", rel, err)
 	}
 	if arr == nil {
 		arr = map[string]any{}
@@ -188,6 +281,18 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 	var cambiati []string
 	for _, c := range campiEditoriali {
 		v := c.normalizza(modulo[c.chiave])
+		if c.chiave == "datazione" {
+			if v, err = normalizzaDatazione(v); err != nil {
+				return fileNuovo{}, err
+			}
+		}
+		if c.chiave == "geolocation.coords" && v != "" {
+			lat, lon, err := interpretaPunto(v)
+			if err != nil {
+				return fileNuovo{}, err
+			}
+			v = testoPunto(lat, lon)
+		}
 		if v != c.valore(pub) {
 			cambiati = append(cambiati, c.chiave)
 		}
@@ -196,10 +301,17 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 			togli(arr, percorso) // il valore importato non si scrive
 			continue
 		}
+		if c.chiave == "categories" && r.voc != nil {
+			for _, k := range strings.Split(v, "\n") {
+				if k != "" && !slices.Contains(r.voc.Categories, k) {
+					return fileNuovo{}, fmt.Errorf("Categoria %q non è nel vocabolario (dati/vocabolario.yaml)", k)
+				}
+			}
+		}
 		if c.chiave == "slug" {
 			for _, s := range strings.Split(v, "\n") {
 				if s != "" && !slices.ContainsFunc(idx, func(e entita) bool { return e.Slug == s }) {
-					return nil, fmt.Errorf("slug %q non è nell'Indice delle Entità", s)
+					return fileNuovo{}, fmt.Errorf("slug %q non è nell'Indice delle Entità", s)
 				}
 			}
 		}
@@ -212,36 +324,24 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 			y = nil // coords: null
 		case v != "":
 			if y, err = c.yaml(v); err != nil {
-				return nil, err
+				return fileNuovo{}, err
 			}
 		}
 		metti(arr, percorso, y)
 	}
 	if len(cambiati) == 0 {
-		return nil, nil // nemmeno si riscrive il file
+		return fileNuovo{pid: pid, rel: rel}, nil // nemmeno si riscrive il file
 	}
 	var nuovo []byte
 	if len(arr) > 0 {
 		if nuovo, err = yaml.Marshal(arr); err != nil {
-			return nil, err
+			return fileNuovo{}, err
 		}
 	}
 	if bytes.Equal(nuovo, vecchio) {
-		return nil, nil
+		return fileNuovo{pid: pid, rel: rel}, nil
 	}
-	if len(nuovo) == 0 {
-		err = os.Remove(p)
-	} else if err = os.MkdirAll(filepath.Dir(p), 0o755); err == nil {
-		err = os.WriteFile(p, nuovo, 0o644)
-	}
-	if err != nil {
-		return nil, err
-	}
-	msg := fmt.Sprintf("foto %d: %s\n\nModifica diretta dal Backend (#43).", pid, strings.Join(cambiati, ", "))
-	if err := registra(r.contenuti, rel, msg, autoreCommit(u)); err != nil {
-		return nil, err
-	}
-	return cambiati, nil
+	return fileNuovo{pid: pid, rel: rel, vecchio: vecchio, nuovo: nuovo, cambiati: cambiati}, nil
 }
 
 // autoreCommit è l'autore git di una modifica: il nome dell'utente del forum, con un
@@ -280,105 +380,235 @@ type voceModulo struct {
 	Chiave, Etichetta, Valore, Importato string
 	Righe                                int
 	Diverso                              bool
+	Anteprima                            anteprimaDatazione // solo per la Datazione
+	User3, User3EDTF                     string             // idem: il suggerimento da Coppermine
+	Gruppi                               []gruppoCategorie  // solo per le Categorie, dal vocabolario
+	TagInterni                           []tagInterno       // solo per i Tag: l'aiuto accanto
+	Chip                                 string             // slug, tags, authors: campo a chip (#53)
+	Opzioni                              []opzioneChip      // i valori già scelti del campo a chip
+	Ereditato                            *puntoEreditato    // solo per il Punto geografico (#54)
 }
 
-var paginaRedazione = template.Must(template.New("r").Parse(`<!doctype html>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>{{.Titolo}}</title>
-<style>
-body{font:16px/1.4 system-ui,sans-serif;max-width:40em;margin:0 auto;padding:0 16px 3em;color:#222;background:#fff}
-label{display:block;margin-top:1em;font-weight:600}
-input,textarea,button{width:100%;box-sizing:border-box;font:inherit;padding:.4em}
-button{margin-top:1.5em;background:#fe0;border:1px solid #cb0}
-.nota{color:#555;font-size:.9em;margin:.2em 0}
-.errore{background:#fdd;padding:.5em}.salvato{background:#dfd;padding:.5em}
-img{max-width:100%;height:auto}
-</style>
-<p style="font:12px monospace;background:#fe0;padding:4px">{{.Branch}} @ {{.Commit}}</p>
-<p><a href="{{.Admin}}">admin</a>{{if .Pid}} · <a href="{{.Pubblica}}">pagina della Foto</a>{{end}}</p>
-<h1>{{.Titolo}}</h1>
-{{if .Errore}}<p class="errore">{{.Errore}}</p>{{end}}
-{{if .Salvato}}<p class="salvato">{{.Salvato}}</p>{{end}}
-<p class="nota">Build: {{.Build}}.</p>
-{{if .Pid}}<form method="post">
-{{range .Voci}}<label for="{{.Chiave}}">{{.Etichetta}}</label>
-{{if .Righe}}<textarea id="{{.Chiave}}" name="{{.Chiave}}" rows="{{.Righe}}">{{.Valore}}</textarea>{{else}}<input id="{{.Chiave}}" name="{{.Chiave}}" value="{{.Valore}}">{{end}}
-{{if .Diverso}}<p class="nota">Importato: {{if .Importato}}{{.Importato}}{{else}}(vuoto){{end}}</p>{{end}}
-{{end}}<p class="nota">Una voce per riga nelle liste. Riportare un campo al valore importato lo toglie dal Livello di arricchimento.</p>
-<button>Salva</button>
-</form>{{else}}<form method="get" action="{{.Admin}}foto/"><label for="pid">Modifica una Foto: pid</label>
-<input id="pid" name="pid" inputmode="numeric"><button>Apri</button></form>{{end}}`))
-
-type datiRedazione struct {
-	Branch, Commit, Titolo, Errore, Salvato, Build, Admin, Pubblica string
-	Pid                                                             int
-	Voci                                                            []voceModulo
+// puntoEreditato è il Punto geografico della prima Entità, che la Foto eredita se non ha il suo.
+type puntoEreditato struct {
+	Lat, Lon float64
+	Diga     string
 }
 
-// foto risponde a /admin/foto/<pid>: il modulo in GET, il salvataggio in POST.
+// gruppoCategorie sono le Categorie del vocabolario con lo stesso primo pezzo di percorso.
+type gruppoCategorie struct {
+	Nome    string
+	Opzioni []opzione
+}
+
+type opzione struct {
+	Valore, Testo string
+	Scelta        bool
+}
+
+// gruppiCategorie raggruppa il vocabolario per percorso; le Categorie scelte che non ci
+// sono restano visibili, così si possono togliere.
+func gruppiCategorie(voc *vocabolario, scelte []string) []gruppoCategorie {
+	var g []gruppoCategorie
+	aggiungi := func(gruppo, valore, testo string) {
+		if len(g) == 0 || g[len(g)-1].Nome != gruppo {
+			g = append(g, gruppoCategorie{Nome: gruppo})
+		}
+		o := &g[len(g)-1].Opzioni
+		*o = append(*o, opzione{valore, testo, slices.Contains(scelte, valore)})
+	}
+	for _, c := range voc.Categories {
+		primo, resto, _ := strings.Cut(c, "/")
+		if resto == "" {
+			resto = primo
+		}
+		aggiungi(primo, c, strings.ReplaceAll(resto, "/", " › "))
+	}
+	for _, c := range scelte {
+		if c != "" && !slices.Contains(voc.Categories, c) {
+			aggiungi("fuori dal vocabolario", c, c)
+		}
+	}
+	return g
+}
+
+// corpoFotoBackend è la scheda di una Foto: il modulo e l'esito dell'ultimo salvataggio.
+type corpoFotoBackend struct {
+	Pid             int
+	Pubblica, Build string
+	Errore, Salvato string
+	Voci            []voceModulo
+	// Navigazione nell'elenco filtrato da cui si è aperta la scheda (#49).
+	Elenco, Prima, Dopo string
+	Pos, Tot            int
+	Testata             testata // la Foto e le informazioni tecniche (#55)
+}
+
+// foto risponde a /admin/foto/<pid>: la scheda in GET, il salvataggio in POST. Il modulo
+// salva con htmx: la risposta è il solo modulo, con i valori salvati e l'esito.
 func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
-	d := datiRedazione{Branch: branch, Commit: commit, Titolo: "Modifica di una Foto", Build: r.statoBuild(), Admin: "../"}
 	resto := strings.Trim(strings.TrimPrefix(req.URL.Path, "/admin/foto"), "/")
-	if resto == "" {
-		if q := req.URL.Query().Get("pid"); q != "" {
-			rimanda(w, url.PathEscape(strings.TrimSpace(q)))
+	switch resto {
+	case "":
+		q := req.URL.Query()
+		if c := strings.TrimSpace(cmp.Or(q.Get("cerca"), q.Get("pid"))); c != "" {
+			rimanda(w, r.dove(c))
 			return
 		}
-		paginaRedazione.Execute(w, d)
+		r.elencoFoto(w, req)
 		return
+	case "freschezza":
+		r.freschezza(w, req)
+		return
+	}
+	if p, ok := strings.CutSuffix(resto, "/file"); ok {
+		if pid, err := strconv.Atoi(p); err == nil {
+			r.fileDellaFoto(w, req, pid)
+			return
+		}
 	}
 	pid, err := strconv.Atoi(resto)
 	if err != nil {
 		http.NotFound(w, req)
 		return
 	}
-	d.Admin, d.Pid, d.Pubblica = "../../", pid, fmt.Sprintf("../../f/%d/", pid)
-	d.Titolo = fmt.Sprintf("Modifica della Foto %d", pid)
+	c := corpoFotoBackend{Pid: pid, Pubblica: fmt.Sprintf("../f/%d/", pid)}
+	{
+		f := leggiFiltro(req.URL.Query())
+		prima, dopo, pos, tot := r.vicine(pid, f)
+		c.Elenco, c.Pos, c.Tot = "foto/"+f.query(), pos, tot
+		if prima > 0 {
+			c.Prima = fmt.Sprintf("foto/%d%s", prima, f.query())
+		}
+		if dopo > 0 {
+			c.Dopo = fmt.Sprintf("foto/%d%s", dopo, f.query())
+		}
+	}
 	modulo := map[string]string{}
 	if req.Method == http.MethodPost {
 		req.ParseForm()
-		for _, c := range campiEditoriali {
-			modulo[c.chiave] = req.PostForm.Get(c.chiave)
+		for _, k := range campiEditoriali {
+			// Le liste arrivano come più valori (select multiple, chip) o come righe di un testo.
+			modulo[k.chiave] = strings.Join(req.PostForm[k.chiave], "\n")
 		}
 		cambiati, err := r.salva(pid, modulo, utenteDi(req))
 		switch {
 		case err != nil:
-			d.Errore = "Non salvato: " + err.Error()
+			c.Errore = "Non salvato: " + err.Error()
 		case len(cambiati) == 0:
-			rimanda(w, resto+"?salvato=0")
-			return
+			c.Salvato = "Nessun campo cambiato."
+			modulo = map[string]string{}
 		default:
 			r.richiediBuild()
-			rimanda(w, resto+"?salvato="+strings.Join(cambiati, ","))
-			return
+			c.Salvato = "Salvato: " + strings.Join(cambiati, ", ") + ". La pagina della Foto cambia dopo il build."
+			modulo = map[string]string{}
 		}
 	}
-	switch s := req.URL.Query().Get("salvato"); s {
-	case "":
-	case "0":
-		d.Salvato = "Nessun campo cambiato."
-	default:
-		d.Salvato = "Salvato: " + strings.ReplaceAll(s, ",", ", ") + ". La pagina della Foto cambia dopo il build."
-	}
-	pub, imp, _, err := r.fotoDaModificare(pid)
+	pub, imp, idx, err := r.fotoDaModificare(pid)
 	if errors.Is(err, os.ErrNotExist) {
 		http.NotFound(w, req)
 		return
 	} else if err != nil {
-		d.Errore, d.Pid = err.Error(), 0
-		paginaRedazione.Execute(w, d)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	for _, c := range campiEditoriali {
-		v := c.valore(pub)
-		if inviato, ok := modulo[c.chiave]; ok {
+	for _, k := range campiEditoriali {
+		v := k.valore(pub)
+		if inviato, ok := modulo[k.chiave]; ok {
 			v = inviato // dopo un errore si ripropone quello che si era scritto
 		}
-		d.Voci = append(d.Voci, voceModulo{Chiave: c.chiave, Etichetta: c.etichetta, Valore: v, Importato: c.valore(imp),
-			Righe: c.righe, Diverso: c.valore(pub) != c.valore(imp)})
+		vm := voceModulo{Chiave: k.chiave, Etichetta: k.etichetta, Valore: v, Importato: k.valore(imp),
+			Righe: k.righe, Diverso: k.valore(pub) != k.valore(imp)}
+		if k.lista && k.chiave != "categories" {
+			vm.Chip, vm.Opzioni = k.chiave, r.opzioniChip(k.chiave, strings.Split(v, "\n"))
+		}
+		if k.chiave == "categories" && r.voc != nil {
+			vm.Gruppi = gruppiCategorie(r.voc, strings.Split(v, "\n"))
+		}
+		if k.chiave == "tags" && r.voc != nil {
+			vm.TagInterni = r.voc.TagsInterni
+		}
+		if k.chiave == "geolocation.coords" && len(pub.Slug) > 0 {
+			if i := slices.IndexFunc(idx, func(e entita) bool { return e.Slug == pub.Slug[0] }); i >= 0 && idx[i].Geolocation.Coords != nil {
+				c := idx[i].Geolocation.Coords
+				vm.Ereditato = &puntoEreditato{c.Latitudine, c.Longitudine, idx[i].Title}
+			}
+		}
+		if k.chiave == "datazione" {
+			vm.Anteprima = anteprimaDi(v)
+			if pub.Datazione == "" && strings.TrimSpace(pub.Coppermine.Data) != "" {
+				vm.User3 = pub.Coppermine.Data
+				if d, ok := interpretaUser3(pub.Coppermine.Data, annoCaricamento(pub)); ok {
+					vm.User3EDTF = d.edtf
+				}
+			}
+		}
+		c.Voci = append(c.Voci, vm)
 	}
-	paginaRedazione.Execute(w, d)
+	c.Build = r.statoBuild()
+	c.Testata = r.testataDi(pub)
+	if req.Method == http.MethodPost && daHtmx(req) {
+		mostraFrammento(w, "modulo", c)
+		return
+	}
+	mostraPagina(w, req, "foto", fmt.Sprintf("Foto %d", pid), c)
+}
+
+// anteprimaDatazione è la resa in italiano della Datazione mentre si scrive (#51).
+type anteprimaDatazione struct {
+	Testo, EDTF, Errore string
+}
+
+func anteprimaDi(v string) anteprimaDatazione {
+	if strings.TrimSpace(v) == "" {
+		return anteprimaDatazione{}
+	}
+	e, err := normalizzaDatazione(v)
+	if err != nil {
+		return anteprimaDatazione{Errore: "Non valida: non si salva."}
+	}
+	a := anteprimaDatazione{Testo: datazioneItaliana(e)}
+	if e != strings.TrimSpace(v) {
+		a.EDTF = e // forma italiana: si salva in EDTF
+	}
+	return a
+}
+
+// datazione risponde a /admin/datazione?datazione=…, che il campo chiede mentre si scrive.
+func datazione(w http.ResponseWriter, req *http.Request) {
+	// Il campo si chiama datazione nella scheda, valore.datazione nella modifica in blocco.
+	v := req.URL.Query().Get("datazione")
+	for _, x := range req.URL.Query() {
+		v = cmp.Or(v, x[0])
+	}
+	mostraFrammento(w, "anteprima-datazione", anteprimaDi(v))
+}
+
+func annoCaricamento(f *fotoPubblicata) int {
+	if t, err := time.Parse(time.RFC3339, f.Date); err == nil {
+		return t.Year()
+	}
+	return time.Now().Year()
+}
+
+var rePidURL = regexp.MustCompile(`/f/(\d+)(?:/|$|\?|#)`)
+
+// dove porta il campo della barra (#57), relativo a /admin/foto/: un numero apre la Foto se
+// esiste, l'URL di una pagina pubblica della Foto apre quella Foto, un testo apre l'elenco
+// con il filtro testo libero.
+func (r *redazione) dove(c string) string {
+	pid := -1
+	if n, err := strconv.Atoi(strings.TrimPrefix(c, "#")); err == nil {
+		pid = n
+	} else if m := rePidURL.FindStringSubmatch(c); m != nil {
+		pid, _ = strconv.Atoi(m[1])
+	}
+	if pid >= 0 {
+		if _, ok := r.indiceCorrente().perPid[pid]; ok || esiste(filepath.Join(r.contenuti, "importazione", fileFoto(pid))) {
+			return strconv.Itoa(pid)
+		}
+	}
+	return "./?" + url.Values{"q": {c}}.Encode()
 }
 
 // rimanda con un Location relativo: http.Redirect lo renderebbe assoluto, e dietro nginx
@@ -388,16 +618,29 @@ func rimanda(w http.ResponseWriter, dove string) {
 	w.WriteHeader(http.StatusSeeOther)
 }
 
-// admin è la home del Backend: chi è l'utente, il modulo per aprire una Foto, lo stato.
+// admin è la home del Backend.
 func (r *redazione) admin(w http.ResponseWriter, req *http.Request) {
 	if req.URL.Path != "/admin/" {
 		http.NotFound(w, req)
 		return
 	}
-	u := utenteDi(req)
-	d := datiRedazione{Branch: branch, Commit: commit, Titolo: "Gerbillo: admin", Build: r.statoBuild(), Admin: "./",
-		Salvato: fmt.Sprintf("Utente: %s (%d), gruppi %s. Stato del server: admin/stato.", u.Nome, u.ID, strings.Join(u.Gruppi, ", "))}
-	paginaRedazione.Execute(w, d)
+	idx := r.indiceCorrente()
+	mostraPagina(w, req, "home", "Backend", corpoHome{Build: r.statoBuild(), Aggiornato: aggiornatoAlle(idx),
+		Filtri: filtro{}.vociDaSistemare(idx), Totale: len(idx.Foto), Admin: utenteDi(req).Admin()})
+}
+
+// ricalcola rilancia il build completo, e con lui l'indice. Solo per l'admin.
+func (r *redazione) ricalcola(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, "serve un POST", http.StatusMethodNotAllowed)
+		return
+	}
+	if !utenteDi(req).Admin() {
+		http.Error(w, "serve l'admin", http.StatusForbidden)
+		return
+	}
+	r.richiediBuild()
+	fmt.Fprint(w, `<span class="nota" role="status">Build richiesto: segui il widget in alto.</span>`)
 }
 
 // redazioneAnteprima prepara la modifica diretta nell'anteprima (ADR 0011). L'immagine ha in
@@ -406,7 +649,7 @@ func (r *redazione) admin(w http.ResponseWriter, req *http.Request) {
 // contenuti con il solo Livello di arricchimento (l'Importazione resta nell'immagine), e i
 // build scrivono in /tmp solo i file diversi dalla Gallery dell'immagine. Senza seme/
 // la modifica non c'è.
-func redazioneAnteprima(seme, contenuti, dist, modifiche string) (*redazione, error) {
+func redazioneAnteprima(seme, contenuti, dist, modifiche, indiceRed string) (*redazione, error) {
 	if !esiste(filepath.Join(seme, "indice.json")) {
 		return nil, nil
 	}
@@ -424,20 +667,31 @@ func redazioneAnteprima(seme, contenuti, dist, modifiche string) (*redazione, er
 			return nil, err
 		}
 	}
-	f, err := os.Open(filepath.Join(seme, "build.args"))
+	opzioni, opz, err := leggiArgsBuild(filepath.Join(seme, "build.args"))
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	args := []string{"build", "-contenuti", contenuti, "-indice", filepath.Join(seme, "indice.json"), "-dist", modifiche, "-confronta", dist}
-	for sc := bufio.NewScanner(f); sc.Scan(); {
-		args = append(args, sc.Text())
-	}
+	args := append([]string{"build", "-contenuti", contenuti, "-indice", filepath.Join(seme, "indice.json"), "-dist", modifiche, "-confronta", dist,
+		"-redazione", indiceRed}, opzioni...)
 	eseguibile, err := os.Executable()
 	if err != nil {
 		return nil, err
 	}
-	r := &redazione{contenuti: contenuti, indice: filepath.Join(seme, "indice.json")}
+	r := &redazione{contenuti: contenuti, indice: filepath.Join(seme, "indice.json"),
+		fileIndice: indiceRed, semeIndice: filepath.Join(seme, "redazione.json"), opz: opz}
+	if err := r.caricaIndice(); err != nil {
+		log.Printf("indice della redazione: %v", err)
+	}
+	if voc, err := leggiVocabolario(filepath.Join(seme, "vocabolario.yaml")); err != nil {
+		log.Printf("vocabolario: %v; le Categorie non si controllano", err)
+	} else {
+		r.usaVocabolario(voc)
+	}
+	r.dopoBuild = func() {
+		if err := r.caricaIndice(); err != nil {
+			log.Printf("indice della redazione: %v", err)
+		}
+	}
 	r.build = func() error {
 		cmd := exec.Command(eseguibile, args...)
 		cmd.Stdout, cmd.Stderr = os.Stderr, os.Stderr

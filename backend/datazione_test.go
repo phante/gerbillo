@@ -98,3 +98,20 @@ func TestDatazioneItaliana(t *testing.T) {
 		}
 	}
 }
+
+func TestNormalizzaDatazione(t *testing.T) {
+	for in, out := range map[string]string{
+		"": "", " 2009-06-03 ": "2009-06-03", "2009-06": "2009-06", "2009": "2009", "195X": "195X",
+		"1938/1940": "1938/1940", "1950?": "1950?", "1950~": "1950~", "2009-05/2009-07": "2009-05/2009-07",
+		"maggio 2006": "2006-05", "anni '60": "196X", "18/07/2004": "2004-07-18", "1950 circa": "1950?",
+	} {
+		if v, err := normalizzaDatazione(in); err != nil || v != out {
+			t.Errorf("%q: %q, %v; atteso %q", in, v, err, out)
+		}
+	}
+	for _, in := range []string{"Pippo", "2009-13", "2009-02-30", "1940/1938", "195X/1960", "20090603"} {
+		if v, err := normalizzaDatazione(in); err == nil {
+			t.Errorf("%q accettato come %q", in, v)
+		}
+	}
+}

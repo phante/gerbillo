@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Genera in ./dist la Gallery pubblica dai dati di test, per l'anteprima (ADR 0011, 0012),
-# e in ./seme quello che serve al Backend dell'anteprima per modificare le Foto (#43).
+# e in ./seme quello che serve al Backend dell'anteprima per modificare le Foto (#43):
+# l'Importazione, gli indici, il Livello di arricchimento, il vocabolario e gli argomenti del build.
 # Richiede un MySQL con testdata/coppermine.sql.gz caricato e l'utente gerbillo_ro.
 # Le immagini puntano agli albums/ pubblici di Coppermine: le Varianti non ci sono ancora.
 #
@@ -26,9 +27,11 @@ g indice-entita -sito testdata/sito > "$lavoro/indice.json"
 g importa -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchimento dati/arricchimento -vocabolario dati/vocabolario.yaml
 # Nell'anteprima nginx serve la Gallery sotto /gerbillo/ e toglie il prefisso.
 opzioni=(-base /gerbillo/ -anteprima -media https://progettodighe.it/gallery/albums/ -striscia "$striscia")
-g build -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchimento dati/arricchimento -dist dist "${opzioni[@]}"
+g build -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchimento dati/arricchimento -dist dist \
+  -redazione "$lavoro/redazione.json" "${opzioni[@]}"
 # Il Backend rifà lo stesso build dopo ogni modifica: stessi dati, stesse opzioni (una per riga).
 rm -rf seme && mkdir seme
-cp -R "$lavoro/contenuti/importazione" "$lavoro/indice.json" seme/
+cp -R "$lavoro/contenuti/importazione" "$lavoro/indice.json" "$lavoro/redazione.json" seme/
 cp -R dati/arricchimento seme/arricchimento
+cp dati/vocabolario.yaml seme/
 printf '%s\n' "${opzioni[@]}" > seme/build.args

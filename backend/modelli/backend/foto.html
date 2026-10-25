@@ -1,0 +1,118 @@
+{{define "foto"}}{{template "testa" .}}
+{{with .Corpo}}
+<nav class="naviga" aria-label="Elenco">
+  <a class="link blue" href="{{.Elenco}}">← Elenco</a>
+  {{if .Pos}}<span class="nota">{{.Pos}} di {{.Tot}}</span>{{end}}
+  <span class="flex-auto"></span>
+  {{if .Prima}}<a class="pulsante pulsante-secondario" href="{{.Prima}}" rel="prev" aria-label="Foto precedente">←</a>{{end}}
+  {{if .Dopo}}<a class="pulsante pulsante-secondario" href="{{.Dopo}}" rel="next" aria-label="Foto successiva">→</a>{{end}}
+</nav>
+{{$c := .}}{{with .Testata}}<figure class="foto-scheda">
+  {{if .Immagine}}<a href="{{$c.Pubblica}}"><img src="{{.Immagine}}" alt="Foto {{$c.Pid}}"{{if .Larghezza}} width="{{.Larghezza}}" height="{{.Altezza}}"{{end}}></a>{{end}}
+  <figcaption><a class="link blue" href="{{$c.Pubblica}}">Pagina pubblica della Foto</a></figcaption>
+</figure>
+<details class="riquadro tecniche">
+  <summary class="b pointer">Informazioni tecniche</summary>
+  <dl class="coppie mt2">
+    <dt>Formato</dt><dd>{{.Formato}}{{if .Larghezza}} · {{.Larghezza}} × {{.Altezza}} px{{end}}</dd>
+    {{if .Caricata}}<dt>Caricata</dt><dd>{{.Caricata}}</dd>{{end}}
+    {{if .Contributore}}<dt>Contributore</dt><dd>{{.Contributore}}</dd>{{end}}
+    <dt>Album Coppermine</dt><dd><a class="link blue" href="{{.LinkAlbum}}">{{if .Album}}{{.Album}}{{else}}album{{end}} ({{.Aid}})</a></dd>
+    <dt>EXIF</dt><dd>{{if .Exif}}<code>{{.Exif}}</code>{{else}}—{{end}}</dd>
+    <dt>user3</dt><dd>{{if .User3}}{{.User3}}{{else}}—{{end}}</dd>
+  </dl>
+  <div hx-get="foto/{{$c.Pid}}/file" hx-trigger="toggle from:closest details once" hx-swap="outerHTML">
+    <p class="nota">File: si leggono all'apertura.</p>
+  </div>
+</details>{{end}}
+{{template "modulo" .}}
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{/* Il modulo salva con htmx e si sostituisce con la risposta: valori salvati ed esito.
+     Alpine segna le modifiche non ancora salvate. */}}
+{{define "modulo"}}<form id="modulo" class="modulo" method="post" hx-post="foto/{{.Pid}}" hx-target="this" hx-swap="outerHTML"
+  x-data="{ cambiato: false }" @input="cambiato = true" @change="cambiato = true">
+{{if .Errore}}<p class="esito errore" role="alert">{{.Errore}}</p>{{end}}
+{{if .Salvato}}<p class="esito ok" role="status">{{.Salvato}}</p>{{end}}
+{{range .Voci}}<div class="campo">
+  <label for="{{.Chiave}}">{{.Etichetta}}</label>
+  {{if eq .Chiave "datazione"}}{{template "campo-datazione" .}}
+  {{else if .Gruppi}}{{template "campo-categorie" .}}
+  {{else if .Chip}}{{template "campo-chip" .}}
+  {{else if eq .Chiave "geolocation.coords"}}{{template "campo-punto" .}}
+  {{else if .Righe}}<textarea id="{{.Chiave}}" name="{{.Chiave}}" rows="{{.Righe}}">{{.Valore}}</textarea>
+  {{else}}<input type="text" id="{{.Chiave}}" name="{{.Chiave}}" value="{{.Valore}}">{{end}}
+  {{with .TagInterni}}<p class="nota">Tag interni, mai mostrati nella Gallery pubblica:
+    {{range $i, $t := .}}{{if $i}} · {{end}}<span class="tag-interno">{{$t.Nome}}</span> {{$t.Descrizione}}{{end}}</p>{{end}}
+  {{if .Diverso}}<p class="nota">Importato: {{if .Importato}}{{.Importato}}{{else}}(vuoto){{end}}</p>{{end}}
+</div>
+{{end}}<p class="nota">Nelle liste invio o virgola chiudono una voce, la × la toglie. Riportare un campo al valore importato lo toglie dal Livello di arricchimento.</p>
+<div class="azioni">
+  <button class="pulsante" :class="cambiato && 'pulsante-evidente'">Salva</button>
+  <span class="nota htmx-indicator">Salvataggio…</span>
+  <span class="nota" x-show="cambiato" x-cloak>Modifiche non salvate</span>
+  {{if .Build}}<span class="nota">Build: {{.Build}}.</span>{{end}}
+</div>
+</form>{{end}}
+
+
+{{/* Datazione (#51): campo testo con l'anteprima in italiano mentre si scrive, gli esempi in
+     un popup e, se manca, il suggerimento da user3 di Coppermine. */}}
+{{define "campo-datazione"}}<div x-data="{ esempi: false }">
+  <div class="flex gap2 items-center">
+    <input type="text" id="datazione" name="datazione" value="{{.Valore}}" x-ref="datazione" autocomplete="off"
+      class="flex-auto" placeholder="es. 2009-06, maggio 2006, anni '60"
+      hx-get="datazione" hx-trigger="input changed delay:300ms" hx-target="next .anteprima-datazione" hx-swap="outerHTML" hx-sync="this:replace">
+    <button type="button" class="pulsante pulsante-secondario" @click="esempi = !esempi" :aria-expanded="esempi" aria-controls="esempi-datazione">?</button>
+  </div>
+  {{template "anteprima-datazione" .Anteprima}}
+  <div id="esempi-datazione" class="popup" x-show="esempi" x-cloak @click.outside="esempi = false">
+    <p class="mt0 b">Come si scrive la Datazione</p>
+    <dl class="coppie">
+      <dt><code>2009-06-03</code></dt><dd>giorno: 03/06/2009</dd>
+      <dt><code>2009-06</code></dt><dd>mese: giugno 2009</dd>
+      <dt><code>2009</code></dt><dd>anno</dd>
+      <dt><code>195X</code></dt><dd>decennio: anni '50</dd>
+      <dt><code>1938/1940</code></dt><dd>intervallo: 1938–1940</dd>
+      <dt><code>1950?</code></dt><dd>incerto: 1950 circa</dd>
+    </dl>
+    <p class="nota mb0">Vanno bene anche «maggio 2006», «anni '60», «18/07/2004», «1950 circa»: si salvano nella forma qui sopra (EDTF).</p>
+  </div>
+  {{if .User3}}<p class="nota suggerimento">Su Coppermine (user3): «{{.User3}}»
+    {{if .User3EDTF}}<button type="button" class="pulsante pulsante-secondario pulsante-piccolo"
+      @click="$refs.datazione.value = '{{.User3EDTF}}'; $refs.datazione.dispatchEvent(new Event('input', { bubbles: true }))">Usa {{.User3EDTF}}</button>{{end}}
+  </p>{{end}}
+</div>{{end}}
+
+{{define "anteprima-datazione"}}<p class="anteprima-datazione nota" aria-live="polite">{{if .Errore}}<span class="dark-red b">{{.Errore}}</span>{{else if .Testo}}= {{.Testo}}{{if .EDTF}} <span class="black-50">(si salva come {{.EDTF}})</span>{{end}}{{end}}</p>{{end}}
+
+{{/* Categorie (#52): solo dal vocabolario, raggruppate per percorso. */}}
+{{define "campo-categorie"}}<select id="categories" name="categories" multiple size="8" class="categorie" data-chip="categories">
+  {{range .Gruppi}}<optgroup label="{{.Nome}}">{{range .Opzioni}}<option value="{{.Valore}}"{{if .Scelta}} selected{{end}}>{{.Testo}}</option>{{end}}</optgroup>{{end}}
+</select>{{end}}
+
+{{/* Liste a chip (#53): Tom Select su un select multiple, con i suggerimenti da
+     suggerimenti/<campo>. Senza JavaScript resta un select con i valori scelti. */}}
+{{define "campo-chip"}}<select id="{{.Chiave}}" name="{{.Chiave}}" multiple data-chip="{{.Chiave}}">
+  {{range .Opzioni}}<option value="{{.Valore}}" data-opzione="{{.Dati}}" selected>{{.Testo}}</option>{{end}}
+</select>{{end}}
+
+{{/* Punto geografico (#54): campo testo e mappa sincronizzati nei due sensi. Il pin si
+     trascina o si mette con un tocco; senza Punto la mappa parte da quello della diga. */}}
+{{define "campo-punto"}}<input type="text" id="geolocation.coords" name="geolocation.coords" value="{{.Valore}}" autocomplete="off"
+  placeholder="46.2905, 8.2987 · 46°17'26&quot;N 8°17'55&quot;E · link di Google Maps">
+<p class="nota esito-punto" aria-live="polite"></p>
+<div class="mappa-punto" data-campo="geolocation.coords"{{with .Ereditato}} data-ereditato="{{.Lat}},{{.Lon}}" data-diga="{{.Diga}}"{{end}}></div>
+<p class="nota">Tocca la mappa per mettere il pin, poi trascinalo. Lo sfondo satellitare è nel selettore in alto a destra.</p>
+{{with .Ereditato}}<button type="button" class="pulsante pulsante-secondario usa-diga">Usa quello della diga</button>
+<span class="nota">Svuota il Punto: la Foto eredita quello di {{.Diga}}.</span>{{end}}{{end}}
+
+{{define "file-foto"}}<table class="file-foto">
+  <thead><tr><th>File</th><th>Dimensioni</th><th>Peso</th></tr></thead>
+  <tbody>{{range .}}<tr>
+    <td>{{if .URL}}<a class="link blue" href="{{.URL}}">{{.Nome}}</a>{{else}}{{.Nome}}{{end}}</td>
+    {{if .Errore}}<td colspan="2" class="nota">{{.Errore}}</td>{{else}}
+    <td>{{if .Larghezza}}{{.Larghezza}} × {{.Altezza}}{{else}}—{{end}}</td><td>{{.Peso}}</td>{{end}}
+  </tr>{{end}}</tbody>
+</table>{{end}}

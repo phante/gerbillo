@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -78,5 +79,25 @@ func TestConBarra(t *testing.T) {
 		if w.Code != http.StatusSeeOther || w.Header().Get("Location") != out {
 			t.Errorf("%s: HTTP %d, Location %q", in, w.Code, w.Header().Get("Location"))
 		}
+	}
+}
+
+// #58: il cookie segnale va ai Moderatori, non agli altri, ed esci lo toglie.
+func TestCookieModeratore(t *testing.T) {
+	pagina := func(http.ResponseWriter, *http.Request) {}
+	for _, c := range []struct {
+		u         *utente
+		segnalato bool
+	}{{nil, false}, {&utente{ID: 7, Gruppi: []string{gruppoRegistrati}}, false}, {&utente{ID: 8, Gruppi: []string{gruppoModeratori}}, true}} {
+		w := httptest.NewRecorder()
+		soloModeratore(&utenteFinto{u: c.u}, pagina)(w, httptest.NewRequest("GET", "/admin/", nil))
+		if got := strings.Contains(w.Header().Get("Set-Cookie"), cookieModeratore+"=1; Path=/"); got != c.segnalato {
+			t.Errorf("%+v: Set-Cookie %q", c.u, w.Header().Get("Set-Cookie"))
+		}
+	}
+	w := httptest.NewRecorder()
+	esci(w, httptest.NewRequest("GET", "/admin/esci", nil))
+	if !strings.Contains(w.Header().Get("Set-Cookie"), "Max-Age=0") {
+		t.Errorf("esci: %q", w.Header().Get("Set-Cookie"))
 	}
 }

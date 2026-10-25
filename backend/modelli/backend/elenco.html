@@ -1,0 +1,62 @@
+{{define "elenco"}}{{template "testa" .}}
+{{with .Corpo}}
+<details class="filtri riquadro" open>
+  <summary class="b pointer">Da sistemare</summary>
+  <ul class="scelte">{{range .Filtri}}
+    <li><a class="scelta{{if .Attivo}} attiva{{end}}" href="{{.Link}}" {{if .Attivo}}aria-current="true"{{end}} title="{{.Aiuto}}">{{.Nome}} <span class="numero">{{.N}}</span></a></li>{{end}}
+  </ul>
+</details>
+<details class="filtri riquadro"{{if .Attivi}} open{{end}}>
+  <summary class="b pointer">Filtri e ordine{{if .Attivi}} ({{.Attivi}} attivi){{end}}</summary>
+  {{/* Ogni cambiamento rimanda il modulo: i filtri restano nell'URL. */}}
+  <form class="filtri-modulo" action="foto/" method="get" x-data @change="$event.target.name && $el.requestSubmit()"
+    @submit="$el.querySelectorAll('[name]').forEach(e => { if (!e.value || (e.name === 'o' && e.value === 'album')) e.disabled = true })">
+    {{range .Sistemare}}<input type="hidden" name="s" value="{{.}}">{{end}}
+    <div class="campo"><label for="q">Testo in titolo e descrizione</label>
+      <input type="search" id="q" name="q" value="{{.Testo}}" enterkeyhint="search"></div>
+    {{range .Faccette}}<div class="campo"><label for="filtro-{{.Param}}">{{.Nome}}</label>
+      <select id="filtro-{{.Param}}" name="{{.Param}}" data-scelta>
+        <option value="">tutte</option>
+        {{$s := .Scelto}}{{range .Opzioni}}<option value="{{.Valore}}"{{if eq .Valore $s}} selected{{end}}>{{.Testo}} ({{.N}})</option>{{end}}
+      </select></div>{{end}}
+    <div class="campo"><label for="o">Ordine</label>
+      <select id="o" name="o">{{$o := .Ordine}}{{range .Ordinamenti}}<option value="{{.Valore}}"{{if eq .Valore $o}} selected{{end}}>{{.Testo}}</option>{{end}}</select></div>
+    <div class="azioni-filtri"><button class="pulsante">Applica</button>
+      {{if .Attivi}}<a class="link blue" href="foto/{{if .Sistemare}}?{{range $i, $s := .Sistemare}}{{if $i}}&amp;{{end}}s={{$s}}{{end}}{{end}}">Togli i filtri</a>{{end}}</div>
+  </form>
+</details>
+{{template "freschezza" .}}
+<div x-data="selezione('{{.Filtro}}', {{.Totale}})" :class="modo && 'con-barra'">
+<div class="flex items-center gap2 mt2 mb2">
+  <p class="ma0 flex-auto"><b>{{.Totale}}</b> Foto{{if gt .Pagine 1}} · pagina {{.Pagina}} di {{.Pagine}}{{end}}</p>
+  {{if .Totale}}<button type="button" class="pulsante pulsante-secondario" x-show="!modo" @click="apri()">Seleziona</button>{{end}}
+</div>
+<ul class="griglia" :class="modo && 'in-selezione'">{{range .Foto}}
+  <li :class="scelta({{.Pid}}) && modo && 'scelta'"><a class="link black-80" href="{{.Link}}" @click="if (modo) { $event.preventDefault(); cambia({{.Pid}}) }">
+    <img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-50">{{.Album}}</span>{{end}}</span></a>
+    <input type="checkbox" class="casella" aria-label="Seleziona la Foto {{.Pid}}" x-show="modo" x-cloak :checked="scelta({{.Pid}})" :disabled="tutte" @change="cambia({{.Pid}})"></li>{{end}}
+</ul>
+{{template "paginazione" .}}
+<form class="barra-selezione" x-show="modo" x-cloak method="post" action="blocco/">
+  <input type="hidden" name="filtro" :value="filtro">
+  <input type="hidden" name="tutte" :value="tutte ? '1' : ''">
+  <input type="hidden" name="pid" :value="scelte.join(',')">
+  <span><b x-text="quante"></b> selezionate</span>
+  <button type="button" class="pulsante pulsante-secondario" x-show="!tutte" @click="tutteLe()">Seleziona tutte le {{.Totale}}</button>
+  <button class="pulsante" :disabled="quante === 0" @click="salva()">Modifica…</button>
+  <button type="button" class="pulsante pulsante-secondario" @click="annulla()">Annulla</button>
+</form>
+</div>
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{define "paginazione"}}{{if or .Indietro .Avanti}}<nav class="paginazione" aria-label="Pagine">
+  {{if .Indietro}}<a class="pulsante pulsante-secondario" href="{{.Indietro}}" rel="prev">← Precedenti</a>{{end}}
+  {{if .Avanti}}<a class="pulsante pulsante-secondario" href="{{.Avanti}}" rel="next">Successive →</a>{{end}}
+</nav>{{end}}{{end}}
+
+{{/* Si richiede ogni 5 secondi: a fine build la risposta fa ricaricare la pagina (HX-Refresh). */}}
+{{define "freschezza"}}<div id="freschezza" class="nota" hx-get="foto/freschezza?v={{.Versione}}" hx-trigger="every 5s" hx-swap="outerHTML">
+  {{if .Avviso}}<p class="esito avviso mb1">{{.Avviso}}</p>{{end}}
+  {{if .Aggiornato}}Aggiornato alle {{.Aggiornato}}.{{else}}Nessun indice: l'elenco compare dopo il primo build.{{end}}
+</div>{{end}}

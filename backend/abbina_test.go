@@ -216,3 +216,24 @@ func TestFuoriVocabolario(t *testing.T) {
 		t.Errorf("%v", fuori)
 	}
 }
+
+// dati/vocabolario.yaml: i tag interni sono quelli che il build nasconde, con la descrizione (#52).
+func TestVocabolarioDelRepo(t *testing.T) {
+	voc, err := leggiVocabolario("../dati/vocabolario.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var nomi []string
+	for _, ti := range voc.TagsInterni {
+		nomi = append(nomi, ti.Nome)
+		if ti.Descrizione == "" {
+			t.Errorf("%s senza descrizione", ti.Nome)
+		}
+	}
+	if !slices.Equal(nomi, chiaviOrdinate(tagInterni)) {
+		t.Errorf("tags_interni %v, tagInterni %v", nomi, chiaviOrdinate(tagInterni))
+	}
+	if !slices.Contains(voc.Categories, "tecnica/turbine/pelton") {
+		t.Errorf("categories: %v", voc.Categories)
+	}
+}
