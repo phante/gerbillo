@@ -14,7 +14,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 	_ "time/tzdata" // l'immagine distroless non ha i fusi orari
@@ -99,32 +98,6 @@ func adminSenzaRedazione(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mostraPagina(w, r, "home", "Backend", corpoHome{})
-}
-
-type corpoStato struct {
-	Avvio, Da            string
-	Heap, Sys, Goroutine uint64
-	Cgroup               [][2]string
-	Host                 string
-}
-
-// stato mostra la memoria del processo, quella del container (cgroup v2)
-// e il file scritto dall'host dal timer (montato in sola lettura).
-func stato(w http.ResponseWriter, r *http.Request) {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
-	c := corpoStato{Avvio: avvio.In(roma).Format("02/01/2006 15:04:05"), Da: time.Since(avvio).Round(time.Second).String(),
-		Heap: m.HeapAlloc >> 20, Sys: m.Sys >> 20, Goroutine: uint64(runtime.NumGoroutine())}
-	for _, f := range []string{"memory.current", "memory.peak", "memory.max"} {
-		v, _ := os.ReadFile("/sys/fs/cgroup/" + f)
-		c.Cgroup = append(c.Cgroup, [2]string{f, strings.TrimSpace(string(v))})
-	}
-	host, err := os.ReadFile(envOr("GERBILLO_STATO_HOST", "/stato/stato.json"))
-	if err != nil {
-		host = []byte(err.Error())
-	}
-	c.Host = string(host)
-	mostraPagina(w, r, "stato", "Stato del server", c)
 }
 
 // staticiSenzaEstensione serve /statico/stile come /statico/stile.css (build -anteprima).

@@ -96,7 +96,15 @@ type redazione struct {
 
 	mu              sync.Mutex
 	inCorso, ancora bool
-	esito           string // dell'ultimo build, per le pagine
+	ultimo          *esitoBuild // nil finché non finisce il primo build
+	dopoBuild       func()      // a fine build riuscito, per esempio per ricaricare l'indice
+}
+
+type esitoBuild struct {
+	Riuscito bool
+	Fine     time.Time
+	Durata   time.Duration
+	Errore   string
 }
 
 // richiediBuild lancia un build in background. Se ne gira già uno, ne segna un altro da
@@ -113,13 +121,15 @@ func (r *redazione) richiediBuild() {
 		for {
 			inizio := time.Now()
 			err := r.build()
-			esito := fmt.Sprintf("riuscito alle %s, in %s", time.Now().In(roma).Format("15:04"), time.Since(inizio).Round(time.Second))
+			e := &esitoBuild{Riuscito: err == nil, Fine: time.Now(), Durata: time.Since(inizio).Round(time.Second)}
 			if err != nil {
-				esito = "fallito: " + err.Error()
+				e.Errore = err.Error()
 				log.Printf("build: %v", err)
+			} else if r.dopoBuild != nil {
+				r.dopoBuild()
 			}
 			r.mu.Lock()
-			r.esito = esito
+			r.ultimo = e
 			if !r.ancora {
 				r.inCorso = false
 				r.mu.Unlock()
@@ -131,18 +141,26 @@ func (r *redazione) richiediBuild() {
 	}()
 }
 
-func (r *redazione) statoBuild() string {
+// statoDelBuild dice se un build gira, se ne segue un altro e com'è andato l'ultimo.
+func (r *redazione) statoDelBuild() (inCorso, inCoda bool, ultimo *esitoBuild) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	return r.inCorso, r.inCorso && r.ancora, r.ultimo
+}
+
+func (r *redazione) statoBuild() string {
+	inCorso, inCoda, e := r.statoDelBuild()
 	switch {
-	case r.inCorso && r.ancora:
+	case inCoda:
 		return "in corso, poi un altro"
-	case r.inCorso:
+	case inCorso:
 		return "in corso"
-	case r.esito != "":
-		return "ultimo " + r.esito
+	case e == nil:
+		return "nessuno da quando il Backend è partito"
+	case !e.Riuscito:
+		return "ultimo fallito: " + e.Errore
 	}
-	return "nessuno da quando il Backend è partito"
+	return fmt.Sprintf("ultimo riuscito alle %s, in %s", e.Fine.In(roma).Format("15:04"), e.Durata)
 }
 
 // fotoDaModificare è la Foto pubblicata e quella importata, con cui si confronta.

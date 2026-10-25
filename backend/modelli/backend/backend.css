@@ -45,3 +45,7 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .coppie dt { color: #666; }
 .coppie dd { margin: 0; overflow-wrap: anywhere; }
 .grezzo { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem; margin: 0; }
+.voce-widget { color: #555; white-space: nowrap; }
+.voce-widget.in-corso { color: #000; font-weight: 600; }
+.voce-widget.in-corso::before { content: "⟳ "; display: inline-block; }
+.voce-widget.guasto { color: #b00; font-weight: 600; }

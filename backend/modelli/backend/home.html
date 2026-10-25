@@ -27,6 +27,7 @@
 </section>
 <section class="riquadro">
   <h2 class="f5 mt0">Container (cgroup)</h2>
+  <p>Memoria vera {{.Memoria.Vera}} MiB{{if .Memoria.Max}} su {{.Memoria.Max}}{{end}}, più {{.Memoria.Cache}} MiB di cache dei file, che il kernel libera quando serve.</p>
   <dl class="coppie">{{range .Cgroup}}<dt>{{index . 0}}</dt><dd>{{index . 1}}</dd>{{end}}</dl>
 </section>
 <section class="riquadro">

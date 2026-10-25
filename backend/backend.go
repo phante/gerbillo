@@ -110,6 +110,7 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	mux.HandleFunc("/admin", conBarra)
 	mux.HandleFunc("/admin/statico/", statico)
 	mux.Handle("/admin/stato", mod(stato))
+	mux.Handle("/admin/stato.json", mod(statoWidget(red)))
 	if red == nil {
 		mux.Handle("/admin/", mod(adminSenzaRedazione))
 		return
