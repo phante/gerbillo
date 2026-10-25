@@ -159,7 +159,7 @@ func TestPaginaRedazione(t *testing.T) {
 	w := httptest.NewRecorder()
 	h(w, httptest.NewRequest("GET", "/admin/foto/1", nil))
 	pagina := w.Body.String()
-	for _, atteso := range []string{`name="viewport"`, `value="Diga"`, `>Ente</textarea>`, "Importato: (vuoto)", `href="../../f/1/"`} {
+	for _, atteso := range []string{`name="viewport"`, `value="Diga"`, `>Ente</textarea>`, "Importato: (vuoto)", `<base href="../">`, `href="../f/1/"`, `hx-post="foto/1"`} {
 		if !strings.Contains(pagina, atteso) {
 			t.Errorf("modulo senza %q:\n%s", atteso, pagina)
 		}
@@ -171,10 +171,13 @@ func TestPaginaRedazione(t *testing.T) {
 	v.Set("description", "Il coronamento")
 	req := httptest.NewRequest("POST", "/admin/foto/1", strings.NewReader(v.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("HX-Request", "true")
 	w = httptest.NewRecorder()
 	h(w, req)
-	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "1?salvato=description" {
-		t.Errorf("POST: HTTP %d, %v", w.Code, w.Header())
+	// htmx riceve solo il modulo, con il valore salvato e l'esito.
+	if b := w.Body.String(); w.Code != http.StatusOK || strings.Contains(b, "<html") ||
+		!strings.Contains(b, "Salvato: description") || !strings.Contains(b, ">Il coronamento</textarea>") {
+		t.Errorf("POST: HTTP %d\n%s", w.Code, b)
 	}
 	for i := 0; i < 100 && strings.Contains(r.statoBuild(), "in corso"); i++ {
 		time.Sleep(10 * time.Millisecond)

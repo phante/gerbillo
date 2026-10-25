@@ -1,0 +1,26 @@
+{{define "foto"}}{{template "testa" .}}
+{{with .Corpo}}
+<p class="mt0"><a class="link blue" href="{{.Pubblica}}">Pagina pubblica della Foto</a></p>
+{{template "modulo" .}}
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{/* Il modulo salva con htmx e si sostituisce con la risposta: valori salvati ed esito.
+     Alpine segna le modifiche non ancora salvate. */}}
+{{define "modulo"}}<form id="modulo" class="modulo" method="post" hx-post="foto/{{.Pid}}" hx-target="this" hx-swap="outerHTML"
+  x-data="{ cambiato: false }" @input="cambiato = true" @change="cambiato = true">
+{{if .Errore}}<p class="esito errore" role="alert">{{.Errore}}</p>{{end}}
+{{if .Salvato}}<p class="esito ok" role="status">{{.Salvato}}</p>{{end}}
+{{range .Voci}}<div class="campo">
+  <label for="{{.Chiave}}">{{.Etichetta}}</label>
+  {{if .Righe}}<textarea id="{{.Chiave}}" name="{{.Chiave}}" rows="{{.Righe}}">{{.Valore}}</textarea>{{else}}<input type="text" id="{{.Chiave}}" name="{{.Chiave}}" value="{{.Valore}}">{{end}}
+  {{if .Diverso}}<p class="nota">Importato: {{if .Importato}}{{.Importato}}{{else}}(vuoto){{end}}</p>{{end}}
+</div>
+{{end}}<p class="nota">Una voce per riga nelle liste. Riportare un campo al valore importato lo toglie dal Livello di arricchimento.</p>
+<div class="azioni">
+  <button class="pulsante" :class="cambiato && 'pulsante-evidente'">Salva</button>
+  <span class="nota htmx-indicator">Salvataggio…</span>
+  <span class="nota" x-show="cambiato" x-cloak>Modifiche non salvate</span>
+  {{if .Build}}<span class="nota">Build: {{.Build}}.</span>{{end}}
+</div>
+</form>{{end}}

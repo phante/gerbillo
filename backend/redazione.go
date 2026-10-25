@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -282,50 +281,28 @@ type voceModulo struct {
 	Diverso                              bool
 }
 
-var paginaRedazione = template.Must(template.New("r").Parse(`<!doctype html>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>{{.Titolo}}</title>
-<style>
-body{font:16px/1.4 system-ui,sans-serif;max-width:40em;margin:0 auto;padding:0 16px 3em;color:#222;background:#fff}
-label{display:block;margin-top:1em;font-weight:600}
-input,textarea,button{width:100%;box-sizing:border-box;font:inherit;padding:.4em}
-button{margin-top:1.5em;background:#fe0;border:1px solid #cb0}
-.nota{color:#555;font-size:.9em;margin:.2em 0}
-.errore{background:#fdd;padding:.5em}.salvato{background:#dfd;padding:.5em}
-img{max-width:100%;height:auto}
-</style>
-<p style="font:12px monospace;background:#fe0;padding:4px">{{.Branch}} @ {{.Commit}}</p>
-<p><a href="{{.Admin}}">admin</a>{{if .Pid}} · <a href="{{.Pubblica}}">pagina della Foto</a>{{end}}</p>
-<h1>{{.Titolo}}</h1>
-{{if .Errore}}<p class="errore">{{.Errore}}</p>{{end}}
-{{if .Salvato}}<p class="salvato">{{.Salvato}}</p>{{end}}
-<p class="nota">Build: {{.Build}}.</p>
-{{if .Pid}}<form method="post">
-{{range .Voci}}<label for="{{.Chiave}}">{{.Etichetta}}</label>
-{{if .Righe}}<textarea id="{{.Chiave}}" name="{{.Chiave}}" rows="{{.Righe}}">{{.Valore}}</textarea>{{else}}<input id="{{.Chiave}}" name="{{.Chiave}}" value="{{.Valore}}">{{end}}
-{{if .Diverso}}<p class="nota">Importato: {{if .Importato}}{{.Importato}}{{else}}(vuoto){{end}}</p>{{end}}
-{{end}}<p class="nota">Una voce per riga nelle liste. Riportare un campo al valore importato lo toglie dal Livello di arricchimento.</p>
-<button>Salva</button>
-</form>{{else}}<form method="get" action="{{.Admin}}foto/"><label for="pid">Modifica una Foto: pid</label>
-<input id="pid" name="pid" inputmode="numeric"><button>Apri</button></form>{{end}}`))
-
-type datiRedazione struct {
-	Branch, Commit, Titolo, Errore, Salvato, Build, Admin, Pubblica string
-	Pid                                                             int
-	Voci                                                            []voceModulo
+// corpoFotoBackend è la scheda di una Foto: il modulo e l'esito dell'ultimo salvataggio.
+type corpoFotoBackend struct {
+	Pid             int
+	Pubblica, Build string
+	Errore, Salvato string
+	Voci            []voceModulo
 }
 
-// foto risponde a /admin/foto/<pid>: il modulo in GET, il salvataggio in POST.
+type corpoHome struct {
+	Build string
+}
+
+// foto risponde a /admin/foto/<pid>: la scheda in GET, il salvataggio in POST. Il modulo
+// salva con htmx: la risposta è il solo modulo, con i valori salvati e l'esito.
 func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
-	d := datiRedazione{Branch: branch, Commit: commit, Titolo: "Modifica di una Foto", Build: r.statoBuild(), Admin: "../"}
 	resto := strings.Trim(strings.TrimPrefix(req.URL.Path, "/admin/foto"), "/")
 	if resto == "" {
-		if q := req.URL.Query().Get("pid"); q != "" {
-			rimanda(w, url.PathEscape(strings.TrimSpace(q)))
+		if q := strings.TrimSpace(req.URL.Query().Get("pid")); q != "" {
+			rimanda(w, url.PathEscape(q))
 			return
 		}
-		paginaRedazione.Execute(w, d)
+		mostraPagina(w, req, "apri", "Apri una Foto", corpoHome{Build: r.statoBuild()})
 		return
 	}
 	pid, err := strconv.Atoi(resto)
@@ -333,52 +310,48 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		http.NotFound(w, req)
 		return
 	}
-	d.Admin, d.Pid, d.Pubblica = "../../", pid, fmt.Sprintf("../../f/%d/", pid)
-	d.Titolo = fmt.Sprintf("Modifica della Foto %d", pid)
+	c := corpoFotoBackend{Pid: pid, Pubblica: fmt.Sprintf("../f/%d/", pid)}
 	modulo := map[string]string{}
 	if req.Method == http.MethodPost {
 		req.ParseForm()
-		for _, c := range campiEditoriali {
-			modulo[c.chiave] = req.PostForm.Get(c.chiave)
+		for _, k := range campiEditoriali {
+			modulo[k.chiave] = req.PostForm.Get(k.chiave)
 		}
 		cambiati, err := r.salva(pid, modulo, utenteDi(req))
 		switch {
 		case err != nil:
-			d.Errore = "Non salvato: " + err.Error()
+			c.Errore = "Non salvato: " + err.Error()
 		case len(cambiati) == 0:
-			rimanda(w, resto+"?salvato=0")
-			return
+			c.Salvato = "Nessun campo cambiato."
+			modulo = map[string]string{}
 		default:
 			r.richiediBuild()
-			rimanda(w, resto+"?salvato="+strings.Join(cambiati, ","))
-			return
+			c.Salvato = "Salvato: " + strings.Join(cambiati, ", ") + ". La pagina della Foto cambia dopo il build."
+			modulo = map[string]string{}
 		}
-	}
-	switch s := req.URL.Query().Get("salvato"); s {
-	case "":
-	case "0":
-		d.Salvato = "Nessun campo cambiato."
-	default:
-		d.Salvato = "Salvato: " + strings.ReplaceAll(s, ",", ", ") + ". La pagina della Foto cambia dopo il build."
 	}
 	pub, imp, _, err := r.fotoDaModificare(pid)
 	if errors.Is(err, os.ErrNotExist) {
 		http.NotFound(w, req)
 		return
 	} else if err != nil {
-		d.Errore, d.Pid = err.Error(), 0
-		paginaRedazione.Execute(w, d)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	for _, c := range campiEditoriali {
-		v := c.valore(pub)
-		if inviato, ok := modulo[c.chiave]; ok {
+	for _, k := range campiEditoriali {
+		v := k.valore(pub)
+		if inviato, ok := modulo[k.chiave]; ok {
 			v = inviato // dopo un errore si ripropone quello che si era scritto
 		}
-		d.Voci = append(d.Voci, voceModulo{Chiave: c.chiave, Etichetta: c.etichetta, Valore: v, Importato: c.valore(imp),
-			Righe: c.righe, Diverso: c.valore(pub) != c.valore(imp)})
+		c.Voci = append(c.Voci, voceModulo{Chiave: k.chiave, Etichetta: k.etichetta, Valore: v, Importato: k.valore(imp),
+			Righe: k.righe, Diverso: k.valore(pub) != k.valore(imp)})
 	}
-	paginaRedazione.Execute(w, d)
+	c.Build = r.statoBuild()
+	if req.Method == http.MethodPost && daHtmx(req) {
+		mostraFrammento(w, "modulo", c)
+		return
+	}
+	mostraPagina(w, req, "foto", fmt.Sprintf("Foto %d", pid), c)
 }
 
 // rimanda con un Location relativo: http.Redirect lo renderebbe assoluto, e dietro nginx
@@ -388,16 +361,13 @@ func rimanda(w http.ResponseWriter, dove string) {
 	w.WriteHeader(http.StatusSeeOther)
 }
 
-// admin è la home del Backend: chi è l'utente, il modulo per aprire una Foto, lo stato.
+// admin è la home del Backend.
 func (r *redazione) admin(w http.ResponseWriter, req *http.Request) {
 	if req.URL.Path != "/admin/" {
 		http.NotFound(w, req)
 		return
 	}
-	u := utenteDi(req)
-	d := datiRedazione{Branch: branch, Commit: commit, Titolo: "Gerbillo: admin", Build: r.statoBuild(), Admin: "./",
-		Salvato: fmt.Sprintf("Utente: %s (%d), gruppi %s. Stato del server: admin/stato.", u.Nome, u.ID, strings.Join(u.Gruppi, ", "))}
-	paginaRedazione.Execute(w, d)
+	mostraPagina(w, req, "home", "Backend", corpoHome{Build: r.statoBuild()})
 }
 
 // redazioneAnteprima prepara la modifica diretta nell'anteprima (ADR 0011). L'immagine ha in

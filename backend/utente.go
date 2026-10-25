@@ -84,7 +84,12 @@ type passwordAnteprima struct {
 	scadenza time.Time
 }
 
-func nuovaPasswordAnteprima() *passwordAnteprima {
+// nuovaPasswordAnteprima genera la password usa e getta. Con fissa non vuota (GERBILLO_PASSWORD,
+// per i test end-to-end in locale e in CI) la password è quella, non scade e non va su Telegram.
+func nuovaPasswordAnteprima(fissa string) *passwordAnteprima {
+	if fissa != "" {
+		return &passwordAnteprima{password: fissa, scadenza: time.Now().AddDate(100, 0, 0)}
+	}
 	p := &passwordAnteprima{}
 	p.rinnova()
 	return p

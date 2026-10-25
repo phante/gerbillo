@@ -18,6 +18,7 @@ Come si sviluppa Gerbillo senza computer: sessioni cloud di Claude Code, avviate
 
 - Il repo, `CLAUDE.md`, `.claude/settings.json`. **Non ci sono** skill e plugin dell'utente, né `~/.claude`.
 - MySQL 8.0, come in produzione. Lo installa il setup script dell'ambiente. L'hook `SessionStart` (`scripts/sessione-cloud.sh`) lo avvia e carica `testdata/coppermine.sql.gz`. Database e tabelle hanno gli stessi nomi della produzione. Credenziali: utente `gerbillo_ro`, password `gerbillo`, socket locale.
+- Test (ADR 0017): `go test ./...` in `backend/`; quelli end-to-end con `scripts/anteprima-gallery.sh` (una volta, scrive `dist/` e `seme/`) e poi `npm ci && npx playwright test` in `e2e/`. Chromium è già installato. Prima di un merge su `main` devono essere verdi.
 - Gli Originali si scaricano da `https://progettodighe.it/gallery/albums/` + `filepath` + `filename`.
 - **GitHub**: `gh issue` e `gh pr` non funzionano, perché il proxy blocca GraphQL. Usa `gh api repos/phante/gerbillo/...` (REST) oppure gli strumenti GitHub integrati. Esempi:
   - `gh api repos/phante/gerbillo/issues?state=open`

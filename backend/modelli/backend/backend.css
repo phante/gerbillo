@@ -1,0 +1,47 @@
+/* Backend (ADR 0017): stessi tachyons, colori e font della Gallery pubblica, con un layout
+   da strumento. Prima il telefono: la barra va a capo, i campi occupano tutta la larghezza. */
+[x-cloak] { display: none !important; }
+.striscia { font: 12px/1.6 monospace; background: #fe0; padding: 0 8px; }
+.barra {
+    position: sticky; top: 0; z-index: 1000;
+    display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
+    padding: .5rem 1rem; background: #fff; border-bottom: 1px solid #ddd;
+}
+.marchio { display: flex; align-items: center; gap: .4rem; font-weight: 600; }
+.barra .cerca { flex: 1 1 8rem; min-width: 6rem; max-width: 20rem; }
+.barra .cerca input { width: 100%; }
+.utente { font-size: .875rem; color: #555; }
+.widget { font-size: .8rem; color: #555; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.widget:empty { display: none; }
+.contenuto { max-width: 64rem; margin: 0 auto; padding: 0 1rem 4rem; }
+.riquadro { background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+.gap2 { gap: .5rem; }
+.campo { margin-top: 1rem; }
+.campo label, .etichetta { display: block; font-weight: 600; margin-bottom: .25rem; }
+input[type=text], input[type=search], input:not([type]), textarea, select {
+    box-sizing: border-box; width: 100%; font: inherit; padding: .5rem;
+    border: 1px solid #bbb; border-radius: 4px; background: #fff; color: inherit;
+}
+.flex input { width: auto; }
+.pulsante {
+    font: inherit; font-weight: 600; padding: .5rem 1rem; border: 1px solid #333; border-radius: 4px;
+    background: #333; color: #fff; cursor: pointer; text-decoration: none; display: inline-block;
+}
+.pulsante-secondario { background: #fff; color: #333; }
+.pulsante-evidente { background: #000; box-shadow: 0 0 0 3px #fe0; }
+.pulsante:disabled { opacity: .5; cursor: default; }
+.nota { color: #666; font-size: .875rem; margin: .25rem 0; }
+.esito { padding: .5rem .75rem; border-radius: 4px; margin: 0 0 1rem; }
+.esito.ok { background: #dfd; }
+.esito.errore { background: #fdd; }
+.esito.avviso { background: #fff6bf; }
+.azioni {
+    position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
+    margin-top: 1.5rem; padding: .75rem 0; background: #f4f4f4; border-top: 1px solid #ddd;
+}
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline; }
+.coppie { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: 0; }
+.coppie dt { color: #666; }
+.coppie dd { margin: 0; overflow-wrap: anywhere; }
+.grezzo { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem; margin: 0; }

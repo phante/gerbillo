@@ -1,0 +1,37 @@
+{{define "home"}}{{template "testa" .}}
+{{with .Corpo}}
+<section class="riquadro">
+  <h2 class="f5 mt0">Apri una Foto</h2>
+  {{template "campo-pid"}}
+</section>
+{{if .Build}}<p class="nota">Build: {{.Build}}.</p>{{end}}
+{{end}}
+<p><a class="link blue" href="stato">Stato del server</a></p>
+{{template "piede" .}}{{end}}
+
+{{define "campo-pid"}}<form class="flex gap2" action="foto/" method="get">
+  <input class="flex-auto" name="pid" inputmode="numeric" placeholder="pid" aria-label="pid">
+  <button class="pulsante">Apri</button>
+</form>{{end}}
+
+{{define "apri"}}{{template "testa" .}}
+<section class="riquadro">{{template "campo-pid"}}</section>
+{{template "piede" .}}{{end}}
+
+{{define "stato"}}{{template "testa" .}}
+{{with .Corpo}}
+<section class="riquadro">
+  <h2 class="f5 mt0">Processo</h2>
+  <p>Avvio: {{.Avvio}} ({{.Da}} fa)</p>
+  <p>Go: heap {{.Heap}} MiB, sys {{.Sys}} MiB, {{.Goroutine}} goroutine</p>
+</section>
+<section class="riquadro">
+  <h2 class="f5 mt0">Container (cgroup)</h2>
+  <dl class="coppie">{{range .Cgroup}}<dt>{{index . 0}}</dt><dd>{{index . 1}}</dd>{{end}}</dl>
+</section>
+<section class="riquadro">
+  <h2 class="f5 mt0">Host</h2>
+  <pre class="grezzo">{{.Host}}</pre>
+</section>
+{{end}}
+{{template "piede" .}}{{end}}
