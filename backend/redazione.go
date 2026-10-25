@@ -9,6 +9,7 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"log"
@@ -17,6 +18,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -400,8 +402,9 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 	resto := strings.Trim(strings.TrimPrefix(req.URL.Path, "/admin/foto"), "/")
 	switch resto {
 	case "":
-		if q := strings.TrimSpace(req.URL.Query().Get("pid")); q != "" {
-			rimanda(w, url.PathEscape(q))
+		q := req.URL.Query()
+		if c := strings.TrimSpace(cmp.Or(q.Get("cerca"), q.Get("pid"))); c != "" {
+			rimanda(w, r.dove(c))
 			return
 		}
 		r.elencoFoto(w, req)
@@ -533,6 +536,26 @@ func annoCaricamento(f *fotoPubblicata) int {
 		return t.Year()
 	}
 	return time.Now().Year()
+}
+
+var rePidURL = regexp.MustCompile(`/f/(\d+)(?:/|$|\?|#)`)
+
+// dove porta il campo della barra (#57), relativo a /admin/foto/: un numero apre la Foto se
+// esiste, l'URL di una pagina pubblica della Foto apre quella Foto, un testo apre l'elenco
+// con il filtro testo libero.
+func (r *redazione) dove(c string) string {
+	pid := -1
+	if n, err := strconv.Atoi(strings.TrimPrefix(c, "#")); err == nil {
+		pid = n
+	} else if m := rePidURL.FindStringSubmatch(c); m != nil {
+		pid, _ = strconv.Atoi(m[1])
+	}
+	if pid >= 0 {
+		if _, ok := r.indiceCorrente().perPid[pid]; ok || esiste(filepath.Join(r.contenuti, "importazione", fileFoto(pid))) {
+			return strconv.Itoa(pid)
+		}
+	}
+	return "./?" + url.Values{"q": {c}}.Encode()
 }
 
 // rimanda con un Location relativo: http.Redirect lo renderebbe assoluto, e dietro nginx

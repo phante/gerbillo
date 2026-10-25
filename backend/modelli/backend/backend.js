@@ -83,7 +83,16 @@ document.addEventListener("htmx:beforeSwap", function (e) {
     }
     new TomSelect(el, opzioni);
   }
-  function tutti(radice) { (radice.querySelectorAll ? radice : document).querySelectorAll("select[data-chip]").forEach(chip); }
+  // Filtri dell'elenco (#57): una scelta sola, con la ricerca tra le opzioni.
+  function scelta(el) {
+    if (el.tomselect || typeof TomSelect === "undefined") return;
+    new TomSelect(el, { allowEmptyOption: true, maxOptions: 600 }); // il change del select rimanda il modulo
+  }
+  function tutti(radice) {
+    var r = radice.querySelectorAll ? radice : document;
+    r.querySelectorAll("select[data-chip]").forEach(chip);
+    r.querySelectorAll("select[data-scelta]").forEach(scelta);
+  }
   // All'apertura della pagina, e per i frammenti che htmx inserisce.
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { tutti(document); });
   else tutti(document);

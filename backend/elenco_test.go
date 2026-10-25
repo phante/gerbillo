@@ -141,3 +141,53 @@ func TestRicalcolaSoloAdmin(t *testing.T) {
 		t.Error("Ricalcola visibile a un Moderatore")
 	}
 }
+
+// #57: gli altri filtri, l'ordinamento e il campo della barra.
+func TestAltriFiltri(t *testing.T) {
+	r := redazioneConIndice(t)
+	idx := r.indiceCorrente()
+	casi := map[string][]int{
+		"e=dighe/vajont":            {1, 2},
+		"a=30":                      {4, 5},
+		"f=documento":               {2},
+		"f=immagine&a=14":           {1},
+		"q=diga":                    {1},
+		"u=74":                      {4},
+		"au=Ente":                   {1},
+		"au=Ente&s=senza-datazione": nil,
+		"t=da-collegare&a=30":       {4, 5},
+		"o=pid&a=30":                {4, 5},
+	}
+	for q, atteso := range casi {
+		v, _ := url.ParseQuery(q)
+		if p := pids(leggiFiltro(v).applica(idx)); !slices.Equal(p, atteso) {
+			t.Errorf("%s: %v, atteso %v", q, p, atteso)
+		}
+	}
+	// I conteggi di una faccetta rispettano gli altri filtri, non il suo.
+	v, _ := url.ParseQuery("a=30&f=immagine")
+	for _, fc := range leggiFiltro(v).faccette(idx, r.vociNote().testoSlug) {
+		if fc.Param == "a" {
+			n := map[string]int{}
+			for _, o := range fc.Opzioni {
+				n[o.Valore] = o.N
+			}
+			if fc.Scelto != "30" || n["30"] != 2 || n["14"] != 1 {
+				t.Errorf("faccetta album: %+v", fc)
+			}
+		}
+		if fc.Param == "e" && len(fc.Opzioni) != 0 {
+			t.Errorf("faccetta Entità con a=30: %+v", fc.Opzioni)
+		}
+	}
+	// L'ordinamento per Datazione mette in fondo le Foto senza.
+	v, _ = url.ParseQuery("o=datazione")
+	if p := pids(leggiFiltro(v).applica(idx)); p[0] != 1 || p[1] != 3 {
+		t.Errorf("per Datazione: %v", p)
+	}
+	for in, out := range map[string]string{"3": "3", "999": "./?q=999", "https://progettodighe.it/gallery/f/4/": "4", "/gerbillo/f/5": "5", "la diga": "./?q=la+diga"} {
+		if d := r.dove(in); d != out {
+			t.Errorf("barra %q: %q, atteso %q", in, d, out)
+		}
+	}
+}

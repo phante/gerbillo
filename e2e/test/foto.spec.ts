@@ -4,8 +4,8 @@ import { test, expect } from '@playwright/test';
 test('salva un campo della Foto senza ricaricare la pagina', async ({ page }) => {
   await page.goto('admin/');
   await expect(page.locator('.utente')).toHaveText('admin');
-  await page.locator('.barra').getByLabel('pid della Foto').fill('8');
-  await page.locator('.barra').getByLabel('pid della Foto').press('Enter');
+  await page.locator('.barra').getByLabel('Cerca una Foto').fill('8');
+  await page.locator('.barra').getByLabel('Cerca una Foto').press('Enter');
   await expect(page).toHaveURL(/admin\/foto\/8$/);
   await expect(page.getByRole('heading', { name: 'Foto 8' })).toBeVisible();
 

@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -148,95 +147,6 @@ func filtriDaSistemare() []daSistemare {
 			func(f *fotoIndice) bool { return f.Datazione == "" && strings.TrimSpace(f.User3) != "" }})
 }
 
-// filtro è una vista dell'elenco, tutta nell'URL: indietro e ricarica la mantengono.
-type filtro struct {
-	sistemare []string // chiavi di filtriDaSistemare, tutte vere insieme
-}
-
-func leggiFiltro(q url.Values) filtro {
-	var f filtro
-	for _, s := range q["s"] {
-		if slices.ContainsFunc(filtriDaSistemare(), func(d daSistemare) bool { return d.chiave == s }) && !slices.Contains(f.sistemare, s) {
-			f.sistemare = append(f.sistemare, s)
-		}
-	}
-	slices.Sort(f.sistemare)
-	return f
-}
-
-func (f filtro) valori() url.Values {
-	v := url.Values{}
-	for _, s := range f.sistemare {
-		v.Add("s", s)
-	}
-	return v
-}
-
-// query è la parte dopo il ? (vuota senza filtri), da aggiungere ai link.
-func (f filtro) query() string {
-	if q := f.valori().Encode(); q != "" {
-		return "?" + q
-	}
-	return ""
-}
-
-func (f filtro) vale(x *fotoIndice) bool {
-	for _, d := range filtriDaSistemare() {
-		if slices.Contains(f.sistemare, d.chiave) && !d.vale(x) {
-			return false
-		}
-	}
-	return true
-}
-
-func (f filtro) applica(idx *indiceRedazione) []*fotoIndice {
-	var out []*fotoIndice
-	for i := range idx.Foto {
-		if f.vale(&idx.Foto[i]) {
-			out = append(out, &idx.Foto[i])
-		}
-	}
-	return out
-}
-
-// conAltro è il filtro con s acceso o spento.
-func (f filtro) conAltro(s string) filtro {
-	g := filtro{sistemare: slices.Clone(f.sistemare)}
-	if i := slices.Index(g.sistemare, s); i >= 0 {
-		g.sistemare = slices.Delete(g.sistemare, i, i+1)
-	} else {
-		g.sistemare = append(g.sistemare, s)
-		slices.Sort(g.sistemare)
-	}
-	return g
-}
-
-type voceFiltro struct {
-	Chiave, Nome, Aiuto, Link string
-	N                         int
-	Attivo                    bool
-}
-
-// vociDaSistemare sono i filtri con quante Foto ha ciascuno insieme agli altri attivi.
-func (f filtro) vociDaSistemare(idx *indiceRedazione) []voceFiltro {
-	var v []voceFiltro
-	for _, d := range filtriDaSistemare() {
-		attivo := slices.Contains(f.sistemare, d.chiave)
-		con := f
-		if !attivo {
-			con = f.conAltro(d.chiave)
-		}
-		n := 0
-		for i := range idx.Foto {
-			if con.vale(&idx.Foto[i]) {
-				n++
-			}
-		}
-		v = append(v, voceFiltro{Chiave: d.chiave, Nome: d.nome, Aiuto: d.aiuto, N: n, Attivo: attivo, Link: "foto/" + f.conAltro(d.chiave).query()})
-	}
-	return v
-}
-
 type miniaturaBackend struct {
 	Pid                 int
 	Titolo, Album, Mini string
@@ -252,6 +162,12 @@ type corpoElencoBackend struct {
 	Aggiornato, Versione string
 	Avviso               string // build in corso o in coda
 	Query                string
+	// Altri filtri e ordinamento (#57)
+	Faccette      []faccetta
+	Testo, Ordine string
+	Ordinamenti   []opzioneFaccetta
+	Attivi        int
+	Sistemare     []string // i «Da sistemare» attivi, da rimandare con il modulo
 }
 
 func (r *redazione) avvisoBuild() string {
@@ -270,11 +186,15 @@ func (r *redazione) elencoFoto(w http.ResponseWriter, req *http.Request) {
 	idx := r.indiceCorrente()
 	f := leggiFiltro(req.URL.Query())
 	trovate := f.applica(idx)
-	c := corpoElencoBackend{Filtri: f.vociDaSistemare(idx), Totale: len(trovate), Query: f.query()}
+	c := corpoElencoBackend{Filtri: f.vociDaSistemare(idx), Totale: len(trovate), Query: f.query(),
+		Faccette: f.faccette(idx, r.vociNote().testoSlug), Testo: f.testo, Ordine: cmp.Or(f.ordine, "album"), Attivi: f.attivi(), Sistemare: f.sistemare}
+	for _, o := range ordinamenti {
+		c.Ordinamenti = append(c.Ordinamenti, opzioneFaccetta{Valore: o.chiave, Testo: o.nome})
+	}
 	c.Pagine = max(1, (len(trovate)+fotoPerPaginaBackend-1)/fotoPerPaginaBackend)
 	c.Pagina = min(max(1, atoi(req.URL.Query().Get("p"))), c.Pagine)
 	pagina := func(k int) string {
-		v := f.valori()
+		v := f.valoriURL()
 		if k > 1 {
 			v.Set("p", strconv.Itoa(k))
 		}

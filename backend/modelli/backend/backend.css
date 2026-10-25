@@ -90,3 +90,6 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .file-foto { width: 100%; border-collapse: collapse; margin-top: .75rem; font-size: .9rem; }
 .file-foto th, .file-foto td { text-align: left; padding: .3rem .4rem; border-bottom: 1px solid #eee; }
 .tecniche code { overflow-wrap: anywhere; font-size: .8rem; }
+.filtri-modulo { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0 1rem; }
+.filtri-modulo .campo { margin-top: .5rem; }
+.azioni-filtri { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; grid-column: 1 / -1; }

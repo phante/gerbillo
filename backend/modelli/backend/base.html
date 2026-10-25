@@ -25,7 +25,7 @@
   <a class="marchio link black-80" href="./"><img src="statico/PDLogo.svg" alt="" width="28" height="28"><span>Backend</span></a>
   <div id="widget-stato" class="widget"></div>
   <form class="cerca" action="foto/" method="get" role="search">
-    <input type="search" name="pid" placeholder="pid della Foto" aria-label="pid della Foto" inputmode="numeric" enterkeyhint="go">
+    <input type="search" name="cerca" placeholder="pid, testo o link della Foto" aria-label="Cerca una Foto" enterkeyhint="go">
   </form>
   {{with .Utente}}<span class="utente" title="user_id {{.ID}}">{{.Nome}}</span>{{end}}
   <a class="link black-60 f6" href="../">Gallery</a>
