@@ -1,6 +1,6 @@
 package main
 
-// Stato del server (ADR 0011): la pagina /admin/stato con i dettagli, e /admin/stato.json
+// Stato del server (ADR 0011): la pagina /admin/stato con i dettagli, e /admin/widget (JSON)
 // per il widget in tutte le pagine del Backend (#48), che si aggiorna ogni 5 secondi.
 
 import (
@@ -105,7 +105,7 @@ type buildJSON struct {
 	Errore  string `json:"errore,omitempty"`
 }
 
-// statoWidget risponde a /admin/stato.json. Senza redazione non c'è il build.
+// statoWidget risponde a /admin/widget. Senza redazione non c'è il build.
 func statoWidget(red *redazione) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := statoJSON{Memoria: memoriaContainer(), Riavvii: riavvii()}

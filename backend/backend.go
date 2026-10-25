@@ -78,23 +78,25 @@ func esegui(w http.ResponseWriter, nome string, dati any) {
 func daHtmx(r *http.Request) bool { return r.Header.Get("HX-Request") == "true" }
 
 // staticiBackend sono i file serviti a /admin/statico/: nome pubblicato → file in modelli/.
+// I nomi non hanno l'estensione: nell'anteprima il vhost di nginx intercetta .css, .js, .svg
+// e .json prima di /gerbillo/ (finché manca ^~ nello snippet), come per la Gallery con
+// build -anteprima. Il tipo viene dall'estensione del file in modelli/.
 var staticiBackend = map[string]string{
-	"tachyons.css":       "sito/tachyons.css",
-	"PDLogo.svg":         "sito/PDLogo.svg",
-	"backend.css":        "backend/backend.css",
-	"backend.js":         "backend/backend.js",
-	"htmx.min.js":        "backend/librerie/htmx.min.js",
-	"alpine.min.js":      "backend/librerie/alpine.min.js",
-	"tom-select.min.js":  "backend/librerie/tom-select.min.js",
-	"tom-select.min.css": "backend/librerie/tom-select.min.css",
-	"mappa.js":           "sito/mappa.js", // Leaflet del Sito principale (#27), per la mappa del Punto geografico
-	"leaflet.css":        "sito/leaflet.css",
+	"tachyons":         "sito/tachyons.css",
+	"logo":             "sito/PDLogo.svg",
+	"backend-stile":    "backend/backend.css",
+	"backend":          "backend/backend.js",
+	"htmx":             "backend/librerie/htmx.min.js",
+	"alpine":           "backend/librerie/alpine.min.js",
+	"tom-select":       "backend/librerie/tom-select.min.js",
+	"tom-select-stile": "backend/librerie/tom-select.min.css",
+	"mappa":            "sito/mappa.js", // Leaflet del Sito principale (#27), per la mappa del Punto geografico
+	"leaflet-stile":    "sito/leaflet.css",
 }
 
 // statico serve i file di staticiBackend. Non richiede l'utente: sono librerie e stili.
 func statico(w http.ResponseWriter, r *http.Request) {
-	nome := path.Base(r.URL.Path)
-	f, ok := staticiBackend[nome]
+	f, ok := staticiBackend[path.Base(r.URL.Path)]
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -106,7 +108,7 @@ func statico(w http.ResponseWriter, r *http.Request) {
 	}
 	// Il binario cambia a ogni deploy: il browser ricontrolla, e riceve 304 finché non cambia.
 	w.Header().Set("Cache-Control", "no-cache")
-	http.ServeContent(w, r, nome, avvio, bytes.NewReader(d))
+	http.ServeContent(w, r, path.Base(f), avvio, bytes.NewReader(d))
 }
 
 // rotteBackend registra le pagine del Backend. Senza redazione (manca il seme) ci sono
@@ -123,7 +125,7 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	mux.HandleFunc("/admin/statico/", statico)
 	mux.HandleFunc("/admin/esci", esci) // senza utente: chi esce non deve rifare l'accesso
 	mux.Handle("/admin/stato", mod(stato))
-	mux.Handle("/admin/stato.json", mod(statoWidget(red)))
+	mux.Handle("/admin/widget", mod(statoWidget(red))) // senza .json: vedi staticiBackend
 	if red == nil {
 		mux.Handle("/admin/", mod(adminSenzaRedazione))
 		return

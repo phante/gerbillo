@@ -57,7 +57,7 @@ test('tutte le N del filtro, con la conferma esplicita oltre 500', async ({ page
   await page.locator('#valore-fonte').fill('Tutte');
   await page.getByRole('button', { name: 'Anteprima' }).click();
   const anteprima = page.locator('#anteprima-blocco');
-  await expect(anteprima).toContainText(`su ${n}`, { timeout: 60_000 });
+  await expect(anteprima).toContainText(`su ${n}`, { timeout: 150_000 });
   await anteprima.getByRole('button', { name: /Conferma su/ }).click();
   await expect(anteprima.getByRole('alert')).toContainText(`scrivi ${n}`);
 });

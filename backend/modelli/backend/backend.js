@@ -5,7 +5,7 @@ document.addEventListener("htmx:beforeSwap", function (e) {
 });
 
 // Widget di stato nella barra (#48): build, memoria vera del container e riavvii, da
-// stato.json ogni 5 secondi. Ogni aggiornamento manda anche l'evento gerbillo:stato
+// widget (JSON) ogni 5 secondi. Ogni aggiornamento manda anche l'evento gerbillo:stato
 // con i dati, per le pagine che seguono il build.
 (function () {
   var w = document.getElementById("widget-stato");
@@ -19,7 +19,7 @@ document.addEventListener("htmx:beforeSwap", function (e) {
     return s;
   }
   function aggiorna() {
-    fetch("stato.json", { cache: "no-store" }).then(function (r) {
+    fetch("widget", { cache: "no-store" }).then(function (r) {
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     }).then(function (s) {
@@ -117,7 +117,8 @@ document.addEventListener("htmx:beforeSwap", function (e) {
     div.mappaPunto = m;
     // La mappa può nascere nascosta (modifica in blocco): si ridisegna quando compare.
     if (window.ResizeObserver) new ResizeObserver(function () { m.invalidateSize(); }).observe(div);
-    L.control.layers({ Mappa: osm, Satellite: sat }).addTo(m);
+    // Aperto: l'icona di leaflet.css (images/layers.png) non è nel binario.
+    L.control.layers({ Mappa: osm, Satellite: sat }, null, { collapsed: false }).addTo(m);
     L.control.scale().addTo(m);
     if (ered) L.circleMarker(ered, { radius: 8, color: "#555", weight: 2, dashArray: "4 3", fillOpacity: 0.1 })
       .addTo(m).bindTooltip("Punto di " + (div.dataset.diga || "della diga"));

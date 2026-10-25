@@ -9,20 +9,20 @@
 <meta name="robots" content="noindex">
 <base href="{{.R}}">
 <title>{{.Titolo}} · Backend Gerbillo</title>
-<link rel="stylesheet" href="statico/tachyons.css">
-<link rel="stylesheet" href="statico/tom-select.min.css">
-<link rel="stylesheet" href="statico/leaflet.css">
-<link rel="stylesheet" href="statico/backend.css">
-<script src="statico/htmx.min.js" defer></script>
-<script src="statico/tom-select.min.js" defer></script>
-<script src="statico/mappa.js" defer></script>
-<script src="statico/backend.js" defer></script>
-<script src="statico/alpine.min.js" defer></script>
+<link rel="stylesheet" href="statico/tachyons">
+<link rel="stylesheet" href="statico/tom-select-stile">
+<link rel="stylesheet" href="statico/leaflet-stile">
+<link rel="stylesheet" href="statico/backend-stile">
+<script src="statico/htmx" defer></script>
+<script src="statico/tom-select" defer></script>
+<script src="statico/mappa" defer></script>
+<script src="statico/backend" defer></script>
+<script src="statico/alpine" defer></script>
 </head>
 <body class="sans-serif bg-near-white black-80">
 {{if .Striscia}}<div class="striscia">{{.Striscia}}</div>{{end}}
 <header class="barra">
-  <a class="marchio link black-80" href="./"><img src="statico/PDLogo.svg" alt="" width="28" height="28"><span>Backend</span></a>
+  <a class="marchio link black-80" href="./"><img src="statico/logo" alt="" width="28" height="28"><span>Backend</span></a>
   <div id="widget-stato" class="widget"></div>
   <form class="cerca" action="foto/" method="get" role="search">
     <input type="search" name="cerca" placeholder="pid, testo o link della Foto" aria-label="Cerca una Foto" enterkeyhint="go">
