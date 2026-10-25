@@ -214,6 +214,7 @@ type corpoFoto struct {
 	Dighe, SulSito                                []voce
 	Licenza                                       voce
 	Link, LinkBreve                               string
+	Modifica                                      string // la scheda nel Backend, per i Moderatori (#58)
 	Contributore                                  *voce
 	Tags                                          []string
 }
@@ -494,6 +495,7 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 		c.Alt = f.Title
 	}
 	c.Originale = b.originale(f)
+	c.Modifica = b.base + "admin/foto/" + pid
 	if t, err := time.Parse(time.RFC3339, f.Date); err == nil {
 		c.Caricata = t.Format("02/01/2006")
 	}
