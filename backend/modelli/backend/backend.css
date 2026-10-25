@@ -1,7 +1,7 @@
 /* Backend (ADR 0017): stessi tachyons, colori e font della Gallery pubblica, con un layout
    da strumento. Prima il telefono: la barra va a capo, i campi occupano tutta la larghezza. */
 [x-cloak] { display: none !important; }
-.striscia { font: 12px/1.6 monospace; background: #fe0; padding: 0 8px; }
+.piede-anteprima { text-align: center; font-size: .75rem; color: rgba(0,0,0,.3); padding: 1rem 0 2rem; }
 .barra {
     position: sticky; top: 0; z-index: 1000;
     display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
@@ -97,10 +97,20 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .griglia.in-selezione li { cursor: pointer; }
 .griglia li.scelta { outline: 3px solid #333; outline-offset: -3px; }
 .griglia li.scelta img { opacity: .8; }
+/* Una riga sola, bassa: sul telefono la griglia deve restare visibile (#50). */
 .barra-selezione {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
-    padding: .75rem 1rem; background: #fff; border-top: 2px solid #333; box-shadow: 0 -2px 8px rgba(0,0,0,.1);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; align-items: center; gap: .5rem;
+    padding: .4rem .75rem calc(.4rem + env(safe-area-inset-bottom)); background: #fff; border-top: 2px solid #333;
+    box-shadow: 0 -2px 8px rgba(0,0,0,.1); font-size: .9rem;
 }
+.barra-selezione .conta { flex: 1 1 auto; white-space: nowrap; }
+.barra-selezione .piccolo {
+    font: inherit; font-weight: 600; padding: .35rem .7rem; border: 1px solid #333; border-radius: 4px;
+    background: #333; color: #fff; white-space: nowrap; cursor: pointer;
+}
+.barra-selezione .piccolo.secondario { background: #fff; color: #333; }
+.barra-selezione .piccolo:disabled { opacity: .5; }
+.barra-selezione .chiudi { font-size: 1.1rem; line-height: 1; padding: .3rem .55rem; }
 .campo-blocco legend { padding: 0 .25rem; }
 fieldset.riquadro { min-width: 0; }
-.con-barra { padding-bottom: 8rem; }
+.con-barra { padding-bottom: 4rem; }

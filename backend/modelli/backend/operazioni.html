@@ -1,7 +1,7 @@
 {{define "operazioni"}}{{template "testa" .}}
 {{with .Corpo}}
 {{if .Errore}}<p class="esito errore">{{.Errore}}</p>{{end}}
-<p class="nota mt0">Le modifiche fatte dal Backend, dalla più recente. «Annulla» riporta le Foto allo stato di prima, con un commit nuovo.</p>
+<p class="nota mt0">Le modifiche fatte da Gerbillo, dalla più recente. «Annulla» riporta le Foto allo stato di prima, con un commit nuovo.</p>
 {{range .Operazioni}}{{template "operazione" .}}{{else}}<p>Nessuna operazione.</p>{{end}}
 {{end}}
 {{template "piede" .}}{{end}}

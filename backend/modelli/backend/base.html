@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <base href="{{.R}}">
-<title>{{.Titolo}} · Backend Gerbillo</title>
+<title>{{.Titolo}} · Gerbillo</title>
 <link rel="stylesheet" href="statico/tachyons">
 <link rel="stylesheet" href="statico/tom-select-stile">
 <link rel="stylesheet" href="statico/leaflet-stile">
@@ -20,9 +20,8 @@
 <script src="statico/alpine" defer></script>
 </head>
 <body class="sans-serif bg-near-white black-80">
-{{if .Striscia}}<div class="striscia">{{.Striscia}}</div>{{end}}
 <header class="barra">
-  <a class="marchio link black-80" href="./"><img src="statico/logo" alt="" width="28" height="28"><span>Backend</span></a>
+  <a class="marchio link black-80" href="./"><img src="statico/logo" alt="" width="28" height="28"><span>Gerbillo</span></a>
   <div id="widget-stato" class="widget"></div>
   <form class="cerca" action="foto/" method="get" role="search">
     <input type="search" name="cerca" placeholder="pid, testo o link della Foto" aria-label="Cerca una Foto" enterkeyhint="go">
@@ -37,6 +36,7 @@
 
 {{define "piede"}}
 </main>
+{{if .Striscia}}<footer class="piede-anteprima">[ANTEPRIMA] {{.Striscia}}</footer>{{end}}
 </body>
 </html>
 {{end}}

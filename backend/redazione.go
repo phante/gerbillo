@@ -43,7 +43,7 @@ var campiEditoriali = []campoEditoriale{
 	{"title", "Titolo", false, 0, func(f *fotoPubblicata) string { return f.Title }},
 	{"description", "Descrizione", false, 5, func(f *fotoPubblicata) string { return f.Description }},
 	{"alt", "Testo alternativo", false, 2, func(f *fotoPubblicata) string { return f.Alt }},
-	{"slug", "Pagine del sito (slug)", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Slug, "\n") }},
+	{"slug", "Dighe, centrali e altre pagine del sito", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Slug, "\n") }},
 	{"categories", "Categorie", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Categories, "\n") }},
 	{"tags", "Tag", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Tags, "\n") }},
 	{"datazione", "Datazione", false, 0, func(f *fotoPubblicata) string { return f.Datazione }},
@@ -625,7 +625,7 @@ func (r *redazione) admin(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	idx := r.indiceCorrente()
-	mostraPagina(w, req, "home", "Backend", corpoHome{Build: r.statoBuild(), Aggiornato: aggiornatoAlle(idx),
+	mostraPagina(w, req, "home", "Gerbillo", corpoHome{Build: r.statoBuild(), Aggiornato: aggiornatoAlle(idx),
 		Filtri: filtro{}.vociDaSistemare(idx), Totale: len(idx.Foto), Admin: utenteDi(req).Admin()})
 }
 

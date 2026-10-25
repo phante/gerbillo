@@ -37,6 +37,8 @@
 {{if .Salvato}}<p class="esito ok" role="status">{{.Salvato}}</p>{{end}}
 {{range .Voci}}<div class="campo">
   <label for="{{.Chiave}}">{{.Etichetta}}</label>
+  {{if eq .Chiave "slug"}}<p class="nota mt0">Scrivi il nome e scegli dai suggerimenti: «Goglio», «Barcis». Qui si collega la Foto a una diga, una centrale o un reportage.</p>{{end}}
+  {{if eq .Chiave "categories"}}<p class="nota mt0">Il tipo di soggetto: turbina, condotta, presa… Per collegare la Foto a una diga o a una centrale usa il campo sopra.</p>{{end}}
   {{if eq .Chiave "datazione"}}{{template "campo-datazione" .}}
   {{else if .Gruppi}}{{template "campo-categorie" .}}
   {{else if .Chip}}{{template "campo-chip" .}}

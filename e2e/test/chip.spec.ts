@@ -8,7 +8,8 @@ const chips = (page: Page, id: string) => page.locator(`#${id}`).locator('xpath=
 test('chip per slug, Tag, Autori e Categorie', async ({ page }) => {
   await page.goto('admin/foto/10');
 
-  // slug: dall'Indice delle Entità, per titolo.
+  // slug: dall'Indice delle Entità, per titolo. È il campo per collegare la Foto a una centrale.
+  await expect(page.getByRole('combobox', { name: 'Dighe, centrali e altre pagine del sito' })).toBeVisible();
   await scrivi(page, 'slug').fill('barc');
   await page.locator('.ts-dropdown .option', { hasText: 'dighe/barcis-o-del-cellina' }).first().click();
   await expect(chips(page, 'slug').filter({ hasText: 'Barcis o del Cellina' })).toHaveCount(1);
