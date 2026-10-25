@@ -1,5 +1,12 @@
 {{define "foto"}}{{template "testa" .}}
 {{with .Corpo}}
+<nav class="naviga" aria-label="Elenco">
+  <a class="link blue" href="{{.Elenco}}">← Elenco</a>
+  {{if .Pos}}<span class="nota">{{.Pos}} di {{.Tot}}</span>{{end}}
+  <span class="flex-auto"></span>
+  {{if .Prima}}<a class="pulsante pulsante-secondario" href="{{.Prima}}" rel="prev" aria-label="Foto precedente">←</a>{{end}}
+  {{if .Dopo}}<a class="pulsante pulsante-secondario" href="{{.Dopo}}" rel="next" aria-label="Foto successiva">→</a>{{end}}
+</nav>
 <p class="mt0"><a class="link blue" href="{{.Pubblica}}">Pagina pubblica della Foto</a></p>
 {{template "modulo" .}}
 {{end}}

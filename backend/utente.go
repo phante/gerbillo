@@ -37,6 +37,9 @@ func (u *utente) Moderatore() bool {
 	return slices.Contains(u.Gruppi, gruppoAdmin) || slices.Contains(u.Gruppi, gruppoModeratori)
 }
 
+// Admin dice se l'utente è un amministratore del forum: per le azioni sull'intera Gallery.
+func (u *utente) Admin() bool { return u != nil && slices.Contains(u.Gruppi, gruppoAdmin) }
+
 // utenteCorrente riconosce chi fa una richiesta.
 type utenteCorrente interface {
 	// Utente è chi fa la richiesta; nil per un ospite.

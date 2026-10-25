@@ -44,7 +44,8 @@ func main() {
 	// rigenerata dopo una modifica (#43) sta in /tmp/dist, con i soli file cambiati, e vince.
 	dist := envOr("GERBILLO_DIST", "/dist")
 	modifiche := envOr("GERBILLO_DIST_MODIFICHE", "/tmp/dist")
-	red, err := redazioneAnteprima(envOr("GERBILLO_SEME", "/seme"), envOr("GERBILLO_CONTENUTI", "/tmp/contenuti"), dist, modifiche)
+	red, err := redazioneAnteprima(envOr("GERBILLO_SEME", "/seme"), envOr("GERBILLO_CONTENUTI", "/tmp/contenuti"), dist, modifiche,
+		envOr("GERBILLO_REDAZIONE", "/tmp/redazione.json"))
 	if err != nil {
 		log.Printf("modifica delle Foto non disponibile: %v", err)
 	}

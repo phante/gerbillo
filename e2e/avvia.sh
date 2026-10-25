@@ -13,5 +13,5 @@ lavoro=$(mktemp -d)
 export GERBILLO_SEME=$PWD/seme GERBILLO_DIST=$PWD/dist \
   GERBILLO_CONTENUTI=$lavoro/contenuti GERBILLO_DIST_MODIFICHE=$lavoro/dist \
   GERBILLO_ADDR=127.0.0.1:${PORTA:-8091} GERBILLO_PASSWORD=prova GERBILLO_PREFISSO=/gerbillo/ \
-  GERBILLO_STATO_HOST=$lavoro/stato.json
+  GERBILLO_STATO_HOST=$lavoro/stato.json GERBILLO_REDAZIONE=$lavoro/redazione.json
 exec "$lavoro/gerbillo" serve

@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -93,6 +94,11 @@ type redazione struct {
 	build     func() error // build completo della Gallery pubblica
 
 	salvataggio sync.Mutex // un salvataggio alla volta
+
+	// Indice della redazione (#49): fileIndice lo riscrivono i build del Backend, semeIndice
+	// è quello del seme, finché non ne finisce uno.
+	fileIndice, semeIndice string
+	elenco                 atomic.Pointer[indiceRedazione]
 
 	mu              sync.Mutex
 	inCorso, ancora bool
@@ -305,22 +311,25 @@ type corpoFotoBackend struct {
 	Pubblica, Build string
 	Errore, Salvato string
 	Voci            []voceModulo
-}
-
-type corpoHome struct {
-	Build string
+	// Navigazione nell'elenco filtrato da cui si è aperta la scheda (#49).
+	Elenco, Prima, Dopo string
+	Pos, Tot            int
 }
 
 // foto risponde a /admin/foto/<pid>: la scheda in GET, il salvataggio in POST. Il modulo
 // salva con htmx: la risposta è il solo modulo, con i valori salvati e l'esito.
 func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 	resto := strings.Trim(strings.TrimPrefix(req.URL.Path, "/admin/foto"), "/")
-	if resto == "" {
+	switch resto {
+	case "":
 		if q := strings.TrimSpace(req.URL.Query().Get("pid")); q != "" {
 			rimanda(w, url.PathEscape(q))
 			return
 		}
-		mostraPagina(w, req, "apri", "Apri una Foto", corpoHome{Build: r.statoBuild()})
+		r.elencoFoto(w, req)
+		return
+	case "freschezza":
+		r.freschezza(w, req)
 		return
 	}
 	pid, err := strconv.Atoi(resto)
@@ -329,6 +338,17 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	c := corpoFotoBackend{Pid: pid, Pubblica: fmt.Sprintf("../f/%d/", pid)}
+	{
+		f := leggiFiltro(req.URL.Query())
+		prima, dopo, pos, tot := r.vicine(pid, f)
+		c.Elenco, c.Pos, c.Tot = "foto/"+f.query(), pos, tot
+		if prima > 0 {
+			c.Prima = fmt.Sprintf("foto/%d%s", prima, f.query())
+		}
+		if dopo > 0 {
+			c.Dopo = fmt.Sprintf("foto/%d%s", dopo, f.query())
+		}
+	}
 	modulo := map[string]string{}
 	if req.Method == http.MethodPost {
 		req.ParseForm()
@@ -385,7 +405,23 @@ func (r *redazione) admin(w http.ResponseWriter, req *http.Request) {
 		http.NotFound(w, req)
 		return
 	}
-	mostraPagina(w, req, "home", "Backend", corpoHome{Build: r.statoBuild()})
+	idx := r.indiceCorrente()
+	mostraPagina(w, req, "home", "Backend", corpoHome{Build: r.statoBuild(), Aggiornato: aggiornatoAlle(idx),
+		Filtri: filtro{}.vociDaSistemare(idx), Totale: len(idx.Foto), Admin: utenteDi(req).Admin()})
+}
+
+// ricalcola rilancia il build completo, e con lui l'indice. Solo per l'admin.
+func (r *redazione) ricalcola(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, "serve un POST", http.StatusMethodNotAllowed)
+		return
+	}
+	if !utenteDi(req).Admin() {
+		http.Error(w, "serve l'admin", http.StatusForbidden)
+		return
+	}
+	r.richiediBuild()
+	fmt.Fprint(w, `<span class="nota" role="status">Build richiesto: segui il widget in alto.</span>`)
 }
 
 // redazioneAnteprima prepara la modifica diretta nell'anteprima (ADR 0011). L'immagine ha in
@@ -394,7 +430,7 @@ func (r *redazione) admin(w http.ResponseWriter, req *http.Request) {
 // contenuti con il solo Livello di arricchimento (l'Importazione resta nell'immagine), e i
 // build scrivono in /tmp solo i file diversi dalla Gallery dell'immagine. Senza seme/
 // la modifica non c'è.
-func redazioneAnteprima(seme, contenuti, dist, modifiche string) (*redazione, error) {
+func redazioneAnteprima(seme, contenuti, dist, modifiche, indiceRed string) (*redazione, error) {
 	if !esiste(filepath.Join(seme, "indice.json")) {
 		return nil, nil
 	}
@@ -417,7 +453,8 @@ func redazioneAnteprima(seme, contenuti, dist, modifiche string) (*redazione, er
 		return nil, err
 	}
 	defer f.Close()
-	args := []string{"build", "-contenuti", contenuti, "-indice", filepath.Join(seme, "indice.json"), "-dist", modifiche, "-confronta", dist}
+	args := []string{"build", "-contenuti", contenuti, "-indice", filepath.Join(seme, "indice.json"), "-dist", modifiche, "-confronta", dist,
+		"-redazione", indiceRed}
 	for sc := bufio.NewScanner(f); sc.Scan(); {
 		args = append(args, sc.Text())
 	}
@@ -425,7 +462,16 @@ func redazioneAnteprima(seme, contenuti, dist, modifiche string) (*redazione, er
 	if err != nil {
 		return nil, err
 	}
-	r := &redazione{contenuti: contenuti, indice: filepath.Join(seme, "indice.json")}
+	r := &redazione{contenuti: contenuti, indice: filepath.Join(seme, "indice.json"),
+		fileIndice: indiceRed, semeIndice: filepath.Join(seme, "redazione.json")}
+	if err := r.caricaIndice(); err != nil {
+		log.Printf("indice della redazione: %v", err)
+	}
+	r.dopoBuild = func() {
+		if err := r.caricaIndice(); err != nil {
+			log.Printf("indice della redazione: %v", err)
+		}
+	}
 	r.build = func() error {
 		cmd := exec.Command(eseguibile, args...)
 		cmd.Stdout, cmd.Stderr = os.Stderr, os.Stderr

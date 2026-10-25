@@ -1,0 +1,27 @@
+{{define "elenco"}}{{template "testa" .}}
+{{with .Corpo}}
+<details class="filtri riquadro" open>
+  <summary class="b pointer">Da sistemare</summary>
+  <ul class="scelte">{{range .Filtri}}
+    <li><a class="scelta{{if .Attivo}} attiva{{end}}" href="{{.Link}}" {{if .Attivo}}aria-current="true"{{end}} title="{{.Aiuto}}">{{.Nome}} <span class="numero">{{.N}}</span></a></li>{{end}}
+  </ul>
+</details>
+{{template "freschezza" .}}
+<p class="mt2 mb2"><b>{{.Totale}}</b> Foto{{if gt .Pagine 1}} · pagina {{.Pagina}} di {{.Pagine}}{{end}}</p>
+<ul class="griglia">{{range .Foto}}
+  <li><a class="link black-80" href="{{.Link}}"><img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-50">{{.Album}}</span>{{end}}</span></a></li>{{end}}
+</ul>
+{{template "paginazione" .}}
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{define "paginazione"}}{{if or .Indietro .Avanti}}<nav class="paginazione" aria-label="Pagine">
+  {{if .Indietro}}<a class="pulsante pulsante-secondario" href="{{.Indietro}}" rel="prev">← Precedenti</a>{{end}}
+  {{if .Avanti}}<a class="pulsante pulsante-secondario" href="{{.Avanti}}" rel="next">Successive →</a>{{end}}
+</nav>{{end}}{{end}}
+
+{{/* Si richiede ogni 5 secondi: a fine build la risposta fa ricaricare la pagina (HX-Refresh). */}}
+{{define "freschezza"}}<div id="freschezza" class="nota" hx-get="foto/freschezza?v={{.Versione}}" hx-trigger="every 5s" hx-swap="outerHTML">
+  {{if .Avviso}}<p class="esito avviso mb1">{{.Avviso}}</p>{{end}}
+  {{if .Aggiornato}}Aggiornato alle {{.Aggiornato}}.{{else}}Nessun indice: l'elenco compare dopo il primo build.{{end}}
+</div>{{end}}

@@ -78,6 +78,7 @@ func build(args []string) error {
 	dist := fs.String("dist", "dist", "cartella di uscita")
 	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
 	dirContenuti := fs.String("contenuti", "", "Repository dei contenuti, al posto di quello della configurazione")
+	redazione := fs.String("redazione", "", "file in cui scrivere l'indice della redazione per il Backend (#49)")
 	var o opzioniBuild
 	fs.StringVar(&o.confronta, "confronta", "", "Gallery già generata: scrive solo i file diversi (anteprima)")
 	fs.StringVar(&o.base, "base", "/gallery/", "prefisso degli URL")
@@ -110,6 +111,11 @@ func build(args []string) error {
 	pagine.Funcs(template.FuncMap{"statico": b.statico})
 	if err := b.tutto(); err != nil {
 		return err
+	}
+	if *redazione != "" {
+		if err := b.scriviIndiceRedazione(*redazione); err != nil {
+			return err
+		}
 	}
 	vecchia := strings.TrimSuffix(*dist, "/") + ".vecchia"
 	os.RemoveAll(vecchia)

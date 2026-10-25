@@ -118,4 +118,5 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	mux.HandleFunc("/admin/foto", conBarra)
 	mux.Handle("/admin/", mod(red.admin))
 	mux.Handle("/admin/foto/", mod(red.foto))
+	mux.Handle("/admin/ricalcola", mod(red.ricalcola))
 }

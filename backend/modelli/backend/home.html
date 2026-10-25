@@ -1,10 +1,22 @@
 {{define "home"}}{{template "testa" .}}
 {{with .Corpo}}
+{{if .Filtri}}<section class="riquadro">
+  <h2 class="f5 mt0">Da sistemare</h2>
+  <ul class="cruscotto">{{range .Filtri}}
+    <li><a class="link" href="{{.Link}}"><span class="numero">{{.N}}</span> {{.Nome}}</a>{{if .Aiuto}} <span class="nota">{{.Aiuto}}</span>{{end}}</li>{{end}}
+  </ul>
+  <p class="nota"><a class="link blue" href="foto/">Tutte le {{.Totale}} Foto</a>{{if .Aggiornato}} · indice aggiornato alle {{.Aggiornato}}{{end}}</p>
+</section>{{end}}
 <section class="riquadro">
   <h2 class="f5 mt0">Apri una Foto</h2>
   {{template "campo-pid"}}
 </section>
-{{if .Build}}<p class="nota">Build: {{.Build}}.</p>{{end}}
+{{if .Build}}<section class="riquadro">
+  <h2 class="f5 mt0">Build</h2>
+  <p class="mt0">{{.Build}}.</p>
+  {{if .Admin}}<form hx-post="ricalcola" hx-swap="outerHTML"><button class="pulsante pulsante-secondario">Ricalcola</button>
+    <span class="nota">Rilancia il build completo della Gallery e dell'indice.</span></form>{{end}}
+</section>{{end}}
 {{end}}
 <p><a class="link blue" href="stato">Stato del server</a></p>
 {{template "piede" .}}{{end}}
@@ -13,10 +25,6 @@
   <input class="flex-auto" name="pid" inputmode="numeric" placeholder="pid" aria-label="pid">
   <button class="pulsante">Apri</button>
 </form>{{end}}
-
-{{define "apri"}}{{template "testa" .}}
-<section class="riquadro">{{template "campo-pid"}}</section>
-{{template "piede" .}}{{end}}
 
 {{define "stato"}}{{template "testa" .}}
 {{with .Corpo}}
