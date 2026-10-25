@@ -196,3 +196,33 @@ func TestPaginaRedazione(t *testing.T) {
 		t.Errorf("Foto inesistente: HTTP %d", w.Code)
 	}
 }
+
+// #51: la Datazione non valida non si salva; quella in italiano si salva in EDTF.
+func TestSalvaDatazione(t *testing.T) {
+	r := redazioneProva(t)
+	admin := &utente{ID: 2, Nome: "admin"}
+	m := moduloDi(t, r, 4)
+	m["datazione"] = "Pippo"
+	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "non valida") {
+		t.Errorf("Pippo: %v", err)
+	}
+	m["datazione"] = "maggio 2006"
+	if _, err := r.salva(4, m, admin); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(filepath.Join(r.contenuti, "arricchimento", "foto", "4.yaml")); string(b) != "datazione: 2006-05\n" {
+		t.Errorf("arricchimento:\n%s", b)
+	}
+	// Il suggerimento da user3 compare solo se la Datazione manca.
+	h := soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)
+	w := httptest.NewRecorder()
+	h(w, httptest.NewRequest("GET", "/admin/foto/5", nil))
+	if b := w.Body.String(); !strings.Contains(b, "«Ottobre 2006»") || !strings.Contains(b, "Usa 2006-10") {
+		t.Errorf("scheda 5 senza il suggerimento da user3")
+	}
+	w = httptest.NewRecorder()
+	datazione(w, httptest.NewRequest("GET", "/admin/datazione?datazione=anni+%2760", nil))
+	if b := w.Body.String(); !strings.Contains(b, "= anni &#39;60") || !strings.Contains(b, "si salva come 196X") {
+		t.Errorf("anteprima: %s", b)
+	}
+}

@@ -45,7 +45,7 @@ var campiEditoriali = []campoEditoriale{
 	{"slug", "Pagine del sito (slug)", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Slug, "\n") }},
 	{"categories", "Categorie", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Categories, "\n") }},
 	{"tags", "Tag", true, 3, func(f *fotoPubblicata) string { return strings.Join(f.Tags, "\n") }},
-	{"datazione", "Datazione (EDTF)", false, 0, func(f *fotoPubblicata) string { return f.Datazione }},
+	{"datazione", "Datazione", false, 0, func(f *fotoPubblicata) string { return f.Datazione }},
 	{"authors", "Autori", true, 2, func(f *fotoPubblicata) string { return strings.Join(f.Authors, "\n") }},
 	{"fonte", "Fonte", false, 0, func(f *fotoPubblicata) string { return f.Fonte }},
 	{"geolocation.coords", "Punto geografico (latitudine, longitudine)", false, 0, func(f *fotoPubblicata) string {
@@ -211,6 +211,11 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 	var cambiati []string
 	for _, c := range campiEditoriali {
 		v := c.normalizza(modulo[c.chiave])
+		if c.chiave == "datazione" {
+			if v, err = normalizzaDatazione(v); err != nil {
+				return nil, err
+			}
+		}
 		if v != c.valore(pub) {
 			cambiati = append(cambiati, c.chiave)
 		}
@@ -303,6 +308,8 @@ type voceModulo struct {
 	Chiave, Etichetta, Valore, Importato string
 	Righe                                int
 	Diverso                              bool
+	Anteprima                            anteprimaDatazione // solo per la Datazione
+	User3, User3EDTF                     string             // idem: il suggerimento da Coppermine
 }
 
 // corpoFotoBackend è la scheda di una Foto: il modulo e l'esito dell'ultimo salvataggio.
@@ -381,8 +388,18 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		if inviato, ok := modulo[k.chiave]; ok {
 			v = inviato // dopo un errore si ripropone quello che si era scritto
 		}
-		c.Voci = append(c.Voci, voceModulo{Chiave: k.chiave, Etichetta: k.etichetta, Valore: v, Importato: k.valore(imp),
-			Righe: k.righe, Diverso: k.valore(pub) != k.valore(imp)})
+		vm := voceModulo{Chiave: k.chiave, Etichetta: k.etichetta, Valore: v, Importato: k.valore(imp),
+			Righe: k.righe, Diverso: k.valore(pub) != k.valore(imp)}
+		if k.chiave == "datazione" {
+			vm.Anteprima = anteprimaDi(v)
+			if pub.Datazione == "" && strings.TrimSpace(pub.Coppermine.Data) != "" {
+				vm.User3 = pub.Coppermine.Data
+				if d, ok := interpretaUser3(pub.Coppermine.Data, annoCaricamento(pub)); ok {
+					vm.User3EDTF = d.edtf
+				}
+			}
+		}
+		c.Voci = append(c.Voci, vm)
 	}
 	c.Build = r.statoBuild()
 	if req.Method == http.MethodPost && daHtmx(req) {
@@ -390,6 +407,38 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	mostraPagina(w, req, "foto", fmt.Sprintf("Foto %d", pid), c)
+}
+
+// anteprimaDatazione è la resa in italiano della Datazione mentre si scrive (#51).
+type anteprimaDatazione struct {
+	Testo, EDTF, Errore string
+}
+
+func anteprimaDi(v string) anteprimaDatazione {
+	if strings.TrimSpace(v) == "" {
+		return anteprimaDatazione{}
+	}
+	e, err := normalizzaDatazione(v)
+	if err != nil {
+		return anteprimaDatazione{Errore: "Non valida: non si salva."}
+	}
+	a := anteprimaDatazione{Testo: datazioneItaliana(e)}
+	if e != strings.TrimSpace(v) {
+		a.EDTF = e // forma italiana: si salva in EDTF
+	}
+	return a
+}
+
+// datazione risponde a /admin/datazione?datazione=…, che il campo chiede mentre si scrive.
+func datazione(w http.ResponseWriter, req *http.Request) {
+	mostraFrammento(w, "anteprima-datazione", anteprimaDi(req.URL.Query().Get("datazione")))
+}
+
+func annoCaricamento(f *fotoPubblicata) int {
+	if t, err := time.Parse(time.RFC3339, f.Date); err == nil {
+		return t.Year()
+	}
+	return time.Now().Year()
 }
 
 // rimanda con un Location relativo: http.Redirect lo renderebbe assoluto, e dietro nginx

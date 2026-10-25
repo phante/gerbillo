@@ -67,3 +67,7 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .paginazione { display: flex; justify-content: space-between; gap: .5rem; margin-top: 1rem; }
 .naviga { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
 .flex-auto { flex: 1 1 auto; }
+.popup { position: relative; z-index: 10; margin-top: .5rem; padding: .75rem 1rem; background: #fff; border: 1px solid #bbb; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+.pulsante-piccolo { padding: .15rem .5rem; font-size: .85rem; }
+.suggerimento { background: #fff6bf; padding: .35rem .5rem; border-radius: 4px; }
+.anteprima-datazione:empty { display: none; }
