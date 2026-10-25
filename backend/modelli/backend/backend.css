@@ -93,3 +93,14 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .filtri-modulo { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0 1rem; }
 .filtri-modulo .campo { margin-top: .5rem; }
 .azioni-filtri { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; grid-column: 1 / -1; }
+.griglia .casella { position: absolute; top: .3rem; right: .3rem; width: 1.4rem; height: 1.4rem; accent-color: #333; }
+.griglia.in-selezione li { cursor: pointer; }
+.griglia li.scelta { outline: 3px solid #333; outline-offset: -3px; }
+.griglia li.scelta img { opacity: .8; }
+.barra-selezione {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem;
+    padding: .75rem 1rem; background: #fff; border-top: 2px solid #333; box-shadow: 0 -2px 8px rgba(0,0,0,.1);
+}
+.campo-blocco legend { padding: 0 .25rem; }
+fieldset.riquadro { min-width: 0; }
+.con-barra { padding-bottom: 8rem; }

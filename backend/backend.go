@@ -16,6 +16,14 @@ import (
 
 var modelliBackend = template.Must(template.New("").Funcs(template.FuncMap{
 	"icona": icona,
+	// dict passa più valori a un modello: {{template "x" (dict "a" 1 "b" 2)}}.
+	"dict": func(kv ...any) map[string]any {
+		m := map[string]any{}
+		for i := 0; i+1 < len(kv); i += 2 {
+			m[kv[i].(string)] = kv[i+1]
+		}
+		return m
+	},
 }).ParseFS(modelli, "modelli/backend/*.html"))
 
 // paginaBackend è il dato di ogni pagina del Backend: la barra in alto più il Corpo.
@@ -127,6 +135,8 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	mux.Handle("/admin/datazione", mod(datazione))
 	mux.Handle("/admin/suggerimenti/", mod(red.suggerimenti))
 	mux.Handle("/admin/punto", mod(punto))
+	mux.Handle("/admin/blocco", mod(red.blocco))
+	mux.Handle("/admin/blocco/", mod(red.blocco))
 	mux.Handle("/admin/operazioni", mod(red.paginaOperazioni))
 	mux.Handle("/admin/operazioni/", mod(red.paginaOperazioni))
 }

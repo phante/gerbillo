@@ -115,6 +115,8 @@ document.addEventListener("htmx:beforeSwap", function (e) {
       attribution: "Esri, Maxar, Earthstar Geographics" });
     var m = L.map(div, { layers: [osm], scrollWheelZoom: false });
     div.mappaPunto = m;
+    // La mappa può nascere nascosta (modifica in blocco): si ridisegna quando compare.
+    if (window.ResizeObserver) new ResizeObserver(function () { m.invalidateSize(); }).observe(div);
     L.control.layers({ Mappa: osm, Satellite: sat }).addTo(m);
     L.control.scale().addTo(m);
     if (ered) L.circleMarker(ered, { radius: 8, color: "#555", weight: 2, dashArray: "4 3", fillOpacity: 0.1 })
@@ -148,7 +150,7 @@ document.addEventListener("htmx:beforeSwap", function (e) {
     }
     campo.addEventListener("input", function () { clearTimeout(attesa); attesa = setTimeout(function () { leggi(true); }, 400); });
     var usa = div.parentNode.querySelector(".usa-diga");
-    if (usa) usa.addEventListener("click", function () {
+    if (usa && ered) usa.addEventListener("click", function () {
       campo.value = ""; togli(); leggi(false);
       campo.dispatchEvent(new Event("change", { bubbles: true }));
       m.setView(ered, 14);
@@ -164,3 +166,32 @@ document.addEventListener("htmx:beforeSwap", function (e) {
   else tutte(document);
   htmx.onLoad(tutte);
 })();
+
+// Selezione multipla nell'elenco (#50): «Seleziona» mette la griglia in modalità selezione.
+// La selezione resta cambiando pagina (sessionStorage, per filtro); «Seleziona tutte le N»
+// prende tutte le Foto del filtro, anche delle altre pagine. «Modifica…» apre la modifica
+// in blocco con l'elenco dei pid.
+document.addEventListener("alpine:init", function () {
+  Alpine.data("selezione", function (filtro, totale) {
+    var chiave = "gerbillo:selezione:" + filtro;
+    function leggi() { try { return JSON.parse(sessionStorage.getItem(chiave)) || {}; } catch (e) { return {}; } }
+    var s = leggi();
+    return {
+      modo: !!s.modo, tutte: !!s.tutte, scelte: s.scelte || [], totale: totale, filtro: filtro,
+      salva: function () {
+        try { sessionStorage.setItem(chiave, JSON.stringify({ modo: this.modo, tutte: this.tutte, scelte: this.scelte })); } catch (e) {}
+      },
+      get quante() { return this.tutte ? this.totale : this.scelte.length; },
+      scelta: function (pid) { return this.tutte || this.scelte.indexOf(pid) >= 0; },
+      cambia: function (pid) {
+        if (this.tutte) return;
+        var i = this.scelte.indexOf(pid);
+        if (i >= 0) this.scelte.splice(i, 1); else this.scelte.push(pid);
+        this.salva();
+      },
+      apri: function () { this.modo = true; this.salva(); },
+      tutteLe: function () { this.tutte = true; this.salva(); },
+      annulla: function () { this.modo = false; this.tutte = false; this.scelte = []; this.salva(); },
+    };
+  });
+});

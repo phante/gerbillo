@@ -25,11 +25,27 @@
   </form>
 </details>
 {{template "freschezza" .}}
-<p class="mt2 mb2"><b>{{.Totale}}</b> Foto{{if gt .Pagine 1}} · pagina {{.Pagina}} di {{.Pagine}}{{end}}</p>
-<ul class="griglia">{{range .Foto}}
-  <li><a class="link black-80" href="{{.Link}}"><img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-50">{{.Album}}</span>{{end}}</span></a></li>{{end}}
+<div x-data="selezione('{{.Filtro}}', {{.Totale}})" :class="modo && 'con-barra'">
+<div class="flex items-center gap2 mt2 mb2">
+  <p class="ma0 flex-auto"><b>{{.Totale}}</b> Foto{{if gt .Pagine 1}} · pagina {{.Pagina}} di {{.Pagine}}{{end}}</p>
+  {{if .Totale}}<button type="button" class="pulsante pulsante-secondario" x-show="!modo" @click="apri()">Seleziona</button>{{end}}
+</div>
+<ul class="griglia" :class="modo && 'in-selezione'">{{range .Foto}}
+  <li :class="scelta({{.Pid}}) && modo && 'scelta'"><a class="link black-80" href="{{.Link}}" @click="if (modo) { $event.preventDefault(); cambia({{.Pid}}) }">
+    <img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-50">{{.Album}}</span>{{end}}</span></a>
+    <input type="checkbox" class="casella" aria-label="Seleziona la Foto {{.Pid}}" x-show="modo" x-cloak :checked="scelta({{.Pid}})" :disabled="tutte" @change="cambia({{.Pid}})"></li>{{end}}
 </ul>
 {{template "paginazione" .}}
+<form class="barra-selezione" x-show="modo" x-cloak method="post" action="blocco/">
+  <input type="hidden" name="filtro" :value="filtro">
+  <input type="hidden" name="tutte" :value="tutte ? '1' : ''">
+  <input type="hidden" name="pid" :value="scelte.join(',')">
+  <span><b x-text="quante"></b> selezionate</span>
+  <button type="button" class="pulsante pulsante-secondario" x-show="!tutte" @click="tutteLe()">Seleziona tutte le {{.Totale}}</button>
+  <button class="pulsante" :disabled="quante === 0" @click="salva()">Modifica…</button>
+  <button type="button" class="pulsante pulsante-secondario" @click="annulla()">Annulla</button>
+</form>
+</div>
 {{end}}
 {{template "piede" .}}{{end}}
 

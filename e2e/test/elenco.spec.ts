@@ -32,6 +32,8 @@ test('filtro da-collegare, scheda e Foto successiva', async ({ page }) => {
 
 // Un salvataggio che toglie da-collegare fa uscire la Foto dall'elenco a fine build, senza ricaricare a mano.
 test('l\'elenco si aggiorna da solo a fine build', async ({ page }) => {
+  // Un build lasciato da un altro test cambierebbe il conteggio: si aspetta che finisca.
+  await expect.poll(async () => (await page.request.get('admin/stato.json').then((r) => r.json())).build.inCorso, { timeout: 60_000 }).toBe(false);
   await page.goto('admin/foto/?s=da-collegare');
   const totale = page.locator('main p b').first();
   const n = Number(await totale.innerText());

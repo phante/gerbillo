@@ -181,19 +181,52 @@ func (r *redazione) statoBuild() string {
 
 // fotoDaModificare è la Foto pubblicata e quella importata, con cui si confronta.
 func (r *redazione) fotoDaModificare(pid int) (pub, imp *fotoPubblicata, idx []entita, err error) {
-	var album albumCoppermine
-	st, idx, err := leggiStrati(r.contenuti, r.indice, nuovoLivello(r.contenuti, ""), &album)
+	st, idx, err := r.strati()
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	p := filepath.Join(r.contenuti, "importazione", "foto", strconv.Itoa(pid)+".yaml")
+	pub, imp, err = st.fotoDaModificare(r.contenuti, pid)
+	return pub, imp, idx, err
+}
+
+// strati sono i livelli sopra l'Importazione, letti una volta per salvataggio: una modifica
+// in blocco (#50) li usa per tutte le sue Foto.
+func (r *redazione) strati() (*strati, []entita, error) {
+	var album albumCoppermine
+	return leggiStrati(r.contenuti, r.indice, nuovoLivello(r.contenuti, ""), &album)
+}
+
+func (st *strati) fotoDaModificare(contenuti string, pid int) (pub, imp *fotoPubblicata, err error) {
+	p := filepath.Join(contenuti, "importazione", "foto", strconv.Itoa(pid)+".yaml")
 	if imp, err = st.importata(p); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 	if pub, err = st.importata(p); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
-	return pub, imp, idx, st.arricchisci(pub)
+	return pub, imp, st.arricchisci(pub)
+}
+
+// fileNuovo è il file di arricchimento di una Foto dopo una modifica, non ancora scritto.
+type fileNuovo struct {
+	pid            int
+	rel            string // relativo al Repository dei contenuti
+	vecchio, nuovo []byte // nuovo vuoto: il file si toglie
+	cambiati       []string
+}
+
+func (f fileNuovo) scrivi(contenuti string) error {
+	p := filepath.Join(contenuti, f.rel)
+	if len(f.nuovo) == 0 {
+		if err := os.Remove(p); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(p, f.nuovo, 0o644)
 }
 
 // salva scrive i valori del modulo e ne fa il commit con autore u. Restituisce i campi
@@ -201,19 +234,46 @@ func (r *redazione) fotoDaModificare(pid int) (pub, imp *fotoPubblicata, idx []e
 func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]string, error) {
 	r.salvataggio.Lock()
 	defer r.salvataggio.Unlock()
-	pub, imp, idx, err := r.fotoDaModificare(pid)
+	st, idx, err := r.strati()
 	if err != nil {
 		return nil, err
 	}
+	f, err := r.prepara(st, idx, pid, func(map[string]string) map[string]string { return modulo })
+	if err != nil || len(f.cambiati) == 0 {
+		return nil, err
+	}
+	if err := f.scrivi(r.contenuti); err != nil {
+		return nil, err
+	}
+	msg := fmt.Sprintf("foto %d: %s\n\nModifica diretta dal Backend (#43).", pid, strings.Join(f.cambiati, ", "))
+	if err := registra(r.contenuti, f.rel, msg, autoreCommit(u)); err != nil {
+		return nil, err
+	}
+	return f.cambiati, nil
+}
+
+// prepara calcola il file di arricchimento di pid con i valori che modifica ricava da quelli
+// pubblicati: in arricchimento/foto/<pid>.yaml va solo ciò che differisce dall'Importazione.
+// Nessun campo cambiato vuol dire nessun file da scrivere.
+func (r *redazione) prepara(st *strati, idx []entita, pid int, modifica func(attuali map[string]string) map[string]string) (fileNuovo, error) {
+	pub, imp, err := st.fotoDaModificare(r.contenuti, pid)
+	if err != nil {
+		return fileNuovo{}, err
+	}
+	attuali := map[string]string{}
+	for _, c := range campiEditoriali {
+		attuali[c.chiave] = c.valore(pub)
+	}
+	modulo := modifica(attuali)
 	rel := filepath.Join("arricchimento", fileFoto(pid))
 	p := filepath.Join(r.contenuti, rel)
 	vecchio, err := os.ReadFile(p)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return nil, err
+		return fileNuovo{}, err
 	}
 	arr := map[string]any{}
 	if err := yaml.Unmarshal(vecchio, &arr); err != nil {
-		return nil, fmt.Errorf("%s: %w", rel, err)
+		return fileNuovo{}, fmt.Errorf("%s: %w", rel, err)
 	}
 	if arr == nil {
 		arr = map[string]any{}
@@ -223,13 +283,13 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 		v := c.normalizza(modulo[c.chiave])
 		if c.chiave == "datazione" {
 			if v, err = normalizzaDatazione(v); err != nil {
-				return nil, err
+				return fileNuovo{}, err
 			}
 		}
 		if c.chiave == "geolocation.coords" && v != "" {
 			lat, lon, err := interpretaPunto(v)
 			if err != nil {
-				return nil, err
+				return fileNuovo{}, err
 			}
 			v = testoPunto(lat, lon)
 		}
@@ -244,14 +304,14 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 		if c.chiave == "categories" && r.voc != nil {
 			for _, k := range strings.Split(v, "\n") {
 				if k != "" && !slices.Contains(r.voc.Categories, k) {
-					return nil, fmt.Errorf("Categoria %q non è nel vocabolario (dati/vocabolario.yaml)", k)
+					return fileNuovo{}, fmt.Errorf("Categoria %q non è nel vocabolario (dati/vocabolario.yaml)", k)
 				}
 			}
 		}
 		if c.chiave == "slug" {
 			for _, s := range strings.Split(v, "\n") {
 				if s != "" && !slices.ContainsFunc(idx, func(e entita) bool { return e.Slug == s }) {
-					return nil, fmt.Errorf("slug %q non è nell'Indice delle Entità", s)
+					return fileNuovo{}, fmt.Errorf("slug %q non è nell'Indice delle Entità", s)
 				}
 			}
 		}
@@ -264,36 +324,24 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 			y = nil // coords: null
 		case v != "":
 			if y, err = c.yaml(v); err != nil {
-				return nil, err
+				return fileNuovo{}, err
 			}
 		}
 		metti(arr, percorso, y)
 	}
 	if len(cambiati) == 0 {
-		return nil, nil // nemmeno si riscrive il file
+		return fileNuovo{pid: pid, rel: rel}, nil // nemmeno si riscrive il file
 	}
 	var nuovo []byte
 	if len(arr) > 0 {
 		if nuovo, err = yaml.Marshal(arr); err != nil {
-			return nil, err
+			return fileNuovo{}, err
 		}
 	}
 	if bytes.Equal(nuovo, vecchio) {
-		return nil, nil
+		return fileNuovo{pid: pid, rel: rel}, nil
 	}
-	if len(nuovo) == 0 {
-		err = os.Remove(p)
-	} else if err = os.MkdirAll(filepath.Dir(p), 0o755); err == nil {
-		err = os.WriteFile(p, nuovo, 0o644)
-	}
-	if err != nil {
-		return nil, err
-	}
-	msg := fmt.Sprintf("foto %d: %s\n\nModifica diretta dal Backend (#43).", pid, strings.Join(cambiati, ", "))
-	if err := registra(r.contenuti, rel, msg, autoreCommit(u)); err != nil {
-		return nil, err
-	}
-	return cambiati, nil
+	return fileNuovo{pid: pid, rel: rel, vecchio: vecchio, nuovo: nuovo, cambiati: cambiati}, nil
 }
 
 // autoreCommit è l'autore git di una modifica: il nome dell'utente del forum, con un
@@ -528,7 +576,12 @@ func anteprimaDi(v string) anteprimaDatazione {
 
 // datazione risponde a /admin/datazione?datazione=…, che il campo chiede mentre si scrive.
 func datazione(w http.ResponseWriter, req *http.Request) {
-	mostraFrammento(w, "anteprima-datazione", anteprimaDi(req.URL.Query().Get("datazione")))
+	// Il campo si chiama datazione nella scheda, valore.datazione nella modifica in blocco.
+	v := req.URL.Query().Get("datazione")
+	for _, x := range req.URL.Query() {
+		v = cmp.Or(v, x[0])
+	}
+	mostraFrammento(w, "anteprima-datazione", anteprimaDi(v))
 }
 
 func annoCaricamento(f *fotoPubblicata) int {

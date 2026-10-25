@@ -168,6 +168,7 @@ type corpoElencoBackend struct {
 	Ordinamenti   []opzioneFaccetta
 	Attivi        int
 	Sistemare     []string // i «Da sistemare» attivi, da rimandare con il modulo
+	Filtro        string   // la query del filtro senza la pagina: la selezione vale per lui (#50)
 }
 
 func (r *redazione) avvisoBuild() string {
@@ -187,7 +188,8 @@ func (r *redazione) elencoFoto(w http.ResponseWriter, req *http.Request) {
 	f := leggiFiltro(req.URL.Query())
 	trovate := f.applica(idx)
 	c := corpoElencoBackend{Filtri: f.vociDaSistemare(idx), Totale: len(trovate), Query: f.query(),
-		Faccette: f.faccette(idx, r.vociNote().testoSlug), Testo: f.testo, Ordine: cmp.Or(f.ordine, "album"), Attivi: f.attivi(), Sistemare: f.sistemare}
+		Faccette: f.faccette(idx, r.vociNote().testoSlug), Testo: f.testo, Ordine: cmp.Or(f.ordine, "album"), Attivi: f.attivi(), Sistemare: f.sistemare,
+		Filtro: f.valoriURL().Encode()}
 	for _, o := range ordinamenti {
 		c.Ordinamenti = append(c.Ordinamenti, opzioneFaccetta{Valore: o.chiave, Testo: o.nome})
 	}

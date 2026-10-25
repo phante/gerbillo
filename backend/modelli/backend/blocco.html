@@ -1,0 +1,71 @@
+{{define "blocco"}}{{template "testa" .}}
+{{with .Corpo}}
+<p class="mt0"><a class="link blue" href="{{.Elenco}}">← Elenco</a></p>
+<form id="modulo-blocco" class="modulo" method="post" hx-post="blocco/anteprima" hx-target="#anteprima-blocco" hx-swap="innerHTML">
+  <input type="hidden" name="pid" value="{{.Pid}}">
+  <p class="nota mt0">Le liste si cambiano voce per voce: aggiungi e togli, anche insieme. Titolo, descrizione e testo alternativo non si cambiano in blocco.</p>
+  {{$c := .}}{{range .Campi}}<fieldset class="riquadro campo-blocco">
+    <legend class="b">{{.Etichetta}}</legend>
+    {{if .Lista}}
+      <label for="aggiungi-{{.Chiave}}">Aggiungi</label>
+      {{if eq .Chiave "categories"}}{{template "categorie-blocco" (dict "nome" "aggiungi" "gruppi" $c.Gruppi)}}{{else}}
+      <select id="aggiungi-{{.Chiave}}" name="aggiungi.{{.Chiave}}" multiple data-chip="{{.Chiave}}"></select>{{end}}
+      <label for="togli-{{.Chiave}}" class="mt2">Togli</label>
+      {{if eq .Chiave "categories"}}{{template "categorie-blocco" (dict "nome" "togli" "gruppi" $c.Gruppi)}}{{else}}
+      <select id="togli-{{.Chiave}}" name="togli.{{.Chiave}}" multiple data-chip="{{.Chiave}}"></select>{{end}}
+      {{if eq .Chiave "tags"}}{{with $c.TagInterni}}<p class="nota">Tag interni:
+        {{range $i, $t := .}}{{if $i}} · {{end}}<span class="tag-interno">{{$t.Nome}}</span> {{$t.Descrizione}}{{end}}</p>{{end}}{{end}}
+    {{else}}
+      <div x-data="{ modo: '' }">
+        <label for="modo-{{.Chiave}}">Cosa fare</label>
+        <select id="modo-{{.Chiave}}" name="modo.{{.Chiave}}" x-model="modo">
+          <option value="">non cambiare</option><option value="imposta">imposta</option><option value="svuota">svuota</option>
+        </select>
+        <div x-show="modo === 'imposta'" x-cloak class="mt2">
+          <label for="valore-{{.Chiave}}">Valore</label>
+          <input type="text" id="valore-{{.Chiave}}" name="valore.{{.Chiave}}" autocomplete="off"
+            {{if eq .Chiave "datazione"}}hx-get="datazione" hx-trigger="input changed delay:300ms" hx-target="next .anteprima-datazione" hx-swap="outerHTML" placeholder="es. 2009-06, maggio 2006, anni '60"{{end}}
+            {{if eq .Chiave "geolocation.coords"}}placeholder="46.2905, 8.2987 · gradi e minuti · link di Google Maps"{{end}}>
+          {{if eq .Chiave "datazione"}}<p class="anteprima-datazione nota"></p>{{end}}
+          {{if eq .Chiave "geolocation.coords"}}<p class="nota esito-punto" aria-live="polite"></p>
+            <div class="mappa-punto" data-campo="valore-{{.Chiave}}"></div>{{end}}
+        </div>
+      </div>
+    {{end}}
+  </fieldset>{{end}}
+  <div class="azioni">
+    <button class="pulsante">Anteprima</button>
+    <span class="nota htmx-indicator">Calcolo…</span>
+  </div>
+</form>
+<div id="anteprima-blocco" aria-live="polite"></div>
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{define "categorie-blocco"}}<select id="{{.nome}}-categories" name="{{.nome}}.categories" multiple data-chip="categories">
+  {{range .gruppi}}<optgroup label="{{.Nome}}">{{range .Opzioni}}<option value="{{.Valore}}">{{.Testo}}</option>{{end}}</optgroup>{{end}}
+</select>{{end}}
+
+{{/* L'anteprima fissa i pid: la conferma rimanda lo stesso elenco e la stessa modifica. */}}
+{{define "anteprima-blocco"}}<section class="riquadro anteprima-blocco">
+  {{if .Esito}}<p class="esito ok" role="status">{{.Esito}} <a class="link" href="operazioni">Operazioni recenti</a> (<code>{{.Operazione}}</code>)</p>
+  {{else}}
+  <h2 class="f5 mt0">Anteprima</h2>
+  {{if .Descrizione}}<ul class="mt0">{{range .Descrizione}}<li>{{.}}</li>{{end}}</ul>{{end}}
+  {{if or .Cambiano .APosto}}<p class="b">Cambieranno {{.Cambiano}} Foto su {{.N}}{{if .APosto}}, {{.APosto}} sono già a posto{{end}}.</p>{{end}}
+  {{with .PerCampo}}<p>{{range $i, $c := .}}{{if $i}} · {{end}}{{index $c 0}}: {{index $c 1}}{{end}}</p>{{end}}
+  {{with .Fotine}}<details><summary class="pointer">Le Foto che cambiano</summary>
+    <p>{{range $i, $p := .}}{{if $i}}, {{end}}<a class="link blue" href="foto/{{$p}}">{{$p}}</a>{{end}}</p></details>{{end}}
+  {{with .Errori}}<div class="esito errore" role="alert"><p class="ma0 b">Da correggere prima di confermare:</p>
+    <ul class="mb0">{{range .}}<li>{{.}}</li>{{end}}</ul></div>{{end}}
+  {{if .ErroreConferma}}<p class="esito errore" role="alert">{{.ErroreConferma}}</p>{{end}}
+  {{if and .Cambiano (not .Errori)}}<form hx-post="blocco/applica" hx-target="#anteprima-blocco" hx-swap="innerHTML" class="mt3">
+    <input type="hidden" name="pid" value="{{.Pid}}">
+    {{range $k, $vs := .Campi}}{{range $vs}}<input type="hidden" name="{{$k}}" value="{{.}}">{{end}}{{end}}
+    {{if .Soglia}}<label for="conferma">Sono {{.N}} Foto: per confermare scrivi {{.N}}</label>
+      <input type="text" id="conferma" name="conferma" inputmode="numeric" autocomplete="off">{{end}}
+    <button class="pulsante mt2">Conferma su {{.Cambiano}} Foto</button>
+    <span class="nota htmx-indicator">Salvataggio…</span>
+  </form>{{end}}
+  {{end}}
+</section>{{end}}
