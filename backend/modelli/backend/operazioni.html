@@ -1,0 +1,22 @@
+{{define "operazioni"}}{{template "testa" .}}
+{{with .Corpo}}
+{{if .Errore}}<p class="esito errore">{{.Errore}}</p>{{end}}
+<p class="nota mt0">Le modifiche fatte dal Backend, dalla più recente. «Annulla» riporta le Foto allo stato di prima, con un commit nuovo.</p>
+{{range .Operazioni}}{{template "operazione" .}}{{else}}<p>Nessuna operazione.</p>{{end}}
+{{end}}
+{{template "piede" .}}{{end}}
+
+{{define "operazione"}}<article class="riquadro operazione" id="op-{{.Breve}}">
+  <header class="flex flex-wrap items-baseline gap2">
+    <b>{{.Tipo}}</b>{{if eq .Tipo "In blocco"}} <span>{{len .Pid}} Foto</span>{{end}}
+    <span class="nota">{{.Quando}} · {{.Autore}} · <code>{{.Breve}}</code></span>
+  </header>
+  {{if .Campi}}<p class="mv1">Campi: {{.Campi}}</p>{{end}}
+  <p class="mv1">{{range $i, $p := .Mostrate}}{{if $i}}, {{end}}<a class="link blue" href="foto/{{$p}}">{{$p}}</a>{{end}}{{if .Altre}} e altre {{.Altre}}{{end}}</p>
+  {{if .AnnullataDa}}<p class="nota mv1">Annullata da <code>{{slice .AnnullataDa 0 7}}</code>.</p>{{end}}
+  {{if .Esito}}<p class="esito ok" role="status">{{.Esito}}</p>{{end}}
+  {{if .Errore}}<div class="esito errore" role="alert"><p class="ma0">{{.Errore}}</p>
+    {{with .CambiateDopo}}<p class="ma0 mt1">{{range $i, $p := .}}{{if $i}}, {{end}}<a class="link" href="foto/{{$p}}">{{$p}}</a>{{end}}</p>{{end}}</div>{{end}}
+  {{if .Annullabile}}<button class="pulsante pulsante-secondario mt2" hx-post="operazioni/{{.Hash}}/annulla" hx-target="closest article" hx-swap="outerHTML"
+    hx-confirm="Annullare questa operazione su {{len .Pid}} Foto?">Annulla</button>{{end}}
+</article>{{end}}

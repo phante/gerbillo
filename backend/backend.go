@@ -127,4 +127,6 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	mux.Handle("/admin/datazione", mod(datazione))
 	mux.Handle("/admin/suggerimenti/", mod(red.suggerimenti))
 	mux.Handle("/admin/punto", mod(punto))
+	mux.Handle("/admin/operazioni", mod(red.paginaOperazioni))
+	mux.Handle("/admin/operazioni/", mod(red.paginaOperazioni))
 }
