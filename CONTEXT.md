@@ -32,15 +32,19 @@ La licenza sotto cui ogni Foto è pubblicata, mostrata nei suoi metadati. Se chi
 ### Classificazione
 
 **Entità**:
-Un oggetto che ha (o avrà) una pagina nel sito principale con uno Slug stabile: una diga, una centrale, un'opera di presa con pagina, un reportage. Una Foto è collegata alle Entità che ritrae tramite il campo `slug` (ADR 0013).
+Un oggetto che ha (o avrà) una pagina nel sito principale con uno Slug stabile: una diga, una centrale, un'opera di presa con pagina, un reportage. Una Foto è collegata alle Entità che ritrae tramite il campo `slug` (ADR 0013). Chi carica sceglie l'Entità per nome, tipo e comune («Cosa ritrae?»), mai per Slug.
 _Avoid_: oggetto, nodo, album
+
+**Entità da censire**:
+Un'Entità che non ha ancora una pagina nel sito principale, e quindi nemmeno uno Slug: una diga, una centrale o un'altra opera. Ha un id numerico stabile, un nome, un tipo, un Punto geografico facoltativo e stato, regione e provincia. La crea chi carica quando non trova l'opera; le Foto la indicano con `da_censire`. Quando nel sito nasce la pagina, un Moderatore la collega allo Slug e tutte le sue Foto lo prendono; l'Entità da censire resta, come «diventata» quello Slug (ADR 0018).
+_Avoid_: opera da censire, segnalazione, Entità provvisoria
 
 **Impianto**:
 Un insieme di più Entità che funzionano insieme (es. diga, centrale e opere di presa di uno stesso sistema). È un concetto del Sito principale, che in futuro lo ricaverà dalle schede di dighe e centrali (`dighe:`, `centrali:`); oggi vi è identificato in modo non standardizzato (tag o id di una mappa, che non coincide sempre con un Impianto). Nella gallery non è modellato: un insieme di Entità si esprime con un Tag, senza prefisso (#3).
 _Avoid_: complesso, sistema, campo `impianto`
 
 **Slug**:
-Il percorso stabile `sezione/nome` con cui il sito principale identifica una pagina (es. `dighe/agaro`, `centrali/goglio-baceno-vb`).
+Il percorso stabile `sezione/nome` con cui il sito principale identifica una pagina (es. `dighe/agaro`, `centrali/goglio-baceno-vb`). È un riferimento tecnico: lo scrive il sistema quando si sceglie un'Entità, e chi carica non lo vede.
 
 **Attributo**:
 Una proprietà di una Foto che non è un collegamento a un'Entità: Tag, Categoria, Datazione, Autore, Fonte, Formato, Punto geografico.

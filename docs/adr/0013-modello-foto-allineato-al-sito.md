@@ -47,3 +47,5 @@ altezza: 1153
 - I valori dei tag del sito oggi sono pochi e disordinati: la gallery li eredita dove esistono e aiuta a sistemarli.
 - Lo spostamento di una pagina nel sito rompe i riferimenti: il build lo rileva contro l'Indice delle Entità.
 - Sinergia con il sito, ma la gallery non si blocca ad aspettarlo: dove il sito non ha una pagina o un valore, la Foto resta senza `slug` o usa un valore proprio di `categories`, e si collega quando il sito lo avrà (#1).
+
+Integrato il 25/10/2026: un'opera che non ha ancora una pagina nel sito è un'Entità da censire, nel campo `da_censire`, accanto a `slug` (ADR 0018). `slug` resta validato contro l'Indice delle Entità.

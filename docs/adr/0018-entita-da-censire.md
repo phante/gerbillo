@@ -1,0 +1,25 @@
+# Entità da censire
+
+Deciso il 25/10/2026, in un grill nato dalla prova dell'anteprima: come cataloga una Foto chi non conosce il sito, e cosa succede se l'opera non ha ancora una pagina.
+
+Lo Slug è un riferimento tecnico, non il modo di catalogare. Chi carica pensa «la diga di Pontesei sopra Forno di Zoldo», non `dighe/pontesei`. E molte opere non hanno una pagina: l'Importazione ha già 293 album di Coppermine non collegati, con 7431 Foto, spesso intitolati a opere senza pagina.
+
+- **«Cosa ritrae?».** Chi carica sceglie l'opera per nome, tipo e comune, o tra le più vicine al GPS (#29); il sistema scrive lo Slug, che non si vede mai. Una scelta dall'elenco vale subito. Se l'opera non c'è, chi carica crea un'Entità da censire.
+- **Entità da censire.** È un'Entità senza pagina: CONTEXT non ha bisogno di un concetto nuovo, perché un'Entità «ha o avrà» una pagina. Ha un id numerico progressivo e stabile, un nome, un tipo (diga, centrale, altra opera; niente reportage, che non è un luogo da censire), un Punto geografico facoltativo e stato, regione e provincia.
+- **Dove vive.** Nel Repository dei contenuti, un YAML per Entità da censire (`entita/<id>.yaml`): la Gallery la pubblica, i commit la registrano, Annulla (#59) la riporta indietro. La Foto la indica Foto per Foto, con `da_censire: [<id>]` accanto a `slug`, anche quando la si assegna a un album intero: `mappature.yaml` resta solo a mano (#50). Una Foto può avere entrambi i campi.
+- **Doppioni.** Chiunque carica può creare un'Entità da censire; il modulo propone prima quelle simili per nome e per distanza. I Moderatori le rinominano e le uniscono, con un commit solo.
+- **Pubblicazione.** Le Foto si pubblicano subito: la gallery non aspetta il sito (ADR 0013). Una Foto con un'Entità da censire perde `da-collegare`, perché si sa cosa ritrae; nel Backend ha il filtro «in attesa del sito».
+- **Gallery pubblica.** Ogni Entità da censire ha la sua pagina, `/da-censire/<id>/`, segnata «non ancora sul sito». Sta nella ricerca, nell'albero per regione e nella Bussola, solo sotto «Dove». Dopo il collegamento la pagina rimanda a quella dell'Entità (ADR 0005).
+- **Il Sito principale.** Il Backend non scrive nel sito (ADR 0002): Gerbillo pubblica l'elenco delle Entità da censire, come pagina del Backend e come JSON accanto all'Indice delle Foto, con nome, tipo, punto e numero di Foto. Quando nell'Indice delle Entità compare una pagina simile per nome e per distanza, il Backend la propone; il Moderatore conferma, e tutte le Foto prendono lo Slug con un commit solo. L'Entità da censire resta, come «diventata» quello Slug.
+- **Album non collegati.** Diventano Entità da censire con «crea dall'album», uno per uno o in blocco, deciso da un Moderatore: molti titoli non sono nomi di opere («Varie», gli album personali).
+- **Aree amministrative.** Stato, regione e provincia li propone Nominatim (OpenStreetMap) dal Punto geografico, quando si crea l'Entità da censire o se ne sposta il punto: dal server, mai dal browser né dal build, con una coda di al massimo una richiesta al secondo e uno User-Agent con il contatto, come chiede la policy d'uso. Nominatim aiuta a compilare ma non è la fonte: il valore a mano vince, e spostando il punto i valori nuovi si propongono senza sovrascrivere. Se Nominatim non risponde, i campi restano vuoti e c'è «Ricalcola dal punto»: il caricamento non dipende da un servizio esterno. I nomi si allineano a quelli dell'Indice delle Entità, senza «Provincia di» o «Città metropolitana di»; come ottenerli puliti (codici ISO 3166-2 o nomi senza prefissi) si decide con la prova di #60.
+- **Attribuzione.** Una riga per OpenStreetMap e Nominatim nel footer della Gallery pubblica e accanto ai campi nel Backend. La pagina Licenze del Sito principale si aggiorna a parte.
+- **Categorie per chi carica.** Facoltative, da etichette leggibili: ogni voce del vocabolario diventa `{valore, etichetta}` in `dati/vocabolario.yaml`.
+
+## Considered Options
+
+- **Slug provvisorio**: accettare uno Slug non ancora nell'Indice, che il build ignora finché la pagina non c'è. Scartato: chiede a chi carica di conoscere il sito e di indovinare lo Slug futuro.
+- **Nome libero sulla singola Foto**: scartato. I Moderatori dovrebbero raggruppare a mano lo stesso nome scritto in modi diversi, e il secondo utente non troverebbe l'opera già segnalata.
+- **Foto in coda finché l'opera non ha una pagina**: scartata. La coda serve a controllare i contenuti, non la classificazione, e la pagina può non arrivare mai.
+- **Aree amministrative dall'Entità del sito più vicina**: scartata. Vicino non vuol dire nella stessa area: un crinale fa confine, e molte centrali sono in pianura, lontane dalle dighe.
+- **Confini amministrativi nel binario**: scartati. Pesano qualche MB e vanno aggiornati a ogni riforma delle province.

@@ -98,7 +98,7 @@ func adminSenzaRedazione(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	mostraPagina(w, r, "home", "Backend", corpoHome{})
+	mostraPagina(w, r, "home", "Gerbillo", corpoHome{})
 }
 
 // staticiSenzaEstensione serve /statico/stile come /statico/stile.css (build -anteprima).

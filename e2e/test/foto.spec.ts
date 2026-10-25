@@ -5,6 +5,10 @@ import { pronta } from './pronta';
 test('salva un campo della Foto senza ricaricare la pagina', async ({ page }) => {
   await page.goto('admin/');
   await expect(page.locator('.utente')).toHaveText('admin');
+  // Il nome è Gerbillo; branch e commit dell'anteprima stanno in fondo, come nella Gallery.
+  await expect(page.locator('.marchio')).toHaveText('Gerbillo');
+  await expect(page).toHaveTitle('Gerbillo · Gerbillo');
+  await expect(page.locator('footer.piede-anteprima')).toContainText('[ANTEPRIMA]');
   await page.locator('.barra').getByLabel('Cerca una Foto').fill('8');
   await page.locator('.barra').getByLabel('Cerca una Foto').press('Enter');
   await expect(page).toHaveURL(/admin\/foto\/8$/);
