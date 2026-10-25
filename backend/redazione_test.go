@@ -226,3 +226,34 @@ func TestSalvaDatazione(t *testing.T) {
 		t.Errorf("anteprima: %s", b)
 	}
 }
+
+// #52: le Categorie si scelgono dal vocabolario; fuori dal vocabolario non si salvano.
+func TestSalvaCategorie(t *testing.T) {
+	r := redazioneProva(t)
+	r.usaVocabolario(vocabolario{Categories: []string{"documenti", "tecnica/turbine/pelton"},
+		TagsInterni: []tagInterno{{"da-collegare", "manca lo Slug"}}})
+	admin := &utente{ID: 2, Nome: "admin"}
+	m := moduloDi(t, r, 4)
+	m["categories"] = "tecnica/turbine/inventata"
+	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "vocabolario") {
+		t.Errorf("Categoria fuori dal vocabolario: %v", err)
+	}
+	// Dal modulo le Categorie arrivano come più valori dello stesso campo.
+	h := soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)
+	v := url.Values{}
+	for k, x := range moduloDi(t, r, 4) {
+		v.Set(k, x)
+	}
+	v["categories"] = []string{"documenti", "tecnica/turbine/pelton"}
+	req := httptest.NewRequest("POST", "/admin/foto/4", strings.NewReader(v.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	h(w, req)
+	b := w.Body.String()
+	for _, atteso := range []string{"Salvato: categories", `<optgroup label="tecnica">`, `<option value="tecnica/turbine/pelton" selected>turbine › pelton</option>`,
+		`<span class="tag-interno">da-collegare</span> manca lo Slug`} {
+		if !strings.Contains(b, atteso) {
+			t.Errorf("scheda senza %q", atteso)
+		}
+	}
+}

@@ -100,6 +100,8 @@ type redazione struct {
 	fileIndice, semeIndice string
 	elenco                 atomic.Pointer[indiceRedazione]
 
+	voc *vocabolario // nil: le Categorie non si controllano (nessun vocabolario nel seme)
+
 	mu              sync.Mutex
 	inCorso, ancora bool
 	ultimo          *esitoBuild // nil finché non finisce il primo build
@@ -111,6 +113,13 @@ type esitoBuild struct {
 	Fine     time.Time
 	Durata   time.Duration
 	Errore   string
+}
+
+func (r *redazione) usaVocabolario(voc vocabolario) {
+	r.voc = &voc
+	for _, t := range voc.TagsInterni {
+		descrizioniTagInterni[t.Nome] = t.Descrizione
+	}
 }
 
 // richiediBuild lancia un build in background. Se ne gira già uno, ne segna un altro da
@@ -224,6 +233,13 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 			togli(arr, percorso) // il valore importato non si scrive
 			continue
 		}
+		if c.chiave == "categories" && r.voc != nil {
+			for _, k := range strings.Split(v, "\n") {
+				if k != "" && !slices.Contains(r.voc.Categories, k) {
+					return nil, fmt.Errorf("Categoria %q non è nel vocabolario (dati/vocabolario.yaml)", k)
+				}
+			}
+		}
 		if c.chiave == "slug" {
 			for _, s := range strings.Split(v, "\n") {
 				if s != "" && !slices.ContainsFunc(idx, func(e entita) bool { return e.Slug == s }) {
@@ -310,6 +326,45 @@ type voceModulo struct {
 	Diverso                              bool
 	Anteprima                            anteprimaDatazione // solo per la Datazione
 	User3, User3EDTF                     string             // idem: il suggerimento da Coppermine
+	Gruppi                               []gruppoCategorie  // solo per le Categorie, dal vocabolario
+	TagInterni                           []tagInterno       // solo per i Tag: l'aiuto accanto
+}
+
+// gruppoCategorie sono le Categorie del vocabolario con lo stesso primo pezzo di percorso.
+type gruppoCategorie struct {
+	Nome    string
+	Opzioni []opzione
+}
+
+type opzione struct {
+	Valore, Testo string
+	Scelta        bool
+}
+
+// gruppiCategorie raggruppa il vocabolario per percorso; le Categorie scelte che non ci
+// sono restano visibili, così si possono togliere.
+func gruppiCategorie(voc *vocabolario, scelte []string) []gruppoCategorie {
+	var g []gruppoCategorie
+	aggiungi := func(gruppo, valore, testo string) {
+		if len(g) == 0 || g[len(g)-1].Nome != gruppo {
+			g = append(g, gruppoCategorie{Nome: gruppo})
+		}
+		o := &g[len(g)-1].Opzioni
+		*o = append(*o, opzione{valore, testo, slices.Contains(scelte, valore)})
+	}
+	for _, c := range voc.Categories {
+		primo, resto, _ := strings.Cut(c, "/")
+		if resto == "" {
+			resto = primo
+		}
+		aggiungi(primo, c, strings.ReplaceAll(resto, "/", " › "))
+	}
+	for _, c := range scelte {
+		if c != "" && !slices.Contains(voc.Categories, c) {
+			aggiungi("fuori dal vocabolario", c, c)
+		}
+	}
+	return g
 }
 
 // corpoFotoBackend è la scheda di una Foto: il modulo e l'esito dell'ultimo salvataggio.
@@ -360,7 +415,8 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
 		req.ParseForm()
 		for _, k := range campiEditoriali {
-			modulo[k.chiave] = req.PostForm.Get(k.chiave)
+			// Le liste arrivano come più valori (select multiple, chip) o come righe di un testo.
+			modulo[k.chiave] = strings.Join(req.PostForm[k.chiave], "\n")
 		}
 		cambiati, err := r.salva(pid, modulo, utenteDi(req))
 		switch {
@@ -390,6 +446,12 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		}
 		vm := voceModulo{Chiave: k.chiave, Etichetta: k.etichetta, Valore: v, Importato: k.valore(imp),
 			Righe: k.righe, Diverso: k.valore(pub) != k.valore(imp)}
+		if k.chiave == "categories" && r.voc != nil {
+			vm.Gruppi = gruppiCategorie(r.voc, strings.Split(v, "\n"))
+		}
+		if k.chiave == "tags" && r.voc != nil {
+			vm.TagInterni = r.voc.TagsInterni
+		}
 		if k.chiave == "datazione" {
 			vm.Anteprima = anteprimaDi(v)
 			if pub.Datazione == "" && strings.TrimSpace(pub.Coppermine.Data) != "" {
@@ -515,6 +577,11 @@ func redazioneAnteprima(seme, contenuti, dist, modifiche, indiceRed string) (*re
 		fileIndice: indiceRed, semeIndice: filepath.Join(seme, "redazione.json")}
 	if err := r.caricaIndice(); err != nil {
 		log.Printf("indice della redazione: %v", err)
+	}
+	if voc, err := leggiVocabolario(filepath.Join(seme, "vocabolario.yaml")); err != nil {
+		log.Printf("vocabolario: %v; le Categorie non si controllano", err)
+	} else {
+		r.usaVocabolario(voc)
 	}
 	r.dopoBuild = func() {
 		if err := r.caricaIndice(); err != nil {

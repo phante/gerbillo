@@ -57,7 +57,7 @@ type geolocFoto struct {
 }
 
 // tagInterni sono promemoria di lavoro, mai mostrati nella Gallery pubblica.
-// Gli stessi di tags_interni in dati/vocabolario.yaml.
+// Gli stessi di tags_interni in dati/vocabolario.yaml (TestVocabolarioDelRepo).
 var tagInterni = map[string]bool{"da-classificare": true, "da-collegare": true, "da-separare": true}
 
 type contenuti struct {

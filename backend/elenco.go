@@ -344,11 +344,7 @@ type corpoHome struct {
 
 func atoi(s string) int { n, _ := strconv.Atoi(s); return n }
 
-// descrizioneTagInterno è l'aiuto accanto a un tag interno.
-func descrizioneTagInterno(t string) string {
-	return map[string]string{
-		"da-classificare": "manca la classificazione",
-		"da-collegare":    "manca lo Slug",
-		"da-separare":     "l'album copre più pagine: le Foto vanno divise",
-	}[t]
-}
+// descrizioniTagInterni sono gli aiuti dei tag interni, da tags_interni del vocabolario (#52).
+var descrizioniTagInterni = map[string]string{}
+
+func descrizioneTagInterno(t string) string { return descrizioniTagInterni[t] }

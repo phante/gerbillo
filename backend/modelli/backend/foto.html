@@ -21,8 +21,11 @@
 {{range .Voci}}<div class="campo">
   <label for="{{.Chiave}}">{{.Etichetta}}</label>
   {{if eq .Chiave "datazione"}}{{template "campo-datazione" .}}
+  {{else if .Gruppi}}{{template "campo-categorie" .}}
   {{else if .Righe}}<textarea id="{{.Chiave}}" name="{{.Chiave}}" rows="{{.Righe}}">{{.Valore}}</textarea>
   {{else}}<input type="text" id="{{.Chiave}}" name="{{.Chiave}}" value="{{.Valore}}">{{end}}
+  {{with .TagInterni}}<p class="nota">Tag interni, mai mostrati nella Gallery pubblica:
+    {{range $i, $t := .}}{{if $i}} · {{end}}<span class="tag-interno">{{$t.Nome}}</span> {{$t.Descrizione}}{{end}}</p>{{end}}
   {{if .Diverso}}<p class="nota">Importato: {{if .Importato}}{{.Importato}}{{else}}(vuoto){{end}}</p>{{end}}
 </div>
 {{end}}<p class="nota">Una voce per riga nelle liste. Riportare un campo al valore importato lo toglie dal Livello di arricchimento.</p>
@@ -64,3 +67,8 @@
 </div>{{end}}
 
 {{define "anteprima-datazione"}}<p class="anteprima-datazione nota" aria-live="polite">{{if .Errore}}<span class="dark-red b">{{.Errore}}</span>{{else if .Testo}}= {{.Testo}}{{if .EDTF}} <span class="black-50">(si salva come {{.EDTF}})</span>{{end}}{{end}}</p>{{end}}
+
+{{/* Categorie (#52): solo dal vocabolario, raggruppate per percorso. */}}
+{{define "campo-categorie"}}<select id="categories" name="categories" multiple size="8" class="categorie">
+  {{range .Gruppi}}<optgroup label="{{.Nome}}">{{range .Opzioni}}<option value="{{.Valore}}"{{if .Scelta}} selected{{end}}>{{.Testo}}</option>{{end}}</optgroup>{{end}}
+</select>{{end}}

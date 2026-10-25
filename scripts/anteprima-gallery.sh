@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Genera in ./dist la Gallery pubblica dai dati di test, per l'anteprima (ADR 0011, 0012),
-# e in ./seme quello che serve al Backend dell'anteprima per modificare le Foto (#43).
+# e in ./seme quello che serve al Backend dell'anteprima per modificare le Foto (#43):
+# l'Importazione, gli indici, il Livello di arricchimento, il vocabolario e gli argomenti del build.
 # Richiede un MySQL con testdata/coppermine.sql.gz caricato e l'utente gerbillo_ro.
 # Le immagini puntano agli albums/ pubblici di Coppermine: le Varianti non ci sono ancora.
 #
@@ -32,4 +33,5 @@ g build -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchim
 rm -rf seme && mkdir seme
 cp -R "$lavoro/contenuti/importazione" "$lavoro/indice.json" "$lavoro/redazione.json" seme/
 cp -R dati/arricchimento seme/arricchimento
+cp dati/vocabolario.yaml seme/
 printf '%s\n' "${opzioni[@]}" > seme/build.args

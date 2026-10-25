@@ -71,3 +71,4 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .pulsante-piccolo { padding: .15rem .5rem; font-size: .85rem; }
 .suggerimento { background: #fff6bf; padding: .35rem .5rem; border-radius: 4px; }
 .anteprima-datazione:empty { display: none; }
+.tag-interno { display: inline-block; padding: 0 .4rem; border-radius: 3px; background: #ffe6cc; color: #8a4b00; font-weight: 600; }
