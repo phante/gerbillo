@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { pronta } from './pronta';
 
 async function salvaFonte(page, pid: number, fonte: string) {
   await page.goto(`admin/foto/${pid}`);
@@ -13,6 +14,7 @@ test('modifica e annulla', async ({ page }) => {
   await salvaFonte(page, 11, 'Da annullare');
   await page.goto('admin/');
   await page.getByRole('link', { name: 'Operazioni recenti' }).click();
+  await pronta(page);
   const op = page.locator('article.operazione').first();
   await expect(op).toContainText('Modifica');
   await expect(op).toContainText('Campi: fonte');
@@ -30,6 +32,7 @@ test('non annulla se la Foto è cambiata dopo', async ({ page }) => {
   await salvaFonte(page, 12, 'Prima');
   await salvaFonte(page, 12, 'Dopo');
   await page.goto('admin/operazioni');
+  await pronta(page);
   const vecchia = page.locator('article.operazione').nth(1);
   await expect(vecchia).toContainText('12');
   await vecchia.getByRole('button', { name: 'Annulla' }).click();

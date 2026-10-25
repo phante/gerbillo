@@ -9,7 +9,8 @@
 <details class="filtri riquadro"{{if .Attivi}} open{{end}}>
   <summary class="b pointer">Filtri e ordine{{if .Attivi}} ({{.Attivi}} attivi){{end}}</summary>
   {{/* Ogni cambiamento rimanda il modulo: i filtri restano nell'URL. */}}
-  <form class="filtri-modulo" action="foto/" method="get" x-data @change="$event.target.name && $el.requestSubmit()">
+  <form class="filtri-modulo" action="foto/" method="get" x-data @change="$event.target.name && $el.requestSubmit()"
+    @submit="$el.querySelectorAll('[name]').forEach(e => { if (!e.value || (e.name === 'o' && e.value === 'album')) e.disabled = true })">
     {{range .Sistemare}}<input type="hidden" name="s" value="{{.}}">{{end}}
     <div class="campo"><label for="q">Testo in titolo e descrizione</label>
       <input type="search" id="q" name="q" value="{{.Testo}}" enterkeyhint="search"></div>

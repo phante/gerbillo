@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { pronta } from './pronta';
 
 // #50: selezione su più pagine, anteprima obbligatoria, conferma con un commit solo.
 test('modifica in blocco di Foto scelte su più pagine', async ({ page }) => {
@@ -11,6 +12,7 @@ test('modifica in blocco di Foto scelte su più pagine', async ({ page }) => {
   await page.locator('.griglia li a').nth(1).click(); // in selezione il tocco sceglie, non apre
   await expect(page.locator('.barra-selezione')).toContainText('2 selezionate');
   await page.getByRole('link', { name: 'Successive →' }).click();
+  await pronta(page);
   await expect(page.locator('.barra-selezione')).toContainText('2 selezionate');
   const pid3 = await page.locator('.griglia .pid').nth(0).innerText();
   await caselle.nth(0).check();
@@ -18,6 +20,7 @@ test('modifica in blocco di Foto scelte su più pagine', async ({ page }) => {
   await page.getByRole('button', { name: 'Modifica…' }).click();
 
   await expect(page.getByRole('heading', { name: 'Modifica in blocco di 3 Foto' })).toBeVisible();
+  await pronta(page);
   await page.locator('#togli-tags-ts-control').fill('da-coll');
   await page.locator('.ts-dropdown .option', { hasText: 'da-collegare' }).first().click();
   await page.locator('#aggiungi-slug-ts-control').fill('vajont');
@@ -53,6 +56,7 @@ test('tutte le N del filtro, con la conferma esplicita oltre 500', async ({ page
   await expect(page.locator('.barra-selezione')).toContainText(`${n} selezionate`);
   await page.getByRole('button', { name: 'Modifica…' }).click();
   await expect(page.getByRole('heading', { name: `Modifica in blocco di ${n} Foto` })).toBeVisible();
+  await pronta(page);
   await page.getByLabel('Cosa fare').nth(1).selectOption('imposta');
   await page.locator('#valore-fonte').fill('Tutte');
   await page.getByRole('button', { name: 'Anteprima' }).click();

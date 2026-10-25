@@ -7,11 +7,14 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"html/template"
 	"log"
+	"mime"
 	"net/http"
 	"path"
 	"strings"
+	"sync"
 )
 
 var modelliBackend = template.Must(template.New("").Funcs(template.FuncMap{
@@ -108,7 +111,29 @@ func statico(w http.ResponseWriter, r *http.Request) {
 	}
 	// Il binario cambia a ogni deploy: il browser ricontrolla, e riceve 304 finché non cambia.
 	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Vary", "Accept-Encoding")
+	// nginx dell'anteprima comprime il CSS ma non il JavaScript: lo fa il Backend, una volta
+	// per file. Le librerie passano da 470 a circa 150 kB e la pagina è pronta prima.
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") && path.Ext(f) != ".svg" {
+		w.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(f)))
+		w.Header().Set("Content-Encoding", "gzip")
+		d = compresso(f, d)
+	}
 	http.ServeContent(w, r, path.Base(f), avvio, bytes.NewReader(d))
+}
+
+var compressi sync.Map // file in modelli/ → gzip
+
+func compresso(f string, d []byte) []byte {
+	if c, ok := compressi.Load(f); ok {
+		return c.([]byte)
+	}
+	var b bytes.Buffer
+	z, _ := gzip.NewWriterLevel(&b, gzip.BestCompression)
+	z.Write(d)
+	z.Close()
+	compressi.Store(f, b.Bytes())
+	return b.Bytes()
 }
 
 // rotteBackend registra le pagine del Backend. Senza redazione (manca il seme) ci sono

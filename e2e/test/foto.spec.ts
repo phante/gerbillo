@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { pronta } from './pronta';
 
 // #56: login, apertura della Foto, salvataggio di un campo, esito visibile senza ricaricare.
 test('salva un campo della Foto senza ricaricare la pagina', async ({ page }) => {
@@ -7,6 +8,7 @@ test('salva un campo della Foto senza ricaricare la pagina', async ({ page }) =>
   await page.locator('.barra').getByLabel('Cerca una Foto').fill('8');
   await page.locator('.barra').getByLabel('Cerca una Foto').press('Enter');
   await expect(page).toHaveURL(/admin\/foto\/8$/);
+  await pronta(page);
   await expect(page.getByRole('heading', { name: 'Foto 8' })).toBeVisible();
 
   // Un segno nella pagina: se il salvataggio la ricaricasse, sparirebbe.

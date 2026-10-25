@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { pronta } from './pronta';
 
 const totale = (page) => page.locator('main p b').first();
 
@@ -25,6 +26,7 @@ test('filtri, ordinamento e successiva', async ({ page }) => {
   await page.goto('admin/foto/?s=senza-datazione');
   const tutte = Number(await totale(page).innerText());
   await expect(page.locator('details.filtri').nth(1)).not.toHaveAttribute('open', '');
+  await pronta(page);
   await page.getByText('Filtri e ordine').click();
 
   // Formato: documento, con il conteggio che rispetta «senza Datazione».
@@ -33,6 +35,7 @@ test('filtri, ordinamento e successiva', async ({ page }) => {
   const n = Number((await opzione.innerText()).match(/\((\d+)\)/)![1]);
   await opzione.click();
   await expect(page).toHaveURL(/f=documento/);
+  await pronta(page);
   await expect(page).toHaveURL(/s=senza-datazione/);
   await expect(totale(page)).toHaveText(String(n));
   expect(n).toBeLessThan(tutte);
@@ -41,6 +44,9 @@ test('filtri, ordinamento e successiva', async ({ page }) => {
   // Ordine per pid: resta nell'URL, e la scheda passa alla successiva dello stesso ordine.
   await page.getByLabel('Ordine').selectOption('pid');
   await expect(page).toHaveURL(/o=pid/);
+  // I campi vuoti non vanno nell'URL.
+  expect(page.url()).not.toMatch(/[?&]q=&/);
+  await pronta(page);
   const pid = await page.locator('.griglia .pid').allInnerTexts();
   expect(pid.map(Number)).toEqual([...pid.map(Number)].sort((a, b) => a - b));
   await page.locator('.griglia li a').first().click();

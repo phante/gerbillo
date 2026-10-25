@@ -1,4 +1,8 @@
 // Comportamenti comuni del Backend (ADR 0017), scritti a mano.
+// data-pronto: htmx e Alpine sono partiti. Lo aspettano i test end-to-end: sull'anteprima
+// gli script arrivano dopo l'HTML, e un clic troppo rapido farebbe un POST normale.
+document.addEventListener("alpine:initialized", function () { document.documentElement.dataset.pronto = ""; });
+
 // htmx: anche le risposte con un errore (4xx, 5xx) sostituiscono il bersaglio, così l'esito si vede.
 document.addEventListener("htmx:beforeSwap", function (e) {
   if (e.detail.xhr.status >= 400) { e.detail.shouldSwap = true; e.detail.isError = false; }
@@ -195,4 +199,10 @@ document.addEventListener("alpine:init", function () {
       annulla: function () { this.modo = false; this.tutte = false; this.scelte = []; this.salva(); },
     };
   });
+});
+
+// Tornando indietro, il browser può ridare la pagina dei filtri com'era al momento
+// dell'invio, con i campi vuoti disabilitati: si riabilitano.
+window.addEventListener("pageshow", function (e) {
+  if (e.persisted) document.querySelectorAll(".filtri-modulo [disabled]").forEach(function (x) { x.disabled = false; });
 });

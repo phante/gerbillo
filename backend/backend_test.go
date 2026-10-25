@@ -1,7 +1,9 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"net/http/httptest"
 	"os"
 	"regexp"
@@ -36,6 +38,15 @@ func TestStaticiBackend(t *testing.T) {
 	statico(w, httptest.NewRequest("GET", "/admin/statico/backend-stile", nil))
 	if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/css") {
 		t.Errorf("backend-stile: Content-Type %q", ct)
+	}
+	req := httptest.NewRequest("GET", "/admin/statico/htmx", nil)
+	req.Header.Set("Accept-Encoding", "gzip, br")
+	w = httptest.NewRecorder()
+	statico(w, req)
+	if z, err := gzip.NewReader(w.Body); err != nil || w.Header().Get("Content-Encoding") != "gzip" || !strings.HasPrefix(w.Header().Get("Content-Type"), "text/javascript") {
+		t.Errorf("htmx in gzip: %v, %v", w.Header(), err)
+	} else if d, _ := io.ReadAll(z); !strings.Contains(string(d), "htmx") {
+		t.Error("htmx in gzip: contenuto sbagliato")
 	}
 	// Nell'anteprima nginx intercetta .css, .js, .svg e .json prima di /gerbillo/: gli URL
 	// del Backend non li hanno.
