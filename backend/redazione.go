@@ -48,9 +48,9 @@ var campiEditoriali = []campoEditoriale{
 	{"datazione", "Datazione", false, 0, func(f *fotoPubblicata) string { return f.Datazione }},
 	{"authors", "Autori", true, 2, func(f *fotoPubblicata) string { return strings.Join(f.Authors, "\n") }},
 	{"fonte", "Fonte", false, 0, func(f *fotoPubblicata) string { return f.Fonte }},
-	{"geolocation.coords", "Punto geografico (latitudine, longitudine)", false, 0, func(f *fotoPubblicata) string {
+	{"geolocation.coords", "Punto geografico", false, 0, func(f *fotoPubblicata) string {
 		if c := f.Geolocation.Coords; c != nil {
-			return strconv.FormatFloat(c.Latitudine, 'f', -1, 64) + ", " + strconv.FormatFloat(c.Longitudine, 'f', -1, 64)
+			return testoPunto(c.Latitudine, c.Longitudine)
 		}
 		return ""
 	}},
@@ -77,13 +77,11 @@ func (c campoEditoriale) yaml(s string) (any, error) {
 	case c.lista:
 		return strings.Split(s, "\n"), nil
 	case c.chiave == "geolocation.coords":
-		lat, lon, ok := strings.Cut(s, ",")
-		a, err1 := strconv.ParseFloat(strings.TrimSpace(lat), 64)
-		b, err2 := strconv.ParseFloat(strings.TrimSpace(lon), 64)
-		if !ok || err1 != nil || err2 != nil || a < -90 || a > 90 || b < -180 || b > 180 {
-			return nil, fmt.Errorf("punto geografico %q: scrivi latitudine, longitudine (es. 46.2905, 8.2987)", s)
+		lat, lon, err := interpretaPunto(s)
+		if err != nil {
+			return nil, err
 		}
-		return map[string]any{"latitudine": a, "longitudine": b}, nil
+		return map[string]any{"latitudine": lat, "longitudine": lon}, nil
 	}
 	return s, nil
 }
@@ -226,6 +224,13 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 				return nil, err
 			}
 		}
+		if c.chiave == "geolocation.coords" && v != "" {
+			lat, lon, err := interpretaPunto(v)
+			if err != nil {
+				return nil, err
+			}
+			v = testoPunto(lat, lon)
+		}
 		if v != c.valore(pub) {
 			cambiati = append(cambiati, c.chiave)
 		}
@@ -331,6 +336,13 @@ type voceModulo struct {
 	TagInterni                           []tagInterno       // solo per i Tag: l'aiuto accanto
 	Chip                                 string             // slug, tags, authors: campo a chip (#53)
 	Opzioni                              []opzioneChip      // i valori già scelti del campo a chip
+	Ereditato                            *puntoEreditato    // solo per il Punto geografico (#54)
+}
+
+// puntoEreditato è il Punto geografico della prima Entità, che la Foto eredita se non ha il suo.
+type puntoEreditato struct {
+	Lat, Lon float64
+	Diga     string
 }
 
 // gruppoCategorie sono le Categorie del vocabolario con lo stesso primo pezzo di percorso.
@@ -434,7 +446,7 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 			modulo = map[string]string{}
 		}
 	}
-	pub, imp, _, err := r.fotoDaModificare(pid)
+	pub, imp, idx, err := r.fotoDaModificare(pid)
 	if errors.Is(err, os.ErrNotExist) {
 		http.NotFound(w, req)
 		return
@@ -457,6 +469,12 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		}
 		if k.chiave == "tags" && r.voc != nil {
 			vm.TagInterni = r.voc.TagsInterni
+		}
+		if k.chiave == "geolocation.coords" && len(pub.Slug) > 0 {
+			if i := slices.IndexFunc(idx, func(e entita) bool { return e.Slug == pub.Slug[0] }); i >= 0 && idx[i].Geolocation.Coords != nil {
+				c := idx[i].Geolocation.Coords
+				vm.Ereditato = &puntoEreditato{c.Latitudine, c.Longitudine, idx[i].Title}
+			}
 		}
 		if k.chiave == "datazione" {
 			vm.Anteprima = anteprimaDi(v)

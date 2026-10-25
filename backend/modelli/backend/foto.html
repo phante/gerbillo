@@ -23,6 +23,7 @@
   {{if eq .Chiave "datazione"}}{{template "campo-datazione" .}}
   {{else if .Gruppi}}{{template "campo-categorie" .}}
   {{else if .Chip}}{{template "campo-chip" .}}
+  {{else if eq .Chiave "geolocation.coords"}}{{template "campo-punto" .}}
   {{else if .Righe}}<textarea id="{{.Chiave}}" name="{{.Chiave}}" rows="{{.Righe}}">{{.Valore}}</textarea>
   {{else}}<input type="text" id="{{.Chiave}}" name="{{.Chiave}}" value="{{.Valore}}">{{end}}
   {{with .TagInterni}}<p class="nota">Tag interni, mai mostrati nella Gallery pubblica:
@@ -79,3 +80,13 @@
 {{define "campo-chip"}}<select id="{{.Chiave}}" name="{{.Chiave}}" multiple data-chip="{{.Chiave}}">
   {{range .Opzioni}}<option value="{{.Valore}}" data-opzione="{{.Dati}}" selected>{{.Testo}}</option>{{end}}
 </select>{{end}}
+
+{{/* Punto geografico (#54): campo testo e mappa sincronizzati nei due sensi. Il pin si
+     trascina o si mette con un tocco; senza Punto la mappa parte da quello della diga. */}}
+{{define "campo-punto"}}<input type="text" id="geolocation.coords" name="geolocation.coords" value="{{.Valore}}" autocomplete="off"
+  placeholder="46.2905, 8.2987 · 46°17'26&quot;N 8°17'55&quot;E · link di Google Maps">
+<p class="nota esito-punto" aria-live="polite"></p>
+<div class="mappa-punto" data-campo="geolocation.coords"{{with .Ereditato}} data-ereditato="{{.Lat}},{{.Lon}}" data-diga="{{.Diga}}"{{end}}></div>
+<p class="nota">Tocca la mappa per mettere il pin, poi trascinalo. Lo sfondo satellitare è nel selettore in alto a destra.</p>
+{{with .Ereditato}}<button type="button" class="pulsante pulsante-secondario usa-diga">Usa quello della diga</button>
+<span class="nota">Svuota il Punto: la Foto eredita quello di {{.Diga}}.</span>{{end}}{{end}}

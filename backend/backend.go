@@ -79,6 +79,8 @@ var staticiBackend = map[string]string{
 	"alpine.min.js":      "backend/librerie/alpine.min.js",
 	"tom-select.min.js":  "backend/librerie/tom-select.min.js",
 	"tom-select.min.css": "backend/librerie/tom-select.min.css",
+	"mappa.js":           "sito/mappa.js", // Leaflet del Sito principale (#27), per la mappa del Punto geografico
+	"leaflet.css":        "sito/leaflet.css",
 }
 
 // statico serve i file di staticiBackend. Non richiede l'utente: sono librerie e stili.
@@ -123,4 +125,5 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	mux.Handle("/admin/ricalcola", mod(red.ricalcola))
 	mux.Handle("/admin/datazione", mod(datazione))
 	mux.Handle("/admin/suggerimenti/", mod(red.suggerimenti))
+	mux.Handle("/admin/punto", mod(punto))
 }

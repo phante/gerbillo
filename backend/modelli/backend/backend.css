@@ -81,3 +81,6 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .ts-dropdown .chip-interno { color: #8a4b00; }
 .ts-control, .ts-control input, .ts-dropdown { font: inherit; }
 .ts-control { border-color: #bbb; border-radius: 4px; padding: .4rem .5rem; min-height: 2.6rem; }
+.mappa-punto { height: 18rem; margin-top: .5rem; border-radius: 6px; border: 1px solid #ccc; z-index: 0; }
+.pin-punto span { display: block; width: 20px; height: 20px; background: #d00; border: 3px solid #fff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+.usa-diga { margin-top: .5rem; }

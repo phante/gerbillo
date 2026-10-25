@@ -89,3 +89,69 @@ document.addEventListener("htmx:beforeSwap", function (e) {
   else tutti(document);
   htmx.onLoad(tutti);
 })();
+
+// Mappa del Punto geografico (#54): Leaflet di mappa.js (window.L), con gli sfondi del sito
+// più uno satellitare. Il campo e il pin si aggiornano a vicenda; i formati del campo li
+// interpreta il server (punto?v=…), lo stesso codice del salvataggio.
+(function () {
+  function arrotonda(x) { return Math.round(x * 1e6) / 1e6; }
+  function mappa(div) {
+    if (div.mappaPunto || typeof L === "undefined") return;
+    var campo = document.getElementById(div.dataset.campo);
+    var esito = div.parentNode.querySelector(".esito-punto");
+    var ered = div.dataset.ereditato ? div.dataset.ereditato.split(",").map(Number) : null;
+    var osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19,
+      attribution: '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', referrerPolicy: "strict-origin-when-cross-origin" });
+    var sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19,
+      attribution: "Esri, Maxar, Earthstar Geographics" });
+    var m = L.map(div, { layers: [osm], scrollWheelZoom: false });
+    div.mappaPunto = m;
+    L.control.layers({ Mappa: osm, Satellite: sat }).addTo(m);
+    L.control.scale().addTo(m);
+    if (ered) L.circleMarker(ered, { radius: 8, color: "#555", weight: 2, dashArray: "4 3", fillOpacity: 0.1 })
+      .addTo(m).bindTooltip("Punto di " + (div.dataset.diga || "della diga"));
+    var icona = L.divIcon({ className: "pin-punto", html: "<span></span>", iconSize: [26, 26], iconAnchor: [13, 30] });
+    var pin = null;
+    function metti(lat, lon, centra) {
+      if (!pin) {
+        pin = L.marker([lat, lon], { draggable: true, icon: icona, title: "Punto geografico della Foto" }).addTo(m);
+        pin.on("dragend", function () { var p = pin.getLatLng(); scrivi(p.lat, p.lng); });
+      } else pin.setLatLng([lat, lon]);
+      if (centra) m.setView([lat, lon], Math.max(m.getZoom() || 0, 14));
+    }
+    function togli() { if (pin) { m.removeLayer(pin); pin = null; } }
+    function scrivi(lat, lon) {
+      campo.value = arrotonda(lat) + ", " + arrotonda(lon);
+      esito.textContent = "";
+      campo.dispatchEvent(new Event("change", { bubbles: true })); // il modulo segna la modifica
+    }
+    m.on("click", function (e) { metti(e.latlng.lat, e.latlng.lng); scrivi(e.latlng.lat, e.latlng.lng); });
+    var attesa;
+    function leggi(centra) {
+      var v = campo.value.trim();
+      if (!v) { togli(); esito.textContent = ered ? "Vuoto: la Foto eredita il Punto della diga." : ""; return; }
+      fetch("punto?v=" + encodeURIComponent(v)).then(function (r) { return r.json(); }).then(function (p) {
+        if (p.errore) { esito.textContent = "Non valido: non si salva."; esito.classList.add("dark-red"); return; }
+        esito.classList.remove("dark-red");
+        esito.textContent = p.testo === v ? "" : "= " + p.testo;
+        metti(p.lat, p.lon, centra);
+      });
+    }
+    campo.addEventListener("input", function () { clearTimeout(attesa); attesa = setTimeout(function () { leggi(true); }, 400); });
+    var usa = div.parentNode.querySelector(".usa-diga");
+    if (usa) usa.addEventListener("click", function () {
+      campo.value = ""; togli(); leggi(false);
+      campo.dispatchEvent(new Event("change", { bubbles: true }));
+      m.setView(ered, 14);
+    });
+    if (campo.value.trim()) {
+      var p = campo.value.split(",").map(Number);
+      if (p.length === 2 && !isNaN(p[0]) && !isNaN(p[1])) { metti(p[0], p[1]); m.setView(p, 15); } else leggi(true);
+    } else if (ered) m.setView(ered, 14);
+    else m.setView([45.8, 10.5], 6);
+  }
+  function tutte(radice) { (radice.querySelectorAll ? radice : document).querySelectorAll(".mappa-punto").forEach(mappa); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { tutte(document); });
+  else tutte(document);
+  htmx.onLoad(tutte);
+})();
