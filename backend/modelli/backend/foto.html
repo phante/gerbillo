@@ -22,13 +22,14 @@
   <label for="{{.Chiave}}">{{.Etichetta}}</label>
   {{if eq .Chiave "datazione"}}{{template "campo-datazione" .}}
   {{else if .Gruppi}}{{template "campo-categorie" .}}
+  {{else if .Chip}}{{template "campo-chip" .}}
   {{else if .Righe}}<textarea id="{{.Chiave}}" name="{{.Chiave}}" rows="{{.Righe}}">{{.Valore}}</textarea>
   {{else}}<input type="text" id="{{.Chiave}}" name="{{.Chiave}}" value="{{.Valore}}">{{end}}
   {{with .TagInterni}}<p class="nota">Tag interni, mai mostrati nella Gallery pubblica:
     {{range $i, $t := .}}{{if $i}} · {{end}}<span class="tag-interno">{{$t.Nome}}</span> {{$t.Descrizione}}{{end}}</p>{{end}}
   {{if .Diverso}}<p class="nota">Importato: {{if .Importato}}{{.Importato}}{{else}}(vuoto){{end}}</p>{{end}}
 </div>
-{{end}}<p class="nota">Una voce per riga nelle liste. Riportare un campo al valore importato lo toglie dal Livello di arricchimento.</p>
+{{end}}<p class="nota">Nelle liste invio o virgola chiudono una voce, la × la toglie. Riportare un campo al valore importato lo toglie dal Livello di arricchimento.</p>
 <div class="azioni">
   <button class="pulsante" :class="cambiato && 'pulsante-evidente'">Salva</button>
   <span class="nota htmx-indicator">Salvataggio…</span>
@@ -69,6 +70,12 @@
 {{define "anteprima-datazione"}}<p class="anteprima-datazione nota" aria-live="polite">{{if .Errore}}<span class="dark-red b">{{.Errore}}</span>{{else if .Testo}}= {{.Testo}}{{if .EDTF}} <span class="black-50">(si salva come {{.EDTF}})</span>{{end}}{{end}}</p>{{end}}
 
 {{/* Categorie (#52): solo dal vocabolario, raggruppate per percorso. */}}
-{{define "campo-categorie"}}<select id="categories" name="categories" multiple size="8" class="categorie">
+{{define "campo-categorie"}}<select id="categories" name="categories" multiple size="8" class="categorie" data-chip="categories">
   {{range .Gruppi}}<optgroup label="{{.Nome}}">{{range .Opzioni}}<option value="{{.Valore}}"{{if .Scelta}} selected{{end}}>{{.Testo}}</option>{{end}}</optgroup>{{end}}
+</select>{{end}}
+
+{{/* Liste a chip (#53): Tom Select su un select multiple, con i suggerimenti da
+     suggerimenti/<campo>. Senza JavaScript resta un select con i valori scelti. */}}
+{{define "campo-chip"}}<select id="{{.Chiave}}" name="{{.Chiave}}" multiple data-chip="{{.Chiave}}">
+  {{range .Opzioni}}<option value="{{.Valore}}" data-opzione="{{.Dati}}" selected>{{.Testo}}</option>{{end}}
 </select>{{end}}

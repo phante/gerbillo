@@ -5,7 +5,8 @@
 # rilancia lo script e si fa il commit dei file e di questo script insieme.
 #
 # Regola per una libreria nuova: versione esatta, nessuna dipendenza a runtime (il file
-# copiato è già completo), licenza permissiva (MIT o simile).
+# copiato è già completo), licenza permissiva (MIT o simile). Tom Select (chip, #53) è
+# Apache-2.0, permissiva; la build complete include già sifter e i plugin.
 #
 # Uso: scripts/librerie-backend.sh
 set -euo pipefail
@@ -18,6 +19,8 @@ trap 'rm -rf "$lavoro"' EXIT
 librerie=(
   "htmx.org 2.0.11 dist/htmx.min.js htmx.min.js"
   "alpinejs 3.17.4 dist/cdn.min.js alpine.min.js"
+  "tom-select 2.6.2 dist/js/tom-select.complete.min.js tom-select.min.js"
+  "tom-select 2.6.2 dist/css/tom-select.default.min.css tom-select.min.css"
 )
 
 for l in "${librerie[@]}"; do

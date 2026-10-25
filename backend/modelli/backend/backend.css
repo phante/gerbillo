@@ -72,3 +72,12 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .suggerimento { background: #fff6bf; padding: .35rem .5rem; border-radius: 4px; }
 .anteprima-datazione:empty { display: none; }
 .tag-interno { display: inline-block; padding: 0 .4rem; border-radius: 3px; background: #ffe6cc; color: #8a4b00; font-weight: 600; }
+.ts-wrapper.multi .ts-control > div.chip { background: #eee; background-image: none; border: 1px solid #ccc; border-radius: 3px; padding: 1px 4px; color: #222; text-shadow: none; box-shadow: none; }
+.ts-wrapper.multi .ts-control > div.chip.active { background: #ddd; color: #000; }
+.ts-wrapper.plugin-remove_button .item .remove { border-left-color: #ccc; color: #555; }
+.ts-wrapper.multi .ts-control > div.chip-interno { background: #ffe6cc; border-color: #f0b070; color: #8a4b00; }
+.ts-wrapper.multi .ts-control > div.chip-nuovo { background: #fff6bf; border-color: #e0c000; }
+.chip small { font-size: .7em; text-transform: uppercase; color: #8a6d00; }
+.ts-dropdown .chip-interno { color: #8a4b00; }
+.ts-control, .ts-control input, .ts-dropdown { font: inherit; }
+.ts-control { border-color: #bbb; border-radius: 4px; padding: .4rem .5rem; min-height: 2.6rem; }

@@ -42,3 +42,50 @@ document.addEventListener("htmx:beforeSwap", function (e) {
   aggiorna();
   setInterval(aggiorna, 5000);
 })();
+
+// Campi a chip (#53): Tom Select sui select con data-chip, anche quelli che htmx inserisce.
+// Invio o virgola chiudono una voce, la × la toglie. slug e Categorie si scelgono soltanto;
+// Tag e Autori accettano voci nuove, e un Tag che nessuno usa è segnato «nuovo».
+(function () {
+  var minimo = { slug: 2, tags: 1, authors: 1 };
+  function chip(el) {
+    if (el.tomselect || typeof TomSelect === "undefined") return;
+    var campo = el.dataset.chip, nuove = campo === "tags" || campo === "authors";
+    var opzioni = {
+      plugins: ["remove_button"],
+      dataAttr: "data-opzione",
+      create: nuove ? function (v) { return { value: v, text: v, nuovo: campo === "tags" }; } : false,
+      createOnBlur: nuove,
+      delimiter: ",",
+      persist: false,
+      hideSelected: true,
+      closeAfterSelect: true,
+      maxOptions: 50,
+      render: {
+        item: function (d, esc) {
+          var c = d.interno ? " chip-interno" : d.nuovo ? " chip-nuovo" : "";
+          return '<div class="chip' + c + '">' + esc(d.text) + (d.nuovo ? " <small>nuovo</small>" : "") + "</div>";
+        },
+        option: function (d, esc) {
+          return '<div class="' + (d.interno ? "chip-interno" : "") + '">' + esc(d.text) + "</div>";
+        },
+        option_create: function (d, esc) { return '<div class="create">Aggiungi «' + esc(d.input) + "»</div>"; },
+        no_results: function () { return '<div class="no-results">Nessun suggerimento</div>'; },
+      },
+    };
+    if (campo !== "categories") {
+      opzioni.load = function (q, fatto) {
+        fetch("suggerimenti/" + campo + "?q=" + encodeURIComponent(q))
+          .then(function (r) { return r.json(); }).then(fatto).catch(function () { fatto(); });
+      };
+      opzioni.shouldLoad = function (q) { return q.length >= minimo[campo]; };
+      opzioni.searchField = ["text", "value"];
+    }
+    new TomSelect(el, opzioni);
+  }
+  function tutti(radice) { (radice.querySelectorAll ? radice : document).querySelectorAll("select[data-chip]").forEach(chip); }
+  // All'apertura della pagina, e per i frammenti che htmx inserisce.
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { tutti(document); });
+  else tutti(document);
+  htmx.onLoad(tutti);
+})();

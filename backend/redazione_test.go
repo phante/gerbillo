@@ -159,7 +159,7 @@ func TestPaginaRedazione(t *testing.T) {
 	w := httptest.NewRecorder()
 	h(w, httptest.NewRequest("GET", "/admin/foto/1", nil))
 	pagina := w.Body.String()
-	for _, atteso := range []string{`name="viewport"`, `value="Diga"`, `>Ente</textarea>`, "Importato: (vuoto)", `<base href="../">`, `href="../f/1/"`, `hx-post="foto/1"`} {
+	for _, atteso := range []string{`name="viewport"`, `value="Diga"`, `<option value="Ente" data-opzione="{&#34;value&#34;:&#34;Ente&#34;,&#34;text&#34;:&#34;Ente&#34;}" selected>Ente</option>`, "Importato: (vuoto)", `<base href="../">`, `href="../f/1/"`, `hx-post="foto/1"`} {
 		if !strings.Contains(pagina, atteso) {
 			t.Errorf("modulo senza %q:\n%s", atteso, pagina)
 		}

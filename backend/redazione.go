@@ -100,7 +100,8 @@ type redazione struct {
 	fileIndice, semeIndice string
 	elenco                 atomic.Pointer[indiceRedazione]
 
-	voc *vocabolario // nil: le Categorie non si controllano (nessun vocabolario nel seme)
+	voc   *vocabolario // nil: le Categorie non si controllano (nessun vocabolario nel seme)
+	cache cacheVoci    // voci note per i chip (#53)
 
 	mu              sync.Mutex
 	inCorso, ancora bool
@@ -328,6 +329,8 @@ type voceModulo struct {
 	User3, User3EDTF                     string             // idem: il suggerimento da Coppermine
 	Gruppi                               []gruppoCategorie  // solo per le Categorie, dal vocabolario
 	TagInterni                           []tagInterno       // solo per i Tag: l'aiuto accanto
+	Chip                                 string             // slug, tags, authors: campo a chip (#53)
+	Opzioni                              []opzioneChip      // i valori già scelti del campo a chip
 }
 
 // gruppoCategorie sono le Categorie del vocabolario con lo stesso primo pezzo di percorso.
@@ -446,6 +449,9 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		}
 		vm := voceModulo{Chiave: k.chiave, Etichetta: k.etichetta, Valore: v, Importato: k.valore(imp),
 			Righe: k.righe, Diverso: k.valore(pub) != k.valore(imp)}
+		if k.lista && k.chiave != "categories" {
+			vm.Chip, vm.Opzioni = k.chiave, r.opzioniChip(k.chiave, strings.Split(v, "\n"))
+		}
 		if k.chiave == "categories" && r.voc != nil {
 			vm.Gruppi = gruppiCategorie(r.voc, strings.Split(v, "\n"))
 		}

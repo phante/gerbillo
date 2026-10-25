@@ -39,9 +39,9 @@ test('l\'elenco si aggiorna da solo a fine build', async ({ page }) => {
 
   const scheda = await page.context().newPage();
   await scheda.goto(`admin/foto/${pid}`);
-  const tag = scheda.getByLabel('Tag');
-  await tag.fill((await tag.inputValue()).split('\n').filter((t) => t !== 'da-collegare').join('\n'));
-  await scheda.getByLabel('Pagine del sito (slug)').fill('dighe/vajont');
+  await scheda.locator('.ts-wrapper .chip', { hasText: 'da-collegare' }).locator('.remove').click();
+  await scheda.locator('#slug-ts-control').fill('vajont');
+  await scheda.locator('.ts-dropdown .option', { hasText: 'dighe/vajont' }).first().click();
   await scheda.getByRole('button', { name: 'Salva' }).click();
   await expect(scheda.getByRole('status')).toContainText('Salvato');
   await scheda.close();

@@ -71,12 +71,14 @@ func daHtmx(r *http.Request) bool { return r.Header.Get("HX-Request") == "true" 
 
 // staticiBackend sono i file serviti a /admin/statico/: nome pubblicato → file in modelli/.
 var staticiBackend = map[string]string{
-	"tachyons.css":  "sito/tachyons.css",
-	"PDLogo.svg":    "sito/PDLogo.svg",
-	"backend.css":   "backend/backend.css",
-	"backend.js":    "backend/backend.js",
-	"htmx.min.js":   "backend/librerie/htmx.min.js",
-	"alpine.min.js": "backend/librerie/alpine.min.js",
+	"tachyons.css":       "sito/tachyons.css",
+	"PDLogo.svg":         "sito/PDLogo.svg",
+	"backend.css":        "backend/backend.css",
+	"backend.js":         "backend/backend.js",
+	"htmx.min.js":        "backend/librerie/htmx.min.js",
+	"alpine.min.js":      "backend/librerie/alpine.min.js",
+	"tom-select.min.js":  "backend/librerie/tom-select.min.js",
+	"tom-select.min.css": "backend/librerie/tom-select.min.css",
 }
 
 // statico serve i file di staticiBackend. Non richiede l'utente: sono librerie e stili.
@@ -120,4 +122,5 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	mux.Handle("/admin/foto/", mod(red.foto))
 	mux.Handle("/admin/ricalcola", mod(red.ricalcola))
 	mux.Handle("/admin/datazione", mod(datazione))
+	mux.Handle("/admin/suggerimenti/", mod(red.suggerimenti))
 }
