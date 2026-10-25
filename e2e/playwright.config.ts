@@ -23,7 +23,7 @@ export default defineConfig({
   projects: [{ name: 'telefono', use: { ...devices['Pixel 7'] } }],
   webServer: remoto ? undefined : {
     command: './avvia.sh',
-    url: `http://127.0.0.1:${porta}/gerbillo/admin/statico/backend-stile`,
+    url: `http://127.0.0.1:${porta}/gerbillo/admin/statico/backend.css`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: { PORTA: porta },

@@ -81,20 +81,18 @@ func esegui(w http.ResponseWriter, nome string, dati any) {
 func daHtmx(r *http.Request) bool { return r.Header.Get("HX-Request") == "true" }
 
 // staticiBackend sono i file serviti a /admin/statico/: nome pubblicato → file in modelli/.
-// I nomi non hanno l'estensione: nell'anteprima il vhost di nginx intercetta .css, .js, .svg
-// e .json prima di /gerbillo/ (finché manca ^~ nello snippet), come per la Gallery con
-// build -anteprima. Il tipo viene dall'estensione del file in modelli/.
+// Il tipo viene dall'estensione del file in modelli/.
 var staticiBackend = map[string]string{
-	"tachyons":         "sito/tachyons.css",
-	"logo":             "sito/PDLogo.svg",
-	"backend-stile":    "backend/backend.css",
-	"backend":          "backend/backend.js",
-	"htmx":             "backend/librerie/htmx.min.js",
-	"alpine":           "backend/librerie/alpine.min.js",
-	"tom-select":       "backend/librerie/tom-select.min.js",
-	"tom-select-stile": "backend/librerie/tom-select.min.css",
-	"mappa":            "sito/mappa.js", // Leaflet del Sito principale (#27), per la mappa del Punto geografico
-	"leaflet-stile":    "sito/leaflet.css",
+	"tachyons.css":   "sito/tachyons.css",
+	"logo.svg":       "sito/PDLogo.svg",
+	"backend.css":    "backend/backend.css",
+	"backend.js":     "backend/backend.js",
+	"htmx.js":        "backend/librerie/htmx.min.js",
+	"alpine.js":      "backend/librerie/alpine.min.js",
+	"tom-select.js":  "backend/librerie/tom-select.min.js",
+	"tom-select.css": "backend/librerie/tom-select.min.css",
+	"mappa.js":       "sito/mappa.js", // Leaflet del Sito principale (#27), per la mappa del Punto geografico
+	"leaflet.css":    "sito/leaflet.css",
 }
 
 // statico serve i file di staticiBackend. Non richiede l'utente: sono librerie e stili.

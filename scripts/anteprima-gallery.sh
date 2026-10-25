@@ -26,7 +26,7 @@ g indice-entita -sito testdata/sito > "$lavoro/indice.json"
 # dati/arricchimento/ fa da Livello di arricchimento finché non c'è il rientro (#38, #39).
 g importa -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchimento dati/arricchimento -vocabolario dati/vocabolario.yaml
 # Nell'anteprima nginx serve la Gallery sotto /gerbillo/ e toglie il prefisso.
-opzioni=(-base /gerbillo/ -anteprima -media https://progettodighe.it/gallery/albums/ -striscia "$striscia")
+opzioni=(-base /gerbillo/ -media https://progettodighe.it/gallery/albums/ -striscia "$striscia")
 g build -config "$lavoro/gerbillo.toml" -indice "$lavoro/indice.json" -arricchimento dati/arricchimento -dist dist \
   -redazione "$lavoro/redazione.json" "${opzioni[@]}"
 # Il Backend rifà lo stesso build dopo ogni modifica: stessi dati, stesse opzioni (una per riga).

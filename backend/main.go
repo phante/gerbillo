@@ -52,7 +52,7 @@ func main() {
 	mux := http.NewServeMux()
 	if esiste(filepath.Join(dist, "index.html")) {
 		cartelle := sovrapposte{http.Dir(modifiche), http.Dir(dist)}
-		mux.Handle("/", staticiSenzaEstensione(cartelle, http.FileServer(cartelle)))
+		mux.Handle("/", http.FileServer(cartelle))
 	} else {
 		mux.HandleFunc("/", home)
 	}
@@ -99,23 +99,6 @@ func adminSenzaRedazione(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mostraPagina(w, r, "home", "Gerbillo", corpoHome{})
-}
-
-// staticiSenzaEstensione serve /statico/stile come /statico/stile.css (build -anteprima).
-func staticiSenzaEstensione(fs sovrapposte, h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/statico/") && path.Ext(r.URL.Path) == "" {
-			for _, ext := range []string{".css", ".svg", ".js", ".json"} {
-				if f, err := fs.Open(r.URL.Path + ext); err == nil {
-					st, _ := f.Stat()
-					http.ServeContent(w, r, path.Base(r.URL.Path)+ext, st.ModTime(), f)
-					f.Close()
-					return
-				}
-			}
-		}
-		h.ServeHTTP(w, r)
-	})
 }
 
 // conBarra rimanda alla stessa pagina con la barra finale, con un Location relativo.

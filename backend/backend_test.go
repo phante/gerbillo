@@ -35,11 +35,11 @@ func TestStaticiBackend(t *testing.T) {
 		t.Errorf("file non elencato: HTTP %d", w.Code)
 	}
 	w = httptest.NewRecorder()
-	statico(w, httptest.NewRequest("GET", "/admin/statico/backend-stile", nil))
+	statico(w, httptest.NewRequest("GET", "/admin/statico/backend.css", nil))
 	if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/css") {
-		t.Errorf("backend-stile: Content-Type %q", ct)
+		t.Errorf("backend.css: Content-Type %q", ct)
 	}
-	req := httptest.NewRequest("GET", "/admin/statico/htmx", nil)
+	req := httptest.NewRequest("GET", "/admin/statico/htmx.js", nil)
 	req.Header.Set("Accept-Encoding", "gzip, br")
 	w = httptest.NewRecorder()
 	statico(w, req)
@@ -48,20 +48,10 @@ func TestStaticiBackend(t *testing.T) {
 	} else if d, _ := io.ReadAll(z); !strings.Contains(string(d), "htmx") {
 		t.Error("htmx in gzip: contenuto sbagliato")
 	}
-	// Nell'anteprima nginx intercetta .css, .js, .svg e .json prima di /gerbillo/: gli URL
-	// del Backend non li hanno.
-	conEstensione := regexp.MustCompile(`(src|href)="statico/[^"]*\.(css|js|svg)"|fetch\("[^"]*\.json`)
-	js, _ := modelli.ReadFile("modelli/backend/backend.js")
-	if m := conEstensione.FindString(string(js)); m != "" {
-		t.Errorf("backend.js: %s", m)
-	}
 	esterno := regexp.MustCompile(`(src|href)="(https?:)?//`)
 	for _, m := range modelliBackend.Templates() {
 		if m.Tree != nil && esterno.MatchString(m.Tree.Root.String()) {
 			t.Errorf("il modello %s carica risorse da un altro dominio", m.Name())
-		}
-		if m.Tree != nil && conEstensione.MatchString(m.Tree.Root.String()) {
-			t.Errorf("il modello %s usa un URL statico con l'estensione: %s", m.Name(), conEstensione.FindString(m.Tree.Root.String()))
 		}
 	}
 }

@@ -77,7 +77,7 @@ Verifica:
 
 Il package `ghcr.io/phante/gerbillo` deve essere **pubblico**, altrimenti il server non riesce a scaricarlo: GitHub → Packages → gerbillo → Package settings → Change visibility.
 
-Al rientro: riportare in Ansible (`progettodighe-server`) la `location`, le unit e l'env file.
+Snippet, unit e env file sono in Ansible (`progettodighe-server`, ruolo `progettodighe_it`, tag `gerbillo_dev`): quando cambiano i file in `server/`, vanno ricopiati in `roles/progettodighe_it/files/gerbillo/`.
 
 ## Livello di arricchimento dell'anteprima
 
@@ -86,5 +86,3 @@ Finché non c'è il rientro, il lavoro editoriale deciso in chat sta in `dati/ar
 Al rientro:
 - `gerbillo abbina` non c'è più (#38): dall'`arricchimento/mappature.yaml` del server tieni solo le righe `manuale`, poi sostituiscilo con `dati/arricchimento/mappature.yaml`;
 - copia il resto di `dati/arricchimento/` in `arricchimento/` del Repository dei contenuti.
-
-Al rientro, anche: applicare `location ^~ /gerbillo/` di `server/nginx-gerbillo.conf` (23/10/2026). Senza `^~` le location a regex del vhost intercettano `.css`, `.svg` e `.json` della Gallery; finché manca, l'anteprima usa `gerbillo build -anteprima`.

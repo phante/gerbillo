@@ -29,7 +29,7 @@ import (
 var modelli embed.FS
 
 // I modelli usano icona (SVG copiati dal sito, inseriti nel markup) e statico
-// (URL di un file statico, con o senza estensione: build -anteprima).
+// (URL di un file statico).
 var pagine = template.Must(template.New("").Funcs(template.FuncMap{
 	"icona":   icona,
 	"statico": func(string) string { return "" },
@@ -63,9 +63,6 @@ type opzioniBuild struct {
 	pubblico string // URL assoluto della Gallery, per la Copia per il forum
 	sito     string // URL del Sito principale
 	striscia string // branch e commit dell'anteprima, in fondo al footer
-	// anteprima: URL dei file statici senza estensione. Il vhost di dev intercetta .css e
-	// .svg prima di /gerbillo/; gerbillo serve li risolve (fino al ^~ nello snippet nginx).
-	anteprima bool
 	// confronta: una Gallery già generata. Il build scrive solo i file diversi da quelli lì:
 	// nell'anteprima il /tmp del container non contiene la Gallery intera (#43).
 	confronta string
@@ -80,7 +77,6 @@ func (o *opzioniBuild) flag(fs *flag.FlagSet) {
 	fs.StringVar(&o.pubblico, "pubblico", "https://progettodighe.it/gallery/", "URL pubblico della Gallery")
 	fs.StringVar(&o.sito, "sito", "https://progettodighe.it/", "URL del Sito principale")
 	fs.StringVar(&o.striscia, "striscia", "", "striscia dell'anteprima")
-	fs.BoolVar(&o.anteprima, "anteprima", false, "URL dei file statici senza estensione (anteprima dev)")
 }
 
 func build(args []string) error {
@@ -259,9 +255,6 @@ func (b *builder) scriviFile(rel string, d []byte) error {
 }
 
 func (b *builder) statico(nome string) string {
-	if b.anteprima {
-		nome = strings.TrimSuffix(nome, path.Ext(nome))
-	}
 	return b.base + "statico/" + nome
 }
 
