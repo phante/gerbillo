@@ -84,3 +84,9 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .mappa-punto { height: 18rem; margin-top: .5rem; border-radius: 6px; border: 1px solid #ccc; z-index: 0; }
 .pin-punto span { display: block; width: 20px; height: 20px; background: #d00; border: 3px solid #fff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 1px 4px rgba(0,0,0,.5); }
 .usa-diga { margin-top: .5rem; }
+.foto-scheda { margin: 0 0 1rem; }
+.foto-scheda img { display: block; max-width: 100%; height: auto; max-height: 70vh; width: auto; border-radius: 4px; background: #ddd; }
+.foto-scheda figcaption { margin-top: .4rem; }
+.file-foto { width: 100%; border-collapse: collapse; margin-top: .75rem; font-size: .9rem; }
+.file-foto th, .file-foto td { text-align: left; padding: .3rem .4rem; border-bottom: 1px solid #eee; }
+.tecniche code { overflow-wrap: anywhere; font-size: .8rem; }

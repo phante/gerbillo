@@ -8,7 +8,6 @@ package main
 // producono uno solo alla fine. La rigenerazione parziale è #15.
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -100,6 +99,7 @@ type redazione struct {
 
 	voc   *vocabolario // nil: le Categorie non si controllano (nessun vocabolario nel seme)
 	cache cacheVoci    // voci note per i chip (#53)
+	opz   opzioniBuild // le opzioni del build, per le immagini nella scheda (#55)
 
 	mu              sync.Mutex
 	inCorso, ancora bool
@@ -391,6 +391,7 @@ type corpoFotoBackend struct {
 	// Navigazione nell'elenco filtrato da cui si è aperta la scheda (#49).
 	Elenco, Prima, Dopo string
 	Pos, Tot            int
+	Testata             testata // la Foto e le informazioni tecniche (#55)
 }
 
 // foto risponde a /admin/foto/<pid>: la scheda in GET, il salvataggio in POST. Il modulo
@@ -408,6 +409,12 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 	case "freschezza":
 		r.freschezza(w, req)
 		return
+	}
+	if p, ok := strings.CutSuffix(resto, "/file"); ok {
+		if pid, err := strconv.Atoi(p); err == nil {
+			r.fileDellaFoto(w, req, pid)
+			return
+		}
 	}
 	pid, err := strconv.Atoi(resto)
 	if err != nil {
@@ -488,6 +495,7 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		c.Voci = append(c.Voci, vm)
 	}
 	c.Build = r.statoBuild()
+	c.Testata = r.testataDi(pub)
 	if req.Method == http.MethodPost && daHtmx(req) {
 		mostraFrammento(w, "modulo", c)
 		return
@@ -583,22 +591,18 @@ func redazioneAnteprima(seme, contenuti, dist, modifiche, indiceRed string) (*re
 			return nil, err
 		}
 	}
-	f, err := os.Open(filepath.Join(seme, "build.args"))
+	opzioni, opz, err := leggiArgsBuild(filepath.Join(seme, "build.args"))
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	args := []string{"build", "-contenuti", contenuti, "-indice", filepath.Join(seme, "indice.json"), "-dist", modifiche, "-confronta", dist,
-		"-redazione", indiceRed}
-	for sc := bufio.NewScanner(f); sc.Scan(); {
-		args = append(args, sc.Text())
-	}
+	args := append([]string{"build", "-contenuti", contenuti, "-indice", filepath.Join(seme, "indice.json"), "-dist", modifiche, "-confronta", dist,
+		"-redazione", indiceRed}, opzioni...)
 	eseguibile, err := os.Executable()
 	if err != nil {
 		return nil, err
 	}
 	r := &redazione{contenuti: contenuti, indice: filepath.Join(seme, "indice.json"),
-		fileIndice: indiceRed, semeIndice: filepath.Join(seme, "redazione.json")}
+		fileIndice: indiceRed, semeIndice: filepath.Join(seme, "redazione.json"), opz: opz}
 	if err := r.caricaIndice(); err != nil {
 		log.Printf("indice della redazione: %v", err)
 	}

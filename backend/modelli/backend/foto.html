@@ -7,7 +7,24 @@
   {{if .Prima}}<a class="pulsante pulsante-secondario" href="{{.Prima}}" rel="prev" aria-label="Foto precedente">←</a>{{end}}
   {{if .Dopo}}<a class="pulsante pulsante-secondario" href="{{.Dopo}}" rel="next" aria-label="Foto successiva">→</a>{{end}}
 </nav>
-<p class="mt0"><a class="link blue" href="{{.Pubblica}}">Pagina pubblica della Foto</a></p>
+{{$c := .}}{{with .Testata}}<figure class="foto-scheda">
+  {{if .Immagine}}<a href="{{$c.Pubblica}}"><img src="{{.Immagine}}" alt="Foto {{$c.Pid}}"{{if .Larghezza}} width="{{.Larghezza}}" height="{{.Altezza}}"{{end}}></a>{{end}}
+  <figcaption><a class="link blue" href="{{$c.Pubblica}}">Pagina pubblica della Foto</a></figcaption>
+</figure>
+<details class="riquadro tecniche">
+  <summary class="b pointer">Informazioni tecniche</summary>
+  <dl class="coppie mt2">
+    <dt>Formato</dt><dd>{{.Formato}}{{if .Larghezza}} · {{.Larghezza}} × {{.Altezza}} px{{end}}</dd>
+    {{if .Caricata}}<dt>Caricata</dt><dd>{{.Caricata}}</dd>{{end}}
+    {{if .Contributore}}<dt>Contributore</dt><dd>{{.Contributore}}</dd>{{end}}
+    <dt>Album Coppermine</dt><dd><a class="link blue" href="{{.LinkAlbum}}">{{if .Album}}{{.Album}}{{else}}album{{end}} ({{.Aid}})</a></dd>
+    <dt>EXIF</dt><dd>{{if .Exif}}<code>{{.Exif}}</code>{{else}}—{{end}}</dd>
+    <dt>user3</dt><dd>{{if .User3}}{{.User3}}{{else}}—{{end}}</dd>
+  </dl>
+  <div hx-get="foto/{{$c.Pid}}/file" hx-trigger="toggle from:closest details once" hx-swap="outerHTML">
+    <p class="nota">File: si leggono all'apertura.</p>
+  </div>
+</details>{{end}}
 {{template "modulo" .}}
 {{end}}
 {{template "piede" .}}{{end}}
@@ -90,3 +107,12 @@
 <p class="nota">Tocca la mappa per mettere il pin, poi trascinalo. Lo sfondo satellitare è nel selettore in alto a destra.</p>
 {{with .Ereditato}}<button type="button" class="pulsante pulsante-secondario usa-diga">Usa quello della diga</button>
 <span class="nota">Svuota il Punto: la Foto eredita quello di {{.Diga}}.</span>{{end}}{{end}}
+
+{{define "file-foto"}}<table class="file-foto">
+  <thead><tr><th>File</th><th>Dimensioni</th><th>Peso</th></tr></thead>
+  <tbody>{{range .}}<tr>
+    <td>{{if .URL}}<a class="link blue" href="{{.URL}}">{{.Nome}}</a>{{else}}{{.Nome}}{{end}}</td>
+    {{if .Errore}}<td colspan="2" class="nota">{{.Errore}}</td>{{else}}
+    <td>{{if .Larghezza}}{{.Larghezza}} × {{.Altezza}}{{else}}—{{end}}</td><td>{{.Peso}}</td>{{end}}
+  </tr>{{end}}</tbody>
+</table>{{end}}
