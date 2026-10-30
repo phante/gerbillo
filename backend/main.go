@@ -38,8 +38,14 @@ func main() {
 		fmt.Fprintln(os.Stderr, "uso: gerbillo serve | importa | indice-entita | varianti | build")
 		os.Exit(2)
 	}
-	// Nell'anteprima l'utente corrente è solo l'admin, con la password usa e getta (#42).
-	var uc utenteCorrente = nuovaPasswordAnteprima(os.Getenv("GERBILLO_PASSWORD"))
+	// Con GERBILLO_BRIDGE l'utente corrente è quello del forum (#66). Nell'anteprima, che non ha
+	// il forum, è chi si sceglie dopo la password usa e getta.
+	var uc utenteCorrente
+	if u := os.Getenv("GERBILLO_BRIDGE"); u != "" {
+		uc = nuovoBridge(u, os.Getenv("GERBILLO_FORUM_LOGIN"))
+	} else {
+		uc = nuovaPasswordAnteprima(os.Getenv("GERBILLO_PASSWORD"))
+	}
 	// Nell'anteprima la Gallery pubblica generata in CI sta in /dist (ADR 0011, 0012); quella
 	// rigenerata dopo una modifica (#43) sta in /tmp/dist, con i soli file cambiati, e vince.
 	dist := envOr("GERBILLO_DIST", "/dist")

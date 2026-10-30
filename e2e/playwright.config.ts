@@ -6,6 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const porta = process.env.PORTA || '8091';
 const remoto = process.env.E2E_URL;
+const base = remoto || `http://127.0.0.1:${porta}/gerbillo/`;
 
 export default defineConfig({
   testDir: 'test',
@@ -16,8 +17,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: remoto || `http://127.0.0.1:${porta}/gerbillo/`,
+    baseURL: base,
     httpCredentials: { username: 'gerbillo', password: process.env.E2E_PASSWORD || 'prova' },
+    // Si entra come amministratore senza passare dalla scelta dell'utente: la prova utenti.spec.ts.
+    storageState: {
+      cookies: [{ name: 'gerbillo_anteprima', value: 'admin', domain: new URL(base).hostname, path: '/', expires: -1, httpOnly: true, secure: false, sameSite: 'Lax' }],
+      origins: [],
+    },
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'telefono', use: { ...devices['Pixel 7'] } }],

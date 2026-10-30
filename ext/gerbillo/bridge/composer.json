@@ -1,0 +1,13 @@
+{
+	"name": "gerbillo/bridge",
+	"type": "phpbb-extension",
+	"description": "Dice al Backend di Gerbillo chi è il proprietario di una sessione del forum (ADR 0008).",
+	"version": "1.0.0",
+	"license": "GPL-2.0-only",
+	"authors": [{ "name": "Elvis Del Tedesco" }],
+	"require": { "php": ">=7.2" },
+	"extra": {
+		"display-name": "Gerbillo: bridge del Backend",
+		"soft-require": { "phpbb/phpbb": ">=3.3.0,<4.0.0" }
+	}
+}

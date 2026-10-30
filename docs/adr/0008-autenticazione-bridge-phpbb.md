@@ -11,3 +11,5 @@ Il Backend non ha utenti propri: riusa la sessione del forum. Un'estensione phpB
 
 - Il percorso dei cookie di phpBB deve essere `/`.
 - Il bridge non crea sessioni nuove: se la sessione non esiste risponde "ospite". `session_begin()` in una sottorichiesta con "ricordami" creerebbe sessioni a ripetizione, perché i `Set-Cookie` vanno persi.
+- `app.php` di phpBB chiama comunque `session_begin()` prima di ogni controller. Perciò il Backend non inoltra il cookie `_k`, e il controller legge la sessione del cookie `_sid` direttamente dalla tabella: la chiamata viene da `127.0.0.1`, e `session_begin()` non riconoscerebbe l'IP del browser. Ogni chiamata lascia una sessione da ospite su `127.0.0.1`, che phpBB pulisce da solo (#66).
+- La sessione propria del Backend sta in memoria, ha come chiave il `_sid` del forum e dura 15 minuti. È il ritardo massimo con cui il Backend vede un cambio di gruppo o un ban.
