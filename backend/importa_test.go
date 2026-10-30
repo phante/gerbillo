@@ -154,13 +154,13 @@ func TestSenzaDecisione(t *testing.T) {
 		riservati: map[int]int{390: 102, 959: 12196, 603: 2},
 		utenti:    map[int]string{2196: "proprietario"},
 		album: albumCoppermine{Album: map[int]albumYAML{
-			390: {16, 31, "Riservata"}, 959: {12196, 367, "Val d'Ultimo"}, 603: {6, 17, "Valtellina"},
+			390: {16, 31, "Album A"}, 959: {12196, 367, "Album B"}, 603: {6, 17, "Album C"},
 		}},
 	}
 	righe := senzaDecisione(d, map[int]string{603: pubblicaAlbum})
 	atteso := []string{
-		"| 390 | Riservata | amministratori | — | 31 |",
-		"| 959 | Val d'Ultimo | solo il proprietario | 2196 proprietario | 367 |",
+		"| 390 | Album A | amministratori | — | 31 |",
+		"| 959 | Album B | solo il proprietario | 2196 proprietario | 367 |",
 	}
 	if !slices.Equal(righe, atteso) {
 		t.Errorf("%q", righe)

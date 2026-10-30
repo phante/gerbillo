@@ -5,7 +5,7 @@ Come si sviluppa Gerbillo senza computer: sessioni cloud di Claude Code, avviate
 ## Decisioni già prese (non ridiscuterle)
 
 - **Il server di produzione non si tocca da remoto.** Nessuna sessione apre SSH, lancia comandi sull'host o propone leve per farlo. Se serve un intervento sul server, lo si annota e lo si fa al rientro.
-- **`testdata/` è pubblico per scelta.** Le dighe vengono dal Sito principale, che è pubblico. Coppermine è anonimizzato (username e Autore pseudonimizzati, EXIF ridotto alla data di scatto; Coppermine non salva il GPS). Si usa liberamente in test, commit e anteprima.
+- **`testdata/` è pubblico per scelta.** Le dighe vengono dal Sito principale, che è pubblico. Coppermine è anonimizzato (username e Autore pseudonimizzati, EXIF ridotto alla data di scatto; Coppermine non salva il GPS), e non contiene gli album riservati né le loro Foto. Si usa liberamente in test, commit e anteprima.
 - **Claude fa merge su `main`** quando glielo chiedi. Una sessione alla volta. Ogni push su qualunque branch pubblica l'anteprima, e vince l'ultimo push.
 - **Upload attivo sull'anteprima.** Lo protegge la password usa e getta, che arriva su Telegram.
 
