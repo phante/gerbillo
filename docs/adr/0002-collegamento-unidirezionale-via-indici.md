@@ -1,3 +1,7 @@
-# Tassonomia nel Sito principale, collegamento solo tramite due indici JSON
+# Gallery e Sito principale si parlano solo tramite due indici JSON
 
-La fonte di verità delle Entità è la directory `content` di Hugo del Sito principale. Le Foto fanno riferimento alle Entità solo tramite Slug. I due siti si parlano esclusivamente con due file JSON: l'Indice delle Entità (dal Sito principale alla gallery) e l'Indice delle Foto (dalla gallery al Sito principale). Il Backend non scrive mai nel repository del Sito principale. L'accoppiamento resta minimo e ogni sito si può costruire e rilasciare da solo.
+Corretto il 30/10/2026 (ADR 0019).
+
+La Gallery pubblica è un sito separato dal Sito principale, e ciascuno si costruisce e si rilascia da solo. Si parlano esclusivamente con due file JSON: l'Indice delle Entità (dal Sito principale alla gallery), che porta le pagine del sito con le loro schede, e l'Indice delle Foto (dalla gallery al Sito principale), che elenca le Foto per Slug. Il Backend non scrive mai nel repository del Sito principale.
+
+L'Indice delle Entità è una delle due fonti delle Entità della Gallery, non l'unica: l'altra sono i file di `entita/` (ADR 0019).
