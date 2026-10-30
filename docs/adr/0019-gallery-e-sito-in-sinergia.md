@@ -8,7 +8,7 @@ Deciso il 30/10/2026, nel grill di #62. Corregge il modello di partenza, in cui 
 - **Sinergia.** Se il sito ha lo stesso Slug, la pagina della Gallery prende link e scheda dati. Il formato comune di Slug e chiavi (ADR 0013) evita traduzioni, e i due indici restano l'unico canale (ADR 0002).
 - **Sezioni.** La Gallery crea Entità in `dighe/`, `centrali/`, `opere/` (opere idrauliche: la Categoria distingue presa, canale, condotta) ed `eventi/`. `reportage/`, `tecnica/` e ogni altra sezione arrivano dal sito e sono accettate senza toccare il codice.
 - **Informazioni interne.** Ciò che serve solo a Moderatori e amministratori resta nel Backend, e il build pubblico non lo scrive mai in `dist/`. Un'informazione nuova nasce interna, salvo decisione contraria. Non avere una pagina sul sito è un'informazione interna: nella Gallery pubblica la pagina si riconosce solo perché manca il link al sito.
-- **Foto senza Entità.** «Da classificare» vale solo per le Foto senza Entità e senza Categoria. Quelle con una Categoria sono classificate, e si trovano nella Vista per Categoria.
+- **Foto senza Entità.** Una Foto con una Categoria è classificata, e si trova nella Vista per Categoria. Una senza Entità e senza Categoria è «Da classificare» solo nel Backend: la Gallery pubblica la mostra in «Altre foto», senza raccontare il lavoro da fare. Oggi la pagina divide per categoria di Coppermine; allo Switch diventa una sola (#40).
 
 ## Considered Options
 

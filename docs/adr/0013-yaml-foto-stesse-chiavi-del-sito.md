@@ -32,7 +32,7 @@ altezza: 1153
 - **`date`**: la Data di caricamento, come la `date` delle pagine e delle immagini del sito.
 - **`authors`**: l'Autore, una lista di persone o enti.
 - **`datazione`**: quando è stata scattata, in EDTF (ISO 8601-2): `2009-06-03`, `2009-06`, `2009`, `195X`, `1938/1940`, `1950~`. `date` non può esprimere la precisione.
-- **`geolocation`**: stesse chiavi del sito. `coords` è il punto geografico centrale associato alla Foto, come nel sito lo è per l'articolo. I campi mancanti si ereditano al build dalla prima Entità in `slug`; `map_ids` si eredita sempre e non si scrive mai nella Foto. `zoom` non serve.
+- **`geolocation`**: stesse chiavi del sito. `coords` è il punto geografico centrale associato alla Foto, come nel sito lo è per l'articolo. `stato`, `regione` e `provincia` mancanti si ereditano al build dalla prima Entità in `slug`. `coords` non si copia: se la Foto non ne ha uno vale quello della prima Entità, calcolato quando una Vista ne ha bisogno, così la Foto segue una correzione dell'Entità. `map_ids` si eredita sempre e non si scrive mai nella Foto. `zoom` non serve.
 - **`credits`** non si salva: si genera da `authors`, `datazione` e Fonte quando una Foto finisce nel sito.
 
 ## Considered Options
