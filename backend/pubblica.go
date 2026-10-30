@@ -28,6 +28,7 @@ type fotoPubblicata struct {
 	Licenza      string // identificativo SPDX; vuota = quella del sito (ADR 0010)
 	Riservata    bool   // album non pubblico di Coppermine (#9): fuori dalla Gallery pubblica
 	Slug         []string
+	DaCensire    []int `yaml:"da_censire"` // Entità da censire (ADR 0018); dopo completa, solo quelle senza Slug
 	Tags         []string
 	Categories   []string
 	Geolocation  geolocFoto
@@ -50,10 +51,13 @@ type fotoPubblicata struct {
 }
 
 type geolocFoto struct {
-	Stato     string
-	Regione   string
-	Provincia string
-	Coords    *struct{ Latitudine, Longitudine float64 }
+	Stato     string `json:"stato,omitempty"`
+	Regione   string `json:"regione,omitempty"`
+	Provincia string `json:"provincia,omitempty"`
+	Coords    *struct {
+		Latitudine  float64 `json:"latitudine"`
+		Longitudine float64 `json:"longitudine"`
+	} `json:"coords,omitempty"`
 }
 
 // tagInterni sono promemoria di lavoro, mai mostrati nella Gallery pubblica.
@@ -61,10 +65,11 @@ type geolocFoto struct {
 var tagInterni = map[string]bool{"da-classificare": true, "da-collegare": true, "da-separare": true}
 
 type contenuti struct {
-	foto   []*fotoPubblicata
-	album  albumCoppermine
-	entita map[string]*entita
-	ignoti []string // "pid: slug" non presenti nell'Indice delle Entità
+	foto      []*fotoPubblicata
+	album     albumCoppermine
+	entita    map[string]*entita
+	daCensire map[int]*entitaDaCensire
+	ignoti    []string // "pid: slug" non presenti nell'Indice delle Entità
 }
 
 // livelloArricchimento sono le cartelle del Livello di arricchimento, dalla più specifica:
@@ -107,6 +112,16 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 	}
 	for i := range idx {
 		c.entita[idx[i].Slug] = &idx[i]
+	}
+	if c.daCensire, err = leggiDaCensire(dir, l); err != nil {
+		return nil, err
+	}
+	for _, id := range chiaviOrdinate(c.daCensire) {
+		// Uno Slug che non c'è più non vale come collegamento: l'Entità resta da censire.
+		if e := c.daCensire[id]; e.Diventata != "" && c.entita[e.Diventata] == nil {
+			c.ignoti = append(c.ignoti, fmt.Sprintf("da censire %d: %s", id, e.Diventata))
+			e.Diventata = ""
+		}
 	}
 	file, err := filepath.Glob(filepath.Join(dir, "importazione", "foto", "*.yaml"))
 	if err != nil {
@@ -273,12 +288,35 @@ func (c *contenuti) completa(f *fotoPubblicata) {
 		}
 		validi = append(validi, s)
 	}
-	f.Slug = validi
-	if len(f.Slug) == 0 {
+	// Un'Entità da censire diventata uno Slug vale come quello Slug, fino al commit del collegamento.
+	var attive []int
+	nota := false
+	for _, id := range f.DaCensire {
+		e := c.daCensire[id]
+		switch {
+		case e == nil:
+			c.ignoti = append(c.ignoti, fmt.Sprintf("%d: da censire %d", f.Pid, id))
+			continue
+		case e.Diventata == "":
+			attive = append(attive, id)
+		case !slices.Contains(validi, e.Diventata):
+			validi = append(validi, e.Diventata)
+		}
+		nota = true
+	}
+	f.Slug, f.DaCensire = validi, attive
+	if nota { // si sa cosa ritrae (ADR 0018)
+		f.Tags = slices.DeleteFunc(f.Tags, func(t string) bool { return t == daCollegare })
+	}
+	if f.Geolocation.Stato != "" {
 		return
 	}
-	g := c.entita[f.Slug[0]].Geolocation
-	if f.Geolocation.Stato == "" {
+	switch {
+	case len(f.Slug) > 0:
+		g := c.entita[f.Slug[0]].Geolocation
+		f.Geolocation.Stato, f.Geolocation.Regione, f.Geolocation.Provincia = g.Stato, g.Regione, g.Provincia
+	case len(f.DaCensire) > 0:
+		g := c.daCensire[f.DaCensire[0]].Geolocation
 		f.Geolocation.Stato, f.Geolocation.Regione, f.Geolocation.Provincia = g.Stato, g.Regione, g.Provincia
 	}
 }
