@@ -131,6 +131,9 @@ func build(args []string) error {
 	for _, s := range cont.ignoti {
 		fmt.Fprintln(os.Stderr, "slug sconosciuto:", s)
 	}
+	for _, s := range cont.avvisi {
+		fmt.Fprintln(os.Stderr, "da sistemare:", s)
+	}
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	fmt.Printf("build: %d Foto, %d pagine in %s; memoria Go massima %d MiB\n",
@@ -150,8 +153,6 @@ type builder struct {
 	// per ogni Foto: l'elenco in cui sta (per precedente e successiva) e la sua posizione
 	contesto map[int]contestoFoto
 	mappe    map[string]int // map_ids → Entità che la hanno (stessaMappa)
-	// id dell'Entità da censire → le sue Foto (dacensire.go)
-	perCensire map[int][]*fotoPubblicata
 }
 
 type contestoFoto struct {
@@ -186,6 +187,11 @@ type corpoGriglia struct {
 type mappaDiga struct {
 	Centro, GeoJSON string
 	Zoom            int
+}
+
+type corpoRimando struct {
+	Refresh    template.HTMLAttr
+	URL, Testo string
 }
 
 type corpoElenco struct {
@@ -296,8 +302,6 @@ func (b *builder) titolo(f *fotoPubblicata) string {
 		return f.Title
 	case len(f.Slug) > 0:
 		return b.c.entita[f.Slug[0]].Title + " · foto " + strconv.Itoa(f.Pid)
-	case len(f.DaCensire) > 0:
-		return b.c.daCensire[f.DaCensire[0]].Nome + " · foto " + strconv.Itoa(f.Pid)
 	}
 	return "Foto " + strconv.Itoa(f.Pid)
 }
@@ -315,19 +319,16 @@ func (b *builder) tutto() error {
 	perContributore := map[int][]*fotoPubblicata{}
 	nomi := map[int]string{}
 	altre := map[int][]*fotoPubblicata{} // Categoria Coppermine radice → Foto senza slug
-	b.perCensire = map[int][]*fotoPubblicata{}
 	for _, f := range b.c.foto {
 		for _, s := range f.Slug {
 			perEntita[s] = append(perEntita[s], f)
-		}
-		for _, id := range f.DaCensire {
-			b.perCensire[id] = append(b.perCensire[id], f)
 		}
 		if f.Contributore != nil {
 			perContributore[f.Contributore.ID] = append(perContributore[f.Contributore.ID], f)
 			nomi[f.Contributore.ID] = f.Contributore.Nome
 		}
-		if len(f.Slug) == 0 && len(f.DaCensire) == 0 {
+		// Da classificare: senza Entità e senza Categoria (ADR 0019).
+		if len(f.Slug) == 0 && len(f.Categories) == 0 {
 			r := b.radice(f.Coppermine.Aid)
 			altre[r] = append(altre[r], f)
 		}
@@ -350,10 +351,20 @@ func (b *builder) tutto() error {
 			return err
 		}
 	}
-	if err := b.pagineDaCensire(casa); err != nil {
-		return err
+	// Alias: una pagina di rimando per ogni Slug vecchio di un'Entità con Foto (ADR 0018).
+	for _, a := range chiaviOrdinate(b.c.rimandi) {
+		s := b.c.rimandi[a]
+		if len(perEntita[s]) == 0 {
+			continue
+		}
+		u := b.url(s)
+		corpo := corpoRimando{URL: u, Testo: b.c.entita[s].Title,
+			Refresh: template.HTMLAttr(`content="0; url=` + template.HTMLEscapeString(u) + `"`)}
+		if err := b.scrivi("rimando", paginaSito{Titolo: b.c.entita[s].Title, Corpo: corpo}, strings.Split(a, "/")...); err != nil {
+			return err
+		}
 	}
-	// Da classificare: Foto senza slug, per Categoria Coppermine.
+	// Da classificare: per Categoria Coppermine.
 	gruppiAltre := chiaviOrdinate(altre)
 	daClassificare := voce{URL: b.url("altre"), Testo: "Da classificare"}
 	for _, cid := range gruppiAltre {
@@ -390,9 +401,6 @@ func (b *builder) tutto() error {
 		return err
 	}
 	if err := b.elencoAltre(gruppiAltre, altre, casa); err != nil {
-		return err
-	}
-	if err := b.scriviIndiceDaCensire(); err != nil {
 		return err
 	}
 	return b.statici(perEntita)
@@ -432,7 +440,7 @@ func (b *builder) mappaDiga(s string, per map[string][]*fotoPubblicata, slugs []
 }
 
 func (b *builder) griglie(fs []*fotoPubblicata, tit, sotto string, link, briciole []voce, esplora []gruppoEsplora, mappa *mappaDiga, parti ...string) error {
-	n := max((len(fs)+perPagina-1)/perPagina, 1) // un'Entità da censire può restare senza Foto: la pagina resta
+	n := (len(fs) + perPagina - 1) / perPagina
 	pag := func(k int) string {
 		if k == 1 {
 			return b.url(parti...)
@@ -518,9 +526,6 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 			c.SulSito = append(c.SulSito, voce{URL: b.sito + s + "/", Testo: e.Title})
 		}
 	}
-	for _, id := range f.DaCensire {
-		c.Dighe = append(c.Dighe, voce{URL: b.url(parteDaCensire(id)...), Testo: b.c.daCensire[id].Nome})
-	}
 	if len(c.Dighe) < 2 {
 		c.Dighe = nil // una sola diga è già nelle briciole
 	}
@@ -543,7 +548,8 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 // home è la Vista ad albero: stato → regione → Entità.
 func (b *builder) home(perEntita map[string][]*fotoPubblicata, slugs []string) error {
 	albero := map[string]map[string][]voce{}
-	aggiungi := func(e *entita, v voce) {
+	for _, s := range slugs {
+		e, fs := b.c.entita[s], perEntita[s]
 		st, reg := e.Geolocation.Stato, e.Geolocation.Regione
 		if st == "" {
 			st = "Senza stato"
@@ -551,15 +557,7 @@ func (b *builder) home(perEntita map[string][]*fotoPubblicata, slugs []string) e
 		if albero[st] == nil {
 			albero[st] = map[string][]voce{}
 		}
-		albero[st][reg] = append(albero[st][reg], v)
-	}
-	for _, s := range slugs {
-		e, fs := b.c.entita[s], perEntita[s]
-		aggiungi(e, voce{URL: b.url(s), Testo: e.Title, Mini: b.mini(fs[0]), N: len(fs)})
-	}
-	for _, id := range b.conFoto() {
-		e, fs := b.c.daCensire[id], b.perCensire[id]
-		aggiungi(e.comeEntita(), voce{URL: b.url(parteDaCensire(id)...), Testo: e.Nome, Mini: b.mini(fs[0]), N: len(fs), Sito: nonSulSito})
+		albero[st][reg] = append(albero[st][reg], voce{URL: b.url(s), Testo: e.Title, Mini: b.mini(fs[0]), N: len(fs)})
 	}
 	stati := chiaviOrdinate(albero)
 	if i := slices.Index(stati, "Italia"); i > 0 {

@@ -81,7 +81,7 @@ document.addEventListener("click",function(e){
 </html>
 {{end}}
 
-{{/* Una pagina statica non può rispondere 301: rimanda con il meta refresh (ADR 0018). */}}
+{{/* Una pagina statica non può rispondere 301: l'Alias rimanda con il meta refresh (ADR 0018). */}}
 {{define "rimando"}}<!doctype html>
 <html lang="it">
 <head>
@@ -142,7 +142,7 @@ document.addEventListener("click",function(e){
   <a class="link w-100 bb b--black-10 pb2 dim flex flex-column" href="{{.URL}}">
     <div class="aspect-ratio aspect-ratio--1x1 w-100">{{if .Mini}}<img class="aspect-ratio--object cover br4 bg-light-gray" src="{{.Mini}}" alt="" loading="lazy" decoding="async">{{end}}</div>
     <h2 class="f5 tracked-tight lh-title black-80 mt2 mb0 flex-auto">{{.Testo}}</h2>
-    <span class="f6 black-60 mt1">{{.N}} foto{{if .Sito}} · {{.Sito}}{{end}}</span>
+    <span class="f6 black-60 mt1">{{.N}} foto</span>
   </a>
 </article>
 {{end}}</div>

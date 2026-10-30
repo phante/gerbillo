@@ -28,7 +28,6 @@ type fotoPubblicata struct {
 	Licenza      string // identificativo SPDX; vuota = quella del sito (ADR 0010)
 	Riservata    bool   // album non pubblico di Coppermine (#9): fuori dalla Gallery pubblica
 	Slug         []string
-	DaCensire    []int `yaml:"da_censire"` // Entità da censire (ADR 0018); dopo completa, solo quelle senza Slug
 	Tags         []string
 	Categories   []string
 	Geolocation  geolocFoto
@@ -51,13 +50,10 @@ type fotoPubblicata struct {
 }
 
 type geolocFoto struct {
-	Stato     string `json:"stato,omitempty"`
-	Regione   string `json:"regione,omitempty"`
-	Provincia string `json:"provincia,omitempty"`
-	Coords    *struct {
-		Latitudine  float64 `json:"latitudine"`
-		Longitudine float64 `json:"longitudine"`
-	} `json:"coords,omitempty"`
+	Stato     string
+	Regione   string
+	Provincia string
+	Coords    *struct{ Latitudine, Longitudine float64 }
 }
 
 // tagInterni sono promemoria di lavoro, mai mostrati nella Gallery pubblica.
@@ -65,11 +61,13 @@ type geolocFoto struct {
 var tagInterni = map[string]bool{"da-classificare": true, "da-collegare": true, "da-separare": true}
 
 type contenuti struct {
-	foto      []*fotoPubblicata
-	album     albumCoppermine
-	entita    map[string]*entita
-	daCensire map[int]*entitaDaCensire
-	ignoti    []string // "pid: slug" non presenti nell'Indice delle Entità
+	foto   []*fotoPubblicata
+	album  albumCoppermine
+	entita map[string]*entita
+	ignoti []string // "pid: slug" non presenti fra le Entità
+	// rimandi: Alias → Slug attuale; avvisi: cose da sistemare, segnalate dal build (entita.go)
+	rimandi map[string]string
+	avvisi  []string
 }
 
 // livelloArricchimento sono le cartelle del Livello di arricchimento, dalla più specifica:
@@ -113,16 +111,7 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 	for i := range idx {
 		c.entita[idx[i].Slug] = &idx[i]
 	}
-	if c.daCensire, err = leggiDaCensire(dir, l); err != nil {
-		return nil, err
-	}
-	for _, id := range chiaviOrdinate(c.daCensire) {
-		// Uno Slug che non c'è più non vale come collegamento: l'Entità resta da censire.
-		if e := c.daCensire[id]; e.Diventata != "" && c.entita[e.Diventata] == nil {
-			c.ignoti = append(c.ignoti, fmt.Sprintf("da censire %d: %s", id, e.Diventata))
-			e.Diventata = ""
-		}
-	}
+	c.rimandi, c.avvisi = st.rimandi, st.avvisi
 	file, err := filepath.Glob(filepath.Join(dir, "importazione", "foto", "*.yaml"))
 	if err != nil {
 		return nil, err
@@ -157,13 +146,16 @@ type strati struct {
 	mappe     map[int]*mappatura // aid → Mappatura
 	decisioni map[int]string     // riservati.yaml
 	alias     aliasAutori
+	rimandi   map[string]string
+	avvisi    []string
 }
 
 func leggiStrati(dir, indice string, l livelloArricchimento, album *albumCoppermine) (*strati, []entita, error) {
-	idx, err := leggiIndice(indice)
+	unite, err := leggiEntita(dir, indice, l)
 	if err != nil {
 		return nil, nil, err
 	}
+	idx := unite.idx
 	b, err := os.ReadFile(filepath.Join(dir, "importazione", "album.yaml"))
 	if err != nil {
 		return nil, nil, err
@@ -171,7 +163,7 @@ func leggiStrati(dir, indice string, l livelloArricchimento, album *albumCopperm
 	if err := yaml.Unmarshal(b, album); err != nil {
 		return nil, nil, err
 	}
-	st := &strati{l: l}
+	st := &strati{l: l, rimandi: unite.rimandi, avvisi: unite.avvisi}
 	var manuali fileMappature
 	if err := l.leggi("mappature.yaml", &manuali); err != nil {
 		return nil, nil, err
@@ -282,41 +274,25 @@ func (c *contenuti) completa(f *fotoPubblicata) {
 	}
 	var validi []string
 	for _, s := range f.Slug {
+		if nuovo, ok := c.rimandi[s]; ok { // uno Slug vecchio vale come quello attuale
+			s = nuovo
+		}
 		if c.entita[s] == nil {
 			c.ignoti = append(c.ignoti, fmt.Sprintf("%d: %s", f.Pid, s))
 			continue
 		}
-		validi = append(validi, s)
-	}
-	// Un'Entità da censire diventata uno Slug vale come quello Slug, fino al commit del collegamento.
-	var attive []int
-	nota := false
-	for _, id := range f.DaCensire {
-		e := c.daCensire[id]
-		switch {
-		case e == nil:
-			c.ignoti = append(c.ignoti, fmt.Sprintf("%d: da censire %d", f.Pid, id))
-			continue
-		case e.Diventata == "":
-			attive = append(attive, id)
-		case !slices.Contains(validi, e.Diventata):
-			validi = append(validi, e.Diventata)
+		if !slices.Contains(validi, s) {
+			validi = append(validi, s)
 		}
-		nota = true
 	}
-	f.Slug, f.DaCensire = validi, attive
-	if nota { // si sa cosa ritrae (ADR 0018)
-		f.Tags = slices.DeleteFunc(f.Tags, func(t string) bool { return t == daCollegare })
-	}
-	if f.Geolocation.Stato != "" {
+	f.Slug = validi
+	if len(f.Slug) == 0 {
 		return
 	}
-	switch {
-	case len(f.Slug) > 0:
-		g := c.entita[f.Slug[0]].Geolocation
-		f.Geolocation.Stato, f.Geolocation.Regione, f.Geolocation.Provincia = g.Stato, g.Regione, g.Provincia
-	case len(f.DaCensire) > 0:
-		g := c.daCensire[f.DaCensire[0]].Geolocation
+	// Si sa cosa ritrae.
+	f.Tags = slices.DeleteFunc(f.Tags, func(t string) bool { return t == daCollegare })
+	g := c.entita[f.Slug[0]].Geolocation
+	if f.Geolocation.Stato == "" {
 		f.Geolocation.Stato, f.Geolocation.Regione, f.Geolocation.Provincia = g.Stato, g.Regione, g.Provincia
 	}
 }

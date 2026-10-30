@@ -73,13 +73,11 @@ func importa(args []string) error {
 			return fmt.Errorf("categories fuori dal vocabolario in mappature.yaml:\n%s", strings.Join(fuori, "\n"))
 		}
 	}
-	var idx []entita
-	if *indice != "" {
-		var err error
-		if idx, err = leggiIndice(*indice); err != nil {
-			return err
-		}
+	unite, err := leggiEntita(c.Contenuti, *indice, liv)
+	if err != nil {
+		return err
 	}
+	idx := unite.idx
 	sock := c.MySQL.Socket
 	if c.SSH.Host != "" {
 		locale, chiudi, err := tunnel(c.SSH.Host, sock)

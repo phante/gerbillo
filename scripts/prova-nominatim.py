@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prova di Nominatim per le aree amministrative delle Entità da censire (Q29 del grill).
+"""Prova di Nominatim per le aree amministrative delle Entità senza pagina (ADR 0018).
 
 Per un'Entità del sito per ogni provincia (e per ogni stato estero) chiede a Nominatim il
 reverse geocoding del Punto geografico e confronta stato, regione e provincia con i valori

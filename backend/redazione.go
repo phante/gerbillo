@@ -311,7 +311,7 @@ func (r *redazione) prepara(st *strati, idx []entita, pid int, modifica func(att
 		if c.chiave == "slug" {
 			for _, s := range strings.Split(v, "\n") {
 				if s != "" && !slices.ContainsFunc(idx, func(e entita) bool { return e.Slug == s }) {
-					return fileNuovo{}, fmt.Errorf("slug %q non è nell'Indice delle Entità", s)
+					return fileNuovo{}, fmt.Errorf("slug %q non è fra le Entità", s)
 				}
 			}
 		}
@@ -662,6 +662,15 @@ func redazioneAnteprima(seme, contenuti, dist, modifiche, indiceRed string) (*re
 		}
 		if err := os.CopyFS(filepath.Join(contenuti, "arricchimento"), os.DirFS(filepath.Join(seme, "arricchimento"))); err != nil {
 			return nil, err
+		}
+		// Le Entità della Gallery stanno fuori dal Livello di arricchimento (ADR 0018).
+		if semeEntita := filepath.Join(contenuti, "arricchimento", "entita"); esiste(semeEntita) {
+			if err := os.Rename(semeEntita, filepath.Join(contenuti, "entita")); err != nil {
+				return nil, err
+			}
+			if err := registra(contenuti, "entita", "anteprima: Entità da dati/arricchimento/entita", ""); err != nil {
+				return nil, err
+			}
 		}
 		if err := registra(contenuti, "arricchimento", "anteprima: Livello di arricchimento da dati/arricchimento", ""); err != nil {
 			return nil, err
