@@ -62,15 +62,18 @@ _Avoid_: tag, campo
 Un'etichetta libera ma da vocabolario controllato, con gli stessi valori dei tag del Sito principale quando esistono (campo `tags`).
 
 **Categoria**:
-Il genere del soggetto di una Foto, con valori a percorso (es. `tecnica/turbine`, campo `categories`). Dice di che genere è, mentre l'Entità dice chi è. Una Foto senza Entità e senza Categoria è «Da classificare».
+Il genere del soggetto di una Foto, con valori a percorso (es. `tecnica/turbine`, campo `categories`). Dice di che genere è, mentre l'Entità dice chi è. Una Foto senza Entità e senza Categoria è «Da classificare» nel Backend e sta in «Altre foto» nella Gallery pubblica.
 _Avoid_: tema
 
 **Punto geografico**:
-Il punto geografico associato alla Foto (`geolocation.coords`), come nel sito lo è per l'articolo. Viene dal GPS dell'EXIF se chi carica lo consente, oppure si inserisce o corregge a mano, e il valore a mano vince. Se manca si eredita dall'Entità.
+Il punto geografico associato alla Foto (`geolocation.coords`), come nel sito lo è per l'articolo. Viene dal GPS dell'EXIF se chi carica lo consente, oppure si inserisce o corregge a mano, e il valore a mano vince. Se la Foto non ne ha uno, vale quello della sua prima Entità: non si copia nella Foto, si calcola quando serve (ADR 0013). Senza Entità, o se l'Entità non ha un punto, la Foto resta senza.
 
 **Posizione nascosta**:
-La scelta di chi carica di non pubblicare il GPS di una Foto: il GPS si toglie dall'Originale prima di salvarlo, e il Punto geografico si eredita dall'Entità. Riguarda solo la posizione: data, Autore ed EXIF utili restano.
+Il rifiuto del GPS da parte di chi carica, prima del caricamento: il GPS si toglie dall'Originale prima di salvarlo. Non vuol dire restare senza posizione: chi carica può indicare un Punto geografico a mano, altrimenti vale quello dell'Entità. Riguarda solo il GPS: data, Autore ed EXIF utili restano.
 _Avoid_: anonimizzazione
+
+**Consenso al GPS**:
+L'autorizzazione di chi carica a usare, mantenere e pubblicare il GPS di una Foto, chiesta prima di ogni caricamento con GPS e registrata come Informazione interna. Si ritira con una mail, non con una funzione del Backend (ADR 0015).
 
 **Datazione**:
 Il momento in cui la Foto è stata scattata, con precisione esplicita (giorno, mese, anno, decennio o intervallo), in EDTF. Distinta dalla Data di scansione e dalla Data di caricamento. Nelle Foto importate viene dall'EXIF (#18); da `user3` di Coppermine, con regole fisse, solo per le candidate: le Foto senza EXIF con `user3` più di un anno prima della Data di caricamento, e le scansioni, con l'EXIF più di un anno dopo `user3`. Per le scansioni importate la Data di scansione non si conserva: l'EXIF resta solo grezzo (#39). Per le altre Foto `user3` si mostra come testo, se manca la Datazione.
