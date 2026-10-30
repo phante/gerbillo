@@ -5,6 +5,8 @@
   casuale che non viene mai salvata. Stessa parola, stessa parola finta, in entrambi i
   campi. Iniziale, maiuscole, punteggiatura, numeri ed entità HTML restano.
 - exifData: resta solo la data di scatto (Coppermine non salva il GPS).
+- album riservati (visibility diversa da 0): spariscono con le loro Foto ed EXIF. Il dump è
+  pubblico, e filepath e filename porterebbero ai file privati.
 - tutto il resto resta byte per byte (latin1 grezzo con dentro UTF-8 e cp1252).
 
 Uso: scripts/anonimizza-coppermine.py
@@ -96,6 +98,21 @@ def valore_sql(b: bytes | str | None, tipo: str) -> str:
     return "X'" + b.hex() + "'" if b else "''"
 
 
+def senza_riservate(righe: dict[str, list[list[str | None]]]) -> dict[str, list[list[str | None]]]:
+    """Tiene solo album con visibility 0, le Foto di quegli album e i loro EXIF. Una Foto di un
+    album che non c'è si toglie: in dubbio non si pubblica. I valori sono esadecimali."""
+    colonna = lambda tab, nome: SELEZIONE[tab].split().index(nome)
+    aid, vis = colonna("cpg1410_albums", "aid"), colonna("cpg1410_albums", "visibility")
+    album = [r for r in righe.get("cpg1410_albums", []) if int(r[vis], 16) == 0]
+    pubblici = {int(r[aid], 16) for r in album}
+    pid, foto_aid = colonna("cpg1410_pictures", "pid"), colonna("cpg1410_pictures", "aid")
+    foto = [r for r in righe.get("cpg1410_pictures", []) if int(r[foto_aid], 16) in pubblici]
+    tenute = {int(r[pid], 16) for r in foto}
+    exif_pid = colonna("cpg1410_exif", "pid")
+    exif = [r for r in righe.get("cpg1410_exif", []) if int(r[exif_pid], 16) in tenute]
+    return righe | {"cpg1410_albums": album, "cpg1410_pictures": foto, "cpg1410_exif": exif}
+
+
 def main() -> None:
     meta: dict[tuple[str, str], list[tuple[str, str, str, str]]] = {}
     righe: dict[str, list[list[bytes | None]]] = {}
@@ -112,6 +129,7 @@ def main() -> None:
             else:
                 # Restano esadecimali: HEX() di un intero è il numero in base 16, non i suoi byte.
                 righe.setdefault(tag, []).append([None if c == b"NULL" else c.decode() for c in campi[1:]])
+    righe = senza_riservate(righe)
 
     out = [f"-- Dati di test anonimizzati da Coppermine (MySQL {versione}). Generato da scripts/anonimizza-coppermine.py.",
            "SET NAMES binary;"]
@@ -158,4 +176,12 @@ if __name__ == "__main__":
     assert parola_finta("M") == "M" and parola_finta("Mario")[0] == "M"
     assert pseudonimo(b"Mario &amp; ENEL").startswith(b"M") and b"&amp;" in pseudonimo(b"Mario &amp; ENEL")
     assert pseudonimo("Niccolò".encode()) .decode().isascii()
+    # Album 1 pubblico, 2 riservato: della Foto 11 (album 2) e della 12 (album che non c'è) non resta nulla.
+    prova = senza_riservate({
+        "cpg1410_albums": [["1", "", "", "", "", "0", "", ""], ["2", "", "", "", "", "2", "", ""]],
+        "cpg1410_pictures": [[f, a] + [""] * 15 for f, a in (("A", "1"), ("B", "2"), ("C", "7"))],
+        "cpg1410_exif": [["A", ""], ["B", ""], ["C", ""]],
+    })
+    assert [r[0] for r in prova["cpg1410_albums"]] == ["1"]
+    assert [r[0] for r in prova["cpg1410_pictures"]] == ["A"] and [r[0] for r in prova["cpg1410_exif"]] == ["A"]
     main()
