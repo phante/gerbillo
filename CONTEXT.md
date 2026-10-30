@@ -1,6 +1,6 @@
 # Gerbillo
 
-Gallery fotografica della community di ProgettoDighe, che sostituisce Coppermine. Le foto documentano dighe, centrali e altre opere descritte nel sito principale.
+Gallery fotografica della community di ProgettoDighe, che sostituisce Coppermine. Le foto documentano dighe, centrali, altre opere ed eventi. Gallery e Sito principale lavorano in sinergia, senza vincoli (ADR 0019).
 
 ## Language
 
@@ -32,19 +32,27 @@ La licenza sotto cui ogni Foto è pubblicata, mostrata nei suoi metadati. Se chi
 ### Classificazione
 
 **Entità**:
-Un oggetto che ha (o avrà) una pagina nel sito principale con uno Slug stabile: una diga, una centrale, un'opera di presa con pagina, un reportage. Una Foto è collegata alle Entità che ritrae tramite il campo `slug` (ADR 0013). Chi carica sceglie l'Entità per nome, tipo e comune («Cosa ritrae?»), mai per Slug.
+Un soggetto con un nome proprio, che ha una pagina nella Gallery pubblica: un'opera, un evento, un reportage. Il test è «si può dire *la X*?»: «le turbine Pelton» non è un'Entità, ma una Categoria. Una Foto è collegata alle Entità che ritrae tramite il campo `slug` (ADR 0013). Chi carica sceglie l'Entità per nome, tipo e comune («Cosa ritrae?»), mai per Slug. Le Entità vengono da due fonti unite al build: i file di `entita/` e l'Indice delle Entità (ADR 0019).
 _Avoid_: oggetto, nodo, album
 
-**Entità da censire**:
-Un'Entità che non ha ancora una pagina nel sito principale, e quindi nemmeno uno Slug: una diga, una centrale o un'altra opera. Ha un id numerico stabile, un nome, un tipo, un Punto geografico facoltativo e stato, regione e provincia. La crea chi carica quando non trova l'opera; le Foto la indicano con `da_censire`. Quando nel sito nasce la pagina, un Moderatore la collega allo Slug e tutte le sue Foto lo prendono; l'Entità da censire resta, come «diventata» quello Slug (ADR 0018).
-_Avoid_: opera da censire, segnalazione, Entità provvisoria
+**Entità senza pagina**:
+Un'Entità che ha una pagina nella Gallery ma non sul Sito principale. Sta in `entita/<sezione>/<nome>.yaml` e le Foto la indicano con `slug`, come tutte. La crea chi carica quando non trova l'opera, e il sistema genera lo Slug. Quando il sito pubblica la pagina con lo stesso Slug smette di esserlo da sola; con uno Slug diverso, un Moderatore la collega e quello vecchio diventa un Alias (ADR 0018). È un'Informazione interna.
+_Avoid_: Entità da censire, opera da censire, segnalazione, Entità provvisoria
+
+**Alias**:
+Un vecchio Slug di un'Entità, elencato in `aliases`: il build scrive al suo posto una pagina di rimando all'URL attuale. Nasce da un collegamento, una rinomina o un'unione di doppioni, e si vede nella scheda del Backend (ADR 0018).
+_Avoid_: redirect, `diventata`
+
+**Informazione interna**:
+Ciò che serve solo a Moderatori e amministratori: resta nel Backend, e il build pubblico non lo scrive mai in `dist/`. I tag interni ne sono un esempio. Un'informazione nuova nasce interna, salvo decisione contraria (ADR 0019).
+_Avoid_: informazione editoriale
 
 **Impianto**:
 Un insieme di più Entità che funzionano insieme (es. diga, centrale e opere di presa di uno stesso sistema). È un concetto del Sito principale, che in futuro lo ricaverà dalle schede di dighe e centrali (`dighe:`, `centrali:`); oggi vi è identificato in modo non standardizzato (tag o id di una mappa, che non coincide sempre con un Impianto). Nella gallery non è modellato: un insieme di Entità si esprime con un Tag, senza prefisso (#3).
 _Avoid_: complesso, sistema, campo `impianto`
 
 **Slug**:
-Il percorso stabile `sezione/nome` con cui il sito principale identifica una pagina (es. `dighe/agaro`, `centrali/goglio-baceno-vb`). È un riferimento tecnico: lo scrive il sistema quando si sceglie un'Entità, e chi carica non lo vede.
+Il percorso `sezione/nome` che identifica un'Entità (es. `dighe/agaro`, `centrali/goglio-baceno-vb`), lo stesso formato del Sito principale: se il sito ha lo stesso Slug, è la stessa Entità. È un riferimento tecnico: lo scrive il sistema, e chi carica non lo vede.
 
 **Attributo**:
 Una proprietà di una Foto che non è un collegamento a un'Entità: Tag, Categoria, Datazione, Autore, Fonte, Formato, Punto geografico.
@@ -54,7 +62,7 @@ _Avoid_: tag, campo
 Un'etichetta libera ma da vocabolario controllato, con gli stessi valori dei tag del Sito principale quando esistono (campo `tags`).
 
 **Categoria**:
-Il tipo o sottotipo del soggetto di una Foto, con valori a percorso (es. `tecnica/turbine`, campo `categories`).
+Il genere del soggetto di una Foto, con valori a percorso (es. `tecnica/turbine`, campo `categories`). Dice di che genere è, mentre l'Entità dice chi è. Una Foto senza Entità e senza Categoria è «Da classificare».
 _Avoid_: tema
 
 **Punto geografico**:
@@ -92,7 +100,7 @@ _Avoid_: gerarchia, album
 ### Sistemi
 
 **Sito principale**:
-Il sito Hugo di ProgettoDighe, fonte di verità delle Entità.
+Il sito Hugo di ProgettoDighe, separato dalla Gallery. Quando ha una pagina per un'Entità, ne fornisce link e scheda dati; altrimenti la Gallery funziona lo stesso.
 _Avoid_: sito Hugo, sito statico
 
 **Gallery pubblica**:
@@ -104,10 +112,10 @@ Il servizio per upload, moderazione e strumenti editoriali. Non serve pagine al 
 _Avoid_: admin, server
 
 **Indice delle Entità**:
-Il file prodotto dal Sito principale che elenca le Entità per la gallery.
+Il file prodotto dal Sito principale che elenca le sue pagine per la gallery. È una delle due fonti delle Entità (ADR 0019).
 
 **Indice delle Foto**:
-Il file prodotto dalla gallery che elenca le Foto per Entità, usato dal Sito principale.
+Il file prodotto dalla gallery che elenca le Foto per Slug, usato dal Sito principale.
 
 **Indice di ricerca**:
 Il file (`cerca.json`) che la pagina di ricerca della Gallery pubblica (`/cerca/`) scarica e indicizza nel browser: Entità, Contributori e Foto (ADR 0014).
