@@ -10,7 +10,8 @@ test('la scheda mostra la Foto e i suoi file', async ({ page }) => {
   await page.getByText('Informazioni tecniche').click();
   const tecniche = page.locator('.tecniche');
   await expect(tecniche).toContainText('immagine · 681 × 1024 px');
-  await expect(tecniche).toContainText('Anof0A (25)');
+  // Lo pseudonimo cambia a ogni rigenerazione del dump: conta l'id.
+  await expect(tecniche).toContainText(/Contributore.+\(25\)/);
   await expect(tecniche).toContainText('27/12/2006');
   await expect(tecniche).toContainText(/Album Coppermine.*\(3\)/);
   const file = tecniche.locator('.file-foto');
