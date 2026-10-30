@@ -115,6 +115,11 @@ func (b *builder) vociBussola(perEntita map[string][]*fotoPubblicata, slugs []st
 		x.Quando, x.Come = decennio(e.campo("anno")), famiglia(e.campo("tipologia"))
 		v = append(v, x)
 	}
+	// Le Entità da censire stanno solo sotto «Dove»: senza Cosa, senza scheda (ADR 0018).
+	for _, id := range b.conFoto() {
+		e, fs := b.c.daCensire[id], b.perCensire[id]
+		v = append(v, voceBussola{URL: b.url(parteDaCensire(id)...), Titolo: e.Nome, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e.comeEntita()), Nota: nonSulSito})
+	}
 	// Prima le dighe con più foto: sono l'anteprima della Bussola.
 	slices.SortStableFunc(v, func(a, b voceBussola) int { return b.N - a.N })
 	return v

@@ -65,6 +65,7 @@
         <img class="v-mid h1" src="{{statico "sa.svg"}}" alt="SA" loading="lazy">
       </span>
     </p>
+    <p class="f6 mt2 mb0">Aree amministrative da <a class="link black-80 b" href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a> (ODbL), tramite <a class="link black-80 b" href="https://nominatim.org/">Nominatim</a></p>
   </div>
   {{if .Striscia}}<div class="tc mt3 f7 black-30">[ANTEPRIMA] {{.Striscia}}</div>{{end}}
 </footer>
@@ -77,6 +78,19 @@ document.addEventListener("click",function(e){
 });
 </script>
 </body>
+</html>
+{{end}}
+
+{{/* Una pagina statica non può rispondere 301: rimanda con il meta refresh (ADR 0018). */}}
+{{define "rimando"}}<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>{{.Titolo}} | Gallery ProgettoDighe</title>
+<link rel="canonical" href="{{.Corpo.URL}}">
+<meta http-equiv="refresh" {{.Corpo.Refresh}}>
+</head>
+<body><p>Ora si trova in <a href="{{.Corpo.URL}}">{{.Corpo.Testo}}</a>.</p></body>
 </html>
 {{end}}
 
@@ -128,7 +142,7 @@ document.addEventListener("click",function(e){
   <a class="link w-100 bb b--black-10 pb2 dim flex flex-column" href="{{.URL}}">
     <div class="aspect-ratio aspect-ratio--1x1 w-100">{{if .Mini}}<img class="aspect-ratio--object cover br4 bg-light-gray" src="{{.Mini}}" alt="" loading="lazy" decoding="async">{{end}}</div>
     <h2 class="f5 tracked-tight lh-title black-80 mt2 mb0 flex-auto">{{.Testo}}</h2>
-    <span class="f6 black-60 mt1">{{.N}} foto</span>
+    <span class="f6 black-60 mt1">{{.N}} foto{{if .Sito}} · {{.Sito}}{{end}}</span>
   </a>
 </article>
 {{end}}</div>
@@ -148,7 +162,7 @@ document.addEventListener("click",function(e){
   </figure>
   {{if .Description}}<p class="f5 f4-ns lh-copy measure-wide mt4 mb3 pre-line">{{.Description}}</p>{{end}}
   <div class="pa2 grid-metadata ma0 mt3">
-    {{if .Dighe}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "route"}}</span><small class="ttu tracked black-70">Dighe:</small>
+    {{if .Dighe}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "route"}}</span><small class="ttu tracked black-70">Ritrae:</small>
       <div class="black-70">{{range $i, $e := .Dighe}}{{if $i}} | {{end}}<a class="black-80 ph1 br1 hover-bg-yellow transition-all" href="{{$e.URL}}">{{$e.Testo}}</a>{{end}}</div></div>{{end}}
     {{if .Authors}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "at"}}</span><small class="ttu tracked black-70">Autore:</small><span class="black-70 ml1 fw5">{{.Authors}}</span></div>{{end}}
     {{if .Fonte}}<div class="grid-row"><span class="svg-inline" aria-hidden="true">{{icona "at"}}</span><small class="ttu tracked black-70">Fonte:</small><span class="black-70 ml1 fw5">{{.Fonte}}</span></div>{{end}}
