@@ -1,0 +1,8 @@
+services:
+    gerbillo.bridge.controller.utente:
+        class: gerbillo\bridge\controller\utente
+        arguments:
+            - '@config'
+            - '@dbal.conn'
+            - '@request'
+            - '@user'

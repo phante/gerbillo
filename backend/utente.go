@@ -1,8 +1,8 @@
 package main
 
 // Utente corrente del Backend (ADR 0008, #42). Le pagine dipendono solo da utenteCorrente,
-// mai da come l'utente è stato riconosciuto: nell'anteprima è l'admin con la password usa e
-// getta, con il bridge phpBB (#44) sarà l'utente della sessione del forum.
+// mai da come l'utente è stato riconosciuto: nell'anteprima è chi si sceglie dopo la password
+// usa e getta, con il bridge phpBB (bridge.go, #66) è l'utente della sessione del forum.
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 )
@@ -30,6 +31,8 @@ const (
 	gruppoAdmin      = "ADMINISTRATORS"
 	gruppoModeratori = "GLOBAL_MODERATORS"
 	gruppoRegistrati = "REGISTERED"
+	gruppoNuovi      = "NEWLY_REGISTERED"
+	gruppoUnlimited  = "Gallery unlimited"
 )
 
 // Moderatore dice se l'utente può approvare, rifiutare e organizzare le Foto.
@@ -46,6 +49,8 @@ type utenteCorrente interface {
 	Utente(r *http.Request) *utente
 	// Accedi risponde a un ospite che deve farsi riconoscere.
 	Accedi(w http.ResponseWriter, r *http.Request)
+	// Esci dimentica chi ha fatto la richiesta.
+	Esci(w http.ResponseWriter, r *http.Request)
 }
 
 type chiaveUtente struct{}
@@ -64,12 +69,26 @@ func soloModeratore(uc utenteCorrente, h http.HandlerFunc) http.HandlerFunc {
 		case u == nil:
 			uc.Accedi(w, r)
 		case !u.Moderatore():
-			http.Error(w, "serve un Moderatore", http.StatusForbidden)
+			nonModeratore(w, r, u)
 		default:
 			segnalaModeratore(w)
 			h(w, r.WithContext(context.WithValue(r.Context(), chiaveUtente{}, u)))
 		}
 	}
+}
+
+// nonModeratore dice con chi si è entrati e offre di uscire: nell'anteprima serve a cambiare utente.
+func nonModeratore(w http.ResponseWriter, r *http.Request, u *utente) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusForbidden)
+	fmt.Fprintf(w, paginaBreve("Serve un Moderatore", `Sei entrato come %s (%s): serve un Moderatore. <a href="%sesci">Esci</a>`),
+		template.HTMLEscapeString(u.Nome), template.HTMLEscapeString(strings.Join(u.Gruppi, ", ")), radice(r))
+}
+
+// paginaBreve è una pagina di una riga, per chi non vede il Backend.
+func paginaBreve(titolo, corpo string) string {
+	return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>` + titolo + `</title>` +
+		`<div style="font:16px system-ui;margin:2em">` + corpo + `</div>`
 }
 
 // cookieModeratore segnala alla Gallery pubblica che chi guarda è un Moderatore, per mostrare
@@ -83,23 +102,50 @@ func segnalaModeratore(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{Name: cookieModeratore, Value: "1", Path: "/", MaxAge: 30 * 24 * 3600, SameSite: http.SameSiteLaxMode})
 }
 
-// esci toglie il cookie segnale. L'HTTP Basic dell'anteprima resta nel browser fino alla sua chiusura.
-func esci(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: cookieModeratore, Value: "", Path: "/", MaxAge: -1, SameSite: http.SameSiteLaxMode})
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Uscito</title>`+
-		`<p style="font:16px system-ui;margin:2em">Sei uscito: la Gallery non mostra più «Modifica». <a href="../">Torna alla Gallery</a></p>`)
+// esci toglie il cookie segnale e l'utente. L'HTTP Basic dell'anteprima resta nel browser fino
+// alla sua chiusura: rientrando si sceglie di nuovo con chi entrare.
+func esci(uc utenteCorrente) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		uc.Esci(w, r)
+		http.SetCookie(w, &http.Cookie{Name: cookieModeratore, Value: "", Path: "/", MaxAge: -1, SameSite: http.SameSiteLaxMode})
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		fmt.Fprint(w, paginaBreve("Uscito", `Sei uscito: la Gallery non mostra più «Modifica». <a href="../">Torna alla Gallery</a> · <a href="./">Rientra nel Backend</a>`))
+	}
 }
 
-// passwordAnteprima è l'utente corrente dell'anteprima dev (ADR 0011): HTTP Basic con una
-// password usa e getta inviata via Telegram, rigenerata alla scadenza. Chi la conosce è
-// l'admin, con tutti i permessi del Moderatore. Vive solo in memoria: un riavvio ne genera un'altra.
+// passwordAnteprima è l'utente corrente dell'anteprima dev (ADR 0011, #66): HTTP Basic con una
+// password usa e getta inviata via Telegram, rigenerata alla scadenza. Chi la conosce sceglie
+// con chi entrare, tra gli utentiAnteprima. Vive solo in memoria: un riavvio ne genera un'altra.
 const (
-	durataPassword     = 24 * time.Hour
-	utenteAnteprima    = "gerbillo" // lo username dell'HTTP Basic
-	idAdminAnteprima   = 2          // in phpBB l'admin creato all'installazione ha user_id 2
-	nomeAdminAnteprima = "admin"
+	durataPassword   = 24 * time.Hour
+	utenteAnteprima  = "gerbillo" // lo username dell'HTTP Basic
+	idAdminAnteprima = 2          // in phpBB l'admin creato all'installazione ha user_id 2
+	// cookieAnteprima dice chi si è scelto. Non è segreto: la password dà già tutti gli utenti.
+	cookieAnteprima = "gerbillo_anteprima"
+	campoAnteprima  = "anteprima_utente"
 )
+
+// utentiAnteprima sono gli utenti tra cui scegliere, nell'ordine della pagina.
+var utentiAnteprima = []struct {
+	chiave, etichetta string
+	u                 utente
+}{
+	{"admin", "Amministratore", utente{ID: idAdminAnteprima, Nome: "admin", Gruppi: []string{gruppoAdmin, gruppoRegistrati}}},
+	{"moderatore", "Moderatore", utente{ID: 3, Nome: "moderatore", Gruppi: []string{gruppoModeratori, gruppoRegistrati}}},
+	{"unlimited", "Gallery unlimited", utente{ID: 4, Nome: "unlimited", Gruppi: []string{gruppoRegistrati, gruppoUnlimited}}},
+	{"nuovo", "Utente nuovo", utente{ID: 5, Nome: "nuovo", Gruppi: []string{gruppoRegistrati, gruppoNuovi}}},
+}
+
+// utenteScelto è l'utente di utentiAnteprima con quella chiave, nil se non c'è.
+func utenteScelto(chiave string) *utente {
+	for _, s := range utentiAnteprima {
+		if s.chiave == chiave {
+			u := s.u
+			return &u
+		}
+	}
+	return nil
+}
 
 type passwordAnteprima struct {
 	mu       sync.Mutex
@@ -135,7 +181,8 @@ func (p *passwordAnteprima) rinnova() {
 	}
 }
 
-func (p *passwordAnteprima) Utente(r *http.Request) *utente {
+// passwordGiusta dice se la richiesta porta la password usa e getta, che rinnova se è scaduta.
+func (p *passwordAnteprima) passwordGiusta(r *http.Request) bool {
 	p.mu.Lock()
 	scaduta := time.Now().After(p.scadenza)
 	p.mu.Unlock()
@@ -146,13 +193,40 @@ func (p *passwordAnteprima) Utente(r *http.Request) *utente {
 	pw := p.password
 	p.mu.Unlock()
 	u, inviata, ok := r.BasicAuth()
-	if !ok || u != utenteAnteprima || subtle.ConstantTimeCompare([]byte(inviata), []byte(pw)) != 1 {
-		return nil
-	}
-	return &utente{ID: idAdminAnteprima, Nome: nomeAdminAnteprima, Gruppi: []string{gruppoAdmin, gruppoRegistrati}}
+	return ok && u == utenteAnteprima && subtle.ConstantTimeCompare([]byte(inviata), []byte(pw)) == 1
 }
 
+func (p *passwordAnteprima) Utente(r *http.Request) *utente {
+	if !p.passwordGiusta(r) {
+		return nil
+	}
+	c, err := r.Cookie(cookieAnteprima)
+	if err != nil {
+		return nil
+	}
+	return utenteScelto(c.Value)
+}
+
+// Accedi chiede la password, poi con chi entrare. La scelta torna alla stessa pagina.
 func (p *passwordAnteprima) Accedi(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("WWW-Authenticate", `Basic realm="Gerbillo dev"`)
-	http.Error(w, "password su Telegram", http.StatusUnauthorized)
+	if !p.passwordGiusta(r) {
+		w.Header().Set("WWW-Authenticate", `Basic realm="Gerbillo dev"`)
+		http.Error(w, "password su Telegram", http.StatusUnauthorized)
+		return
+	}
+	if scelta := r.PostFormValue(campoAnteprima); r.Method == http.MethodPost && utenteScelto(scelta) != nil {
+		http.SetCookie(w, &http.Cookie{Name: cookieAnteprima, Value: scelta, Path: "/", HttpOnly: true, SameSite: http.SameSiteLaxMode})
+		rimanda(w, "?"+r.URL.RawQuery) // relativo: dietro nginx il Backend non vede /gerbillo/
+		return
+	}
+	var bottoni strings.Builder
+	for _, s := range utentiAnteprima {
+		fmt.Fprintf(&bottoni, `<p><button name="%s" value="%s">%s</button></p>`, campoAnteprima, s.chiave, s.etichetta)
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprint(w, paginaBreve("Con chi entri?", `<h1>Con chi entri?</h1><form method="post">`+bottoni.String()+`</form>`))
+}
+
+func (p *passwordAnteprima) Esci(w http.ResponseWriter, _ *http.Request) {
+	http.SetCookie(w, &http.Cookie{Name: cookieAnteprima, Value: "", Path: "/", MaxAge: -1, HttpOnly: true, SameSite: http.SameSiteLaxMode})
 }

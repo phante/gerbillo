@@ -97,6 +97,8 @@ jobs:
       - name: go test
         working-directory: backend
         run: go test ./...
+      - name: test del bridge phpBB
+        run: php ext/gerbillo/bridge/tests/utente_test.php
       # Gli stessi dati dell'anteprima, in dist/ e seme/, per il Backend dei test.
       - name: gallery
         run: |

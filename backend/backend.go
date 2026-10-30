@@ -146,7 +146,7 @@ func rotteBackend(mux *http.ServeMux, uc utenteCorrente, red *redazione) {
 	// e dietro nginx si perderebbe il prefisso /gerbillo/ dell'anteprima.
 	mux.HandleFunc("/admin", conBarra)
 	mux.HandleFunc("/admin/statico/", statico)
-	mux.HandleFunc("/admin/esci", esci) // senza utente: chi esce non deve rifare l'accesso
+	mux.HandleFunc("/admin/esci", esci(uc)) // senza utente: chi esce non deve rifare l'accesso
 	mux.Handle("/admin/stato", mod(stato))
 	mux.Handle("/admin/widget", mod(statoWidget(red))) // senza .json: vedi staticiBackend
 	if red == nil {

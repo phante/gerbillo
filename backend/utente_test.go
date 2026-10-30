@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -19,6 +20,7 @@ func (f *utenteFinto) Accedi(w http.ResponseWriter, _ *http.Request) {
 	f.accessi++
 	w.WriteHeader(http.StatusUnauthorized)
 }
+func (f *utenteFinto) Esci(http.ResponseWriter, *http.Request) { f.u = nil }
 
 func TestSoloModeratore(t *testing.T) {
 	var visto *utente
@@ -60,14 +62,69 @@ func TestPasswordAnteprima(t *testing.T) {
 	if p.Utente(r) != nil {
 		t.Error("password sbagliata riconosciuta")
 	}
-	r.SetBasicAuth(utenteAnteprima, "segreta")
-	if u := p.Utente(r); u == nil || !u.Moderatore() || u.ID != idAdminAnteprima {
-		t.Errorf("con la password l'utente è l'admin: %+v", u)
-	}
 	w := httptest.NewRecorder()
 	p.Accedi(w, r)
 	if w.Code != http.StatusUnauthorized || w.Header().Get("WWW-Authenticate") == "" {
-		t.Errorf("Accedi: HTTP %d, %v", w.Code, w.Header())
+		t.Errorf("Accedi senza password: HTTP %d, %v", w.Code, w.Header())
+	}
+	// La scelta da sola non basta.
+	r.AddCookie(&http.Cookie{Name: cookieAnteprima, Value: "admin"})
+	if p.Utente(r) != nil {
+		t.Error("cookie senza password riconosciuto")
+	}
+}
+
+// #66: dopo la password si sceglie con chi entrare, e i permessi seguono la scelta.
+func TestSceltaAnteprima(t *testing.T) {
+	p := &passwordAnteprima{password: "segreta", scadenza: time.Now().Add(time.Hour)}
+	r := httptest.NewRequest("GET", "/admin/", nil)
+	r.SetBasicAuth(utenteAnteprima, "segreta")
+	if p.Utente(r) != nil {
+		t.Error("utente riconosciuto prima della scelta")
+	}
+	w := httptest.NewRecorder()
+	p.Accedi(w, r)
+	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "Gallery unlimited") {
+		t.Errorf("pagina di scelta: HTTP %d: %s", w.Code, w.Body)
+	}
+
+	for _, c := range []struct {
+		chiave     string
+		moderatore bool
+		gruppo     string
+	}{{"admin", true, gruppoAdmin}, {"moderatore", true, gruppoModeratori}, {"unlimited", false, gruppoUnlimited}, {"nuovo", false, gruppoNuovi}} {
+		post := httptest.NewRequest("POST", "/admin/foto/?x=1", strings.NewReader(campoAnteprima+"="+c.chiave))
+		post.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		post.SetBasicAuth(utenteAnteprima, "segreta")
+		w := httptest.NewRecorder()
+		p.Accedi(w, post)
+		if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "?x=1" {
+			t.Fatalf("%s: HTTP %d, Location %q", c.chiave, w.Code, w.Header().Get("Location"))
+		}
+		g := httptest.NewRequest("GET", "/admin/", nil)
+		g.SetBasicAuth(utenteAnteprima, "segreta")
+		g.AddCookie(w.Result().Cookies()[0])
+		u := p.Utente(g)
+		if u == nil || u.Moderatore() != c.moderatore || !slices.Contains(u.Gruppi, c.gruppo) {
+			t.Errorf("%s: utente %+v", c.chiave, u)
+		}
+	}
+
+	// Una scelta che non esiste non entra.
+	r.AddCookie(&http.Cookie{Name: cookieAnteprima, Value: "root"})
+	if u := p.Utente(r); u != nil {
+		t.Errorf("scelta inventata: %+v", u)
+	}
+}
+
+// #66: chi non è Moderatore vede con chi è entrato, con il nome sottoposto a escape.
+func TestNonModeratore(t *testing.T) {
+	w := httptest.NewRecorder()
+	u := &utente{ID: 7, Nome: "<b>x", Gruppi: []string{gruppoUnlimited}}
+	soloModeratore(&utenteFinto{u: u}, func(http.ResponseWriter, *http.Request) {})(w, httptest.NewRequest("GET", "/admin/foto/8", nil))
+	if w.Code != http.StatusForbidden || strings.Contains(w.Body.String(), "<b>x") ||
+		!strings.Contains(w.Body.String(), gruppoUnlimited) || !strings.Contains(w.Body.String(), `href="../esci"`) {
+		t.Errorf("HTTP %d: %s", w.Code, w.Body)
 	}
 }
 
@@ -96,8 +153,9 @@ func TestCookieModeratore(t *testing.T) {
 		}
 	}
 	w := httptest.NewRecorder()
-	esci(w, httptest.NewRequest("GET", "/admin/esci", nil))
-	if !strings.Contains(w.Header().Get("Set-Cookie"), "Max-Age=0") {
-		t.Errorf("esci: %q", w.Header().Get("Set-Cookie"))
+	f := &utenteFinto{u: &utente{ID: 8}}
+	esci(f)(w, httptest.NewRequest("GET", "/admin/esci", nil))
+	if !strings.Contains(w.Header().Get("Set-Cookie"), "Max-Age=0") || f.u != nil {
+		t.Errorf("esci: %q, utente %+v", w.Header().Get("Set-Cookie"), f.u)
 	}
 }
