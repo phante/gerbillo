@@ -8,13 +8,17 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  packages: write
-concurrency:
-  group: anteprima
-  cancel-in-progress: true
 jobs:
   immagine:
     runs-on: ubuntu-latest
+    # Solo questo job scrive il tag :dev, che il server di produzione esegue da solo.
+    permissions:
+      contents: read
+      packages: write
+    # Gruppo unico: un solo tag :dev, vince l'ultimo push di qualunque branch.
+    concurrency:
+      group: anteprima
+      cancel-in-progress: true
     # MySQL con i dati di test, per generare la Gallery pubblica dell'anteprima (#12).
     services:
       mysql:
@@ -24,8 +28,10 @@ jobs:
         ports: ["3306:3306"]
         options: --health-cmd "mysqladmin ping -h 127.0.0.1" --health-interval 5s --health-timeout 5s --health-retries 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
@@ -36,12 +42,12 @@ jobs:
             GRANT SELECT ON progettodighe_it_gallery.* TO 'gerbillo_ro'@'%';
             GRANT SELECT ON progettodighe_it_forum.* TO 'gerbillo_ro'@'%';"
           scripts/anteprima-gallery.sh 127.0.0.1:3306 "${{ github.ref_name }} @ $(echo ${{ github.sha }} | cut -c1-7)"
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           context: . # la cartella di lavoro, per includere dist/ generata qui sopra
           push: true
@@ -61,6 +67,13 @@ jobs:
             -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — build dev fallita ❌\nBranch: %s\nCommit: %.7s\n%s' "${{ github.ref_name }}" "${{ github.sha }}" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")"
   test:
     runs-on: ubuntu-latest
+    # Lancia npm ci e playwright install: niente permessi di scrittura.
+    permissions:
+      contents: read
+    # Un gruppo per branch: un push su main non annulla i check di una PR.
+    concurrency:
+      group: test-${{ github.ref }}
+      cancel-in-progress: true
     services:
       mysql:
         image: mysql:8.0
@@ -69,12 +82,14 @@ jobs:
         ports: ["3306:3306"]
         options: --health-cmd "mysqladmin ping -h 127.0.0.1" --health-interval 5s --health-timeout 5s --health-retries 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -96,7 +111,7 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           npx playwright test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: failure()
         with:
           name: playwright
