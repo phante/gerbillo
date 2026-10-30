@@ -81,8 +81,9 @@ Snippet, unit e env file sono in Ansible (`progettodighe-server`, ruolo `progett
 
 ## Livello di arricchimento dell'anteprima
 
-Finché non c'è il rientro, il lavoro editoriale deciso in chat sta in `dati/arricchimento/`, con la stessa struttura del Livello di arricchimento (`mappature.yaml`, `autori.yaml`, `riservati.yaml`, `foto/<pid>.yaml`), più le Entità da censire in `entita/<id>.yaml`. L'anteprima lo applica con `importa -arricchimento` e `build -arricchimento`, sovrapposto file per file a quello dei contenuti (#38, #39).
+Finché non c'è il rientro, il lavoro editoriale deciso in chat sta in `dati/arricchimento/`, con la stessa struttura del Livello di arricchimento (`mappature.yaml`, `autori.yaml`, `riservati.yaml`, `foto/<pid>.yaml`), più le Entità senza pagina in `entita/<sezione>/<nome>.yaml`. L'anteprima lo applica con `importa -arricchimento` e `build -arricchimento`, sovrapposto file per file a quello dei contenuti (#38, #39).
 
 Al rientro:
 - `gerbillo abbina` non c'è più (#38): dall'`arricchimento/mappature.yaml` del server tieni solo le righe `manuale`, poi sostituiscilo con `dati/arricchimento/mappature.yaml`;
+- copia `dati/arricchimento/entita/` in `entita/` del Repository dei contenuti (ADR 0018);
 - copia il resto di `dati/arricchimento/` in `arricchimento/` del Repository dei contenuti.

@@ -65,12 +65,6 @@ func (b *builder) cerca(perEntita map[string][]*fotoPubblicata, slugs []string, 
 		x.Pagine = append(x.Pagine, paginaRicerca{Slug: s, Titolo: e.Title, Tipo: tipoEntita(s), Luogo: luogoEntita(e),
 			URL: b.url(s), Mini: b.mini(fs[0]), N: len(fs)})
 	}
-	for _, id := range b.conFoto() {
-		e, fs := b.c.daCensire[id], b.perCensire[id]
-		pos[chiaveDaCensire(id)] = len(x.Pagine)
-		x.Pagine = append(x.Pagine, paginaRicerca{Slug: chiaveDaCensire(id), Titolo: e.Nome, Tipo: tipiDaCensire[e.Tipo].ricerca,
-			Luogo: luogoEntita(e.comeEntita()), URL: b.url(parteDaCensire(id)...), Mini: b.mini(fs[0]), N: len(fs)})
-	}
 	for _, id := range ids {
 		fs := perContributore[id]
 		x.Pagine = append(x.Pagine, paginaRicerca{Titolo: nomi[id], Tipo: "Contributori",
@@ -96,10 +90,6 @@ func (b *builder) fotoRicerca(f *fotoPubblicata, pos map[string]int) fotoRicerca
 	for _, s := range f.Slug {
 		entita = append(entita, b.c.entita[s].Title)
 		e = append(e, pos[s])
-	}
-	for _, id := range f.DaCensire {
-		entita = append(entita, b.c.daCensire[id].Nome)
-		e = append(e, pos[chiaveDaCensire(id)])
 	}
 	meta := slices.Concat(entita, f.Authors)
 	if f.Contributore != nil {

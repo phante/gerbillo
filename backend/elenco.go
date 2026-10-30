@@ -25,7 +25,6 @@ type fotoIndice struct {
 	Titolo       string   `json:"titolo,omitempty"`
 	Descrizione  string   `json:"descrizione,omitempty"`
 	Slug         []string `json:"slug,omitempty"`
-	DaCensire    []int    `json:"da_censire,omitempty"` // Entità da censire (ADR 0018)
 	Categorie    []string `json:"categorie,omitempty"`
 	Tag          []string `json:"tag,omitempty"` // compresi gli interni
 	Autori       []string `json:"autori,omitempty"`
@@ -52,7 +51,7 @@ type indiceRedazione struct {
 func (b *builder) scriviIndiceRedazione(p string) error {
 	idx := indiceRedazione{Generato: time.Now()}
 	for _, f := range b.c.foto {
-		v := fotoIndice{Pid: f.Pid, Titolo: f.Title, Descrizione: f.Description, Slug: f.Slug, DaCensire: f.DaCensire, Categorie: f.Categories,
+		v := fotoIndice{Pid: f.Pid, Titolo: f.Title, Descrizione: f.Description, Slug: f.Slug, Categorie: f.Categories,
 			Tag: f.Tags, Autori: f.Authors, Datazione: f.Datazione, User3: f.Coppermine.Data, Aid: f.Coppermine.Aid,
 			Album: b.c.album.Album[f.Coppermine.Aid].Title, Formato: f.Formato, Data: f.Date, Mini: b.mini(f)}
 		if c := f.Contributore; c != nil {

@@ -2,8 +2,8 @@ package main
 
 // Campi a chip per slug, Categorie, Tag e Autori (#53), con Tom Select (ADR 0017). I
 // suggerimenti mentre si scrive vengono da /admin/suggerimenti/<campo>?q=…:
-//   - slug: l'Indice delle Entità, per titolo, comprese le bozze. Lo slug si sceglie,
-//     non si scrive, e il salvataggio lo valida ancora contro l'Indice;
+//   - slug: le Entità, per titolo, comprese le bozze. Lo slug si sceglie, non si scrive,
+//     e il salvataggio lo valida ancora contro le Entità;
 //   - Tag: quelli del Sito principale e quelli già usati nella Gallery. Un Tag che non è
 //     in nessuno dei due si accetta, ma il chip lo segna «nuovo» perché i refusi si notino;
 //   - Autori: quelli già usati, più i nomi degli alias di autori.yaml (#19).
@@ -60,11 +60,11 @@ func (r *redazione) vociNote() *vociNote {
 		}
 	}
 	if old := r.cache.voci; old != nil {
-		v.entita, v.perSlug, v.tagSito = old.entita, old.perSlug, old.tagSito // l'Indice delle Entità non cambia
-	} else if e, err := leggiIndice(r.indice); err != nil {
-		log.Printf("Indice delle Entità: %v", err)
+		v.entita, v.perSlug, v.tagSito = old.entita, old.perSlug, old.tagSito // le Entità non cambiano: il Backend non le scrive ancora (#62)
+	} else if u, err := leggiEntita(r.contenuti, r.indice, nuovoLivello(r.contenuti, "")); err != nil {
+		log.Printf("Entità: %v", err)
 	} else {
-		v.entita = e
+		v.entita = u.idx
 		for i := range v.entita {
 			v.perSlug[v.entita[i].Slug] = &v.entita[i]
 			for _, t := range v.entita[i].Tags {
