@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -36,15 +37,16 @@ album:
     20: {slug: [dighe/inesistente], tags: [da-separare, cellina]}
 `)
 	foto := map[string]string{
-		"1": "pid: 1\ntitle: Diga\nformato: immagine\ndate: \"2006-12-27T12:23:55+01:00\"\ncontributore: {id: 25, nome: Mario}\ncoppermine: {aid: 14, filepath: userpics/1/, filename: a.jpg}\n",
-		"2": "pid: 2\nauthors: [\"-\"]\nformato: pdf\ncoppermine: {aid: 14, filepath: userpics/1/, filename: b.pdf}\n",
-		"3": "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ndatazione: \"2004-07-18\"\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg, data: 18/07/2004 circa}\n",
-		"6": "pid: 6\nriservata: true\nformato: immagine\ncoppermine: {aid: 40}\n",
-		"7": "pid: 7\nriservata: true\nformato: immagine\ncoppermine: {aid: 41}\n",
-		"8": "pid: 8\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
-		"9": "pid: 9\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
-		"5": "pid: 5\nformato: immagine\ncoppermine: {aid: 30, filepath: userpics/2/, filename: e.jpg, data: Ottobre 2006}\n",
-		"4": "pid: 4\nauthors: [Grezzo]\nformato: immagine\ncontributore: {id: 74, nome: Pomase}\ncoppermine: {aid: 30, filepath: userpics/2/, filename: d.jpg}\n",
+		"1":  "pid: 1\ntitle: Diga\nformato: immagine\ndate: \"2006-12-27T12:23:55+01:00\"\ncontributore: {id: 25, nome: Mario}\ncoppermine: {aid: 14, filepath: userpics/1/, filename: a.jpg}\n",
+		"2":  "pid: 2\nauthors: [\"-\"]\nformato: pdf\ncoppermine: {aid: 14, filepath: userpics/1/, filename: b.pdf}\n",
+		"3":  "pid: 3\ntitle: Altrove\nauthors: [Il gaurdiano & paolog]\nformato: immagine\ndatazione: \"2004-07-18\"\ncoppermine: {aid: 20, filepath: userpics/1/, filename: c.jpg, data: 18/07/2004 circa}\n",
+		"6":  "pid: 6\nriservata: true\nformato: immagine\ncoppermine: {aid: 40}\n",
+		"7":  "pid: 7\nriservata: true\nformato: immagine\ncoppermine: {aid: 41}\n",
+		"8":  "pid: 8\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
+		"9":  "pid: 9\nriservata: true\nformato: immagine\ncoppermine: {aid: 42}\n",
+		"5":  "pid: 5\nformato: immagine\ncoppermine: {aid: 30, filepath: userpics/2/, filename: e.jpg, data: Ottobre 2006}\n",
+		"4":  "pid: 4\nauthors: [Grezzo]\nformato: immagine\ncontributore: {id: 74, nome: Pomase}\ncoppermine: {aid: 30, filepath: userpics/2/, filename: d.jpg}\n",
+		"10": "pid: 10\ntitle: Mappa KMZ\nformato: altro\ncoppermine: {aid: 14, filepath: userpics/1/, filename: mappa.zip}\n",
 	}
 	for pid, y := range foto {
 		scrivi("importazione/foto/"+pid+".yaml", y)
@@ -92,6 +94,10 @@ func TestLeggiContenuti(t *testing.T) {
 	// Album riservati (#35): pubblica, cancella, senza riga (resta riservato), eccezione sulla Foto.
 	if f[6] == nil || f[7] != nil || f[8] != nil || f[9] == nil {
 		t.Errorf("riservati: pubblicato %v, cancellato %v, senza decisione %v, eccezione %v", f[6] != nil, f[7] != nil, f[8] != nil, f[9] != nil)
+	}
+	// Il Formato altro resta fuori finché non si decide file per file (#21); il pdf no.
+	if f[10] != nil || f[2] == nil {
+		t.Errorf("Formato altro %v, pdf %v", f[10] != nil, f[2] != nil)
 	}
 	// Album personale senza riga né abbinamento: il tag interno si deriva al build (#38).
 	if tg := f[4].Tags; len(tg) != 1 || tg[0] != daCollegare || len(f[4].tagPubblici()) != 0 {
@@ -151,6 +157,19 @@ func TestBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		return string(b)
+	}
+	// Il Formato altro non esce in nessun file, indice della ricerca compreso (#89).
+	filepath.WalkDir(dist, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		if b, _ := os.ReadFile(p); strings.Contains(string(b), "Mappa KMZ") || strings.Contains(string(b), "mappa.zip") {
+			t.Errorf("Formato altro pubblicato in %s", p)
+		}
+		return nil
+	})
+	if _, err := os.Stat(filepath.Join(dist, "f/10")); err == nil {
+		t.Error("f/10 pubblicata")
 	}
 	foto1 := leggi("f/1/index.html")
 	for _, atteso := range []string{

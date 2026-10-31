@@ -9,7 +9,7 @@ Il container ha limiti rigidi (`--memory 384m --memory-swap 384m --cpus 0.5`, so
 ## Considered Options
 
 - **Woodpecker che pubblica sul server** (volumi o `docker.sock`): scartato. Un repo *trusted* può montare qualunque path dell'host, e un errore colpirebbe la produzione.
-- **Build su Woodpecker**: scartata, perché consumerebbe la RAM della produzione. Resta come fallback (la pipeline di simulazione è pronta) se GitHub Actions non fosse più disponibile.
+- **Build su Woodpecker**: scartata, perché consumerebbe la RAM della produzione. Se GitHub Actions non fosse più disponibile si riconsidera: `.woodpecker/simulazione.yml` prova solo webhook e clone, non builda.
 - **Pipeline di emergenza con shell root sull'host**: scartata. Da remoto il server non si tocca.
 
 ## Consequences

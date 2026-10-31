@@ -130,7 +130,8 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 		if err := st.arricchisci(f); err != nil {
 			return nil, err
 		}
-		if f.Riservata {
+		// Il Formato altro (zip, xls) resta fuori finché non si decide file per file (#21).
+		if f.Riservata || f.Formato == "altro" {
 			continue
 		}
 		c.completa(f)
