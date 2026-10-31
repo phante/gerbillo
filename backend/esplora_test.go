@@ -91,6 +91,13 @@ func TestIntorno(t *testing.T) {
 			t.Errorf("GeoJSON senza %s:\n%s", atteso, geo)
 		}
 	}
+	// #82: mappa.js inserisce il nome come HTML nel popup e in un attributo. L'apostrofo
+	// resta intero: l'elenco «Dove sono» di mappa.js fa già il suo escape.
+	c.entita["dighe/agaro"].Title = `Ca' <img src=x> "Selva"`
+	if _, geo, _ = b.geojsonDiga("dighe/agaro", per, slugs); !strings.Contains(geo, `"name":"Ca' \u0026lt;img src=x\u0026gt; \u0026#34;Selva\u0026#34;"`) {
+		t.Errorf("nome senza escape:\n%s", geo)
+	}
+	c.entita["dighe/agaro"].Title = "dighe/agaro"
 	if strings.Contains(geo, "lontana") {
 		t.Error("la diga lontana e senza mappe in comune, a parte italia, non va sulla mappa")
 	}

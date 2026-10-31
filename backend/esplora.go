@@ -245,6 +245,11 @@ func tipoMappa(slug string) string {
 	return ""
 }
 
+// escapeNomeMappa protegge il nome, che mappa.js inserisce come HTML nel popup e in un
+// attributo (#82). Non html.EscapeString: l'elenco «Dove sono» di mappa.js fa già il suo
+// escape, e «Ca' Selva» vi comparirebbe con &#39;. Un & lasciato intero non apre tag.
+var escapeNomeMappa = strings.NewReplacer("<", "&lt;", ">", "&gt;", `"`, "&#34;")
+
 // geojsonDiga è la mappa della pagina della diga (#27), per il componente mappa del
 // sito (modelli/sito/mappa.js): la diga stessa, che porta alla sua pagina sul sito,
 // e le dighe con foto della stessa mappa o entro raggioKm, che portano ai loro
@@ -271,7 +276,7 @@ func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, 
 		for k, v := range x.Diga {
 			p[k] = v
 		}
-		p["type"], p["name"] = tipoMappa(x.Slug), nome
+		p["type"], p["name"] = tipoMappa(x.Slug), escapeNomeMappa.Replace(nome)
 		if url != "" {
 			p["url"] = url
 		}

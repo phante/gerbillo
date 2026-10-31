@@ -1,6 +1,7 @@
 package main
 
 import (
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -159,7 +160,7 @@ func TestPaginaRedazione(t *testing.T) {
 	w := httptest.NewRecorder()
 	h(w, httptest.NewRequest("GET", "/admin/foto/1", nil))
 	pagina := w.Body.String()
-	for _, atteso := range []string{`name="viewport"`, `value="Diga"`, `<option value="Ente" data-opzione="{&#34;value&#34;:&#34;Ente&#34;,&#34;text&#34;:&#34;Ente&#34;}" selected>Ente</option>`, "Importato: (vuoto)", `<base href="../">`, `href="../f/1/"`, `hx-post="foto/1"`} {
+	for _, atteso := range []string{`name="viewport"`, `value="Diga"`, `<option value="Ente" data-opzione="{&#34;value&#34;:&#34;Ente&#34;,&#34;text&#34;:&#34;Ente&#34;}" selected>Ente</option>`, "Importato: (vuoto)", `<base href="../">`, `href="../f/1/"`, `hx-post="foto/1"`, `<input type="hidden" name="modulo_completo" value="1">`} {
 		if !strings.Contains(pagina, atteso) {
 			t.Errorf("modulo senza %q:\n%s", atteso, pagina)
 		}
@@ -169,6 +170,7 @@ func TestPaginaRedazione(t *testing.T) {
 		v.Set(k, x)
 	}
 	v.Set("description", "Il coronamento")
+	v.Set("modulo_completo", "1")
 	req := httptest.NewRequest("POST", "/admin/foto/1", strings.NewReader(v.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("HX-Request", "true")
@@ -194,6 +196,31 @@ func TestPaginaRedazione(t *testing.T) {
 	h(w, httptest.NewRequest("GET", "/admin/foto/99", nil))
 	if w.Code != http.StatusNotFound {
 		t.Errorf("Foto inesistente: HTTP %d", w.Code)
+	}
+}
+
+// #85: un POST incompleto non svuota la Foto e non risponde «Salvato».
+func TestPostIncompleto(t *testing.T) {
+	r := redazioneProva(t)
+	h := soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)
+	prima := moduloDi(t, r, 1)
+	testa := gitLog(t, r.contenuti, "%H")
+	for _, c := range []struct{ nome, tipo, corpo string }{
+		{"vuoto", "application/x-www-form-urlencoded", ""},
+		{"senza sentinella", "application/x-www-form-urlencoded", "title=Solo+il+titolo"},
+		{"troncato", "application/x-www-form-urlencoded", "title=Ponte&slug=%ZZ"},
+		{"multipart", "multipart/form-data; boundary=x", "--x\r\nContent-Disposition: form-data; name=\"modulo_completo\"\r\n\r\n1\r\n--x--\r\n"},
+	} {
+		req := httptest.NewRequest("POST", "/admin/foto/1", strings.NewReader(c.corpo))
+		req.Header.Set("Content-Type", c.tipo)
+		w := httptest.NewRecorder()
+		h(w, req)
+		if w.Code != http.StatusBadRequest || strings.Contains(w.Body.String(), "Salvato") {
+			t.Errorf("%s: HTTP %d\n%s", c.nome, w.Code, w.Body)
+		}
+	}
+	if !maps.Equal(moduloDi(t, r, 1), prima) || gitLog(t, r.contenuti, "%H") != testa {
+		t.Error("un POST incompleto ha cambiato la Foto")
 	}
 }
 
@@ -245,6 +272,7 @@ func TestSalvaCategorie(t *testing.T) {
 		v.Set(k, x)
 	}
 	v["categories"] = []string{"documenti", "tecnica/turbine/pelton"}
+	v.Set("modulo_completo", "1")
 	req := httptest.NewRequest("POST", "/admin/foto/4", strings.NewReader(v.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
