@@ -71,10 +71,9 @@ type voceBussola struct {
 	Come   string `json:"c,omitempty"`
 	Uso    string `json:"p,omitempty"`
 	Cosa   string `json:"k"`
-	// Gruppo: un insieme di Foto ancora da classificare, non una diga. Compare solo
-	// quando si sceglie il suo Cosa.
-	Gruppo bool   `json:"g,omitempty"`
-	Nota   string `json:"o,omitempty"`
+	// Gruppo: un insieme di Altre foto, non un'Entità. Compare solo quando si sceglie il
+	// suo Cosa.
+	Gruppo bool `json:"g,omitempty"`
 }
 
 // cosaCoppermine dà il nome della Categoria Coppermine radice nella faccetta Cosa:
@@ -102,7 +101,7 @@ func (b *builder) vociGruppi(altre map[int][]*fotoPubblicata) []voceBussola {
 			titolo = "Altre foto di dighe"
 		}
 		v = append(v, voceBussola{URL: b.url("altre", strconv.Itoa(cid)), Titolo: titolo, Mini: b.mini(fs[0]),
-			N: len(fs), Cosa: cosa, Gruppo: true, Nota: "da classificare"})
+			N: len(fs), Cosa: cosa, Gruppo: true})
 	}
 	return v
 }
@@ -111,7 +110,7 @@ func (b *builder) vociBussola(perEntita map[string][]*fotoPubblicata, slugs []st
 	var v []voceBussola
 	for _, s := range slugs {
 		e, fs := b.c.entita[s], perEntita[s]
-		x := voceBussola{URL: b.url(s), Titolo: e.Title, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e), Uso: usoPrincipale(e), Cosa: "Dighe"}
+		x := voceBussola{URL: b.url(s), Titolo: e.Title, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e), Uso: usoPrincipale(e), Cosa: tipoEntita(s)}
 		x.Quando, x.Come = decennio(e.campo("anno")), famiglia(e.campo("tipologia"))
 		v = append(v, x)
 	}
@@ -234,6 +233,18 @@ func km(lat1, lon1, lat2, lon2 float64) float64 {
 	return 2 * r * math.Asin(math.Sqrt(a))
 }
 
+// tipoMappa è il type di mappa.js per la sezione dello Slug. Il sito non ha un type per
+// opere, eventi e reportage: vuoto, e mappa.js usa il suo «Punto geografico».
+func tipoMappa(slug string) string {
+	switch strings.SplitN(slug, "/", 2)[0] {
+	case "dighe":
+		return "diga"
+	case "centrali":
+		return "centrale"
+	}
+	return ""
+}
+
 // geojsonDiga è la mappa della pagina della diga (#27), per il componente mappa del
 // sito (modelli/sito/mappa.js): la diga stessa, che porta alla sua pagina sul sito,
 // e le dighe con foto della stessa mappa o entro raggioKm, che portano ai loro
@@ -260,7 +271,7 @@ func (b *builder) geojsonDiga(s string, perEntita map[string][]*fotoPubblicata, 
 		for k, v := range x.Diga {
 			p[k] = v
 		}
-		p["type"], p["name"] = "diga", nome
+		p["type"], p["name"] = tipoMappa(x.Slug), nome
 		if url != "" {
 			p["url"] = url
 		}

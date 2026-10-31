@@ -22,7 +22,7 @@ type indiceRicerca struct {
 type paginaRicerca struct {
 	Slug   string `json:"s,omitempty"` // solo le Entità, per il filtro «Dove»
 	Titolo string `json:"t"`
-	Tipo   string `json:"k"` // Dighe, Centrali, Altre pagine, Contributori
+	Tipo   string `json:"k"` // Dighe, Centrali, Opere, Eventi, Altre pagine, Contributori
 	Luogo  string `json:"l,omitempty"`
 	URL    string `json:"u"`
 	Mini   string `json:"m"`
@@ -39,13 +39,18 @@ type fotoRicerca struct {
 	Mini    string `json:"m,omitempty"` // solo se non è f/<pid>/mini.webp (anteprima, PDF)
 }
 
-// tipoEntita mette ogni sezione del sito diversa da dighe e centrali in «Altre pagine».
+// tipoEntita è il nome della sezione dello Slug, per la ricerca e il Cosa della Bussola.
+// Le sezioni che arrivano solo dal sito stanno in «Altre pagine».
 func tipoEntita(slug string) string {
 	switch strings.SplitN(slug, "/", 2)[0] {
 	case "dighe":
 		return "Dighe"
 	case "centrali":
 		return "Centrali"
+	case "opere":
+		return "Opere"
+	case "eventi":
+		return "Eventi"
 	}
 	return "Altre pagine"
 }
