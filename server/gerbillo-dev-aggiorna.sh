@@ -18,7 +18,17 @@ avvisa() {
     -d chat_id="$TELEGRAM_CHAT_ID" --data-urlencode text="gerbillo-dev: $1"
 }
 
+# Cancella i messaggi con le password del container che sta per sparire: gli id sono nel suo log.
+# Telegram rifiuta quelli già cancellati o più vecchi di 48 ore: va bene così.
+cancella_password() {
+  docker logs "$NOME" 2>&1 | sed -n 's/.* telegram message_id=\([0-9]*\)$/\1/p' | while read -r id; do
+    curl -s -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/deleteMessage" \
+      -d chat_id="$TELEGRAM_CHAT_ID" -d message_id="$id"
+  done
+}
+
 avvia() {
+  cancella_password
   docker rm -f "$NOME" >/dev/null 2>&1
   docker run -d --name "$NOME" --restart unless-stopped \
     -p 127.0.0.1:8090:8080 \

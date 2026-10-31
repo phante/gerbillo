@@ -17,3 +17,4 @@ Il container ha limiti rigidi (`--memory 384m --memory-swap 384m --cpus 0.5`, so
 - Il setup sul server (container, timer, nginx, `/etc/gerbillo-dev.env`) si fa una volta a mano. File in `server/`, istruzioni in `docs/lavoro-remoto.md`.
 - Lo stato dell'admin è effimero: ogni deploy riparte dai dati di test.
 - Il timer scrive `stato.json` (container, memoria, swap, disco) e manda allarmi Telegram su OOM, container fermo o swap alto.
+- I messaggi con le password scadute si cancellano da soli: il container a 24 ore, il timer al deploy, leggendo gli id dal log del container vecchio. Così il container resta in sola lettura e senza volumi scrivibili sull'host.
