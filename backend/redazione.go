@@ -486,7 +486,12 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 	}
 	modulo := map[string]string{}
 	if req.Method == http.MethodPost {
-		req.ParseForm()
+		// Un campo assente varrebbe vuoto. La sentinella è l'ultimo campo del modulo, così
+		// manca anche in un corpo troncato (#85).
+		if err := req.ParseForm(); err != nil || req.PostForm.Get("modulo_completo") != "1" {
+			http.Error(w, "Modulo incompleto: non è stato salvato nulla. Ricarica la pagina.", http.StatusBadRequest)
+			return
+		}
 		for _, k := range campiEditoriali {
 			// Le liste arrivano come più valori (select multiple, chip) o come righe di un testo.
 			modulo[k.chiave] = strings.Join(req.PostForm[k.chiave], "\n")
