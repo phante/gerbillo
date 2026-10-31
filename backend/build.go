@@ -364,14 +364,14 @@ func (b *builder) tutto() error {
 			return err
 		}
 	}
-	// Da classificare: per Categoria Coppermine.
+	// Altre foto: per Categoria Coppermine, fino allo Switch (ADR 0019, #40).
 	gruppiAltre := chiaviOrdinate(altre)
-	daClassificare := voce{URL: b.url("altre"), Testo: "Da classificare"}
+	altreFoto := voce{URL: b.url("altre"), Testo: "Altre foto"}
 	for _, cid := range gruppiAltre {
 		nome := b.c.album.Categorie[cid].Nome
-		su := voce{URL: b.url("altre", strconv.Itoa(cid)), Testo: "Da classificare: " + nome}
+		su := voce{URL: b.url("altre", strconv.Itoa(cid)), Testo: "Altre foto: " + nome}
 		b.registraContesto(altre[cid], su)
-		if err := b.griglie(altre[cid], nome, "Foto non ancora collegate a una pagina del sito.", nil, []voce{casa, daClassificare}, nil, nil, "altre", strconv.Itoa(cid)); err != nil {
+		if err := b.griglie(altre[cid], nome, "", nil, []voce{casa, altreFoto}, nil, nil, "altre", strconv.Itoa(cid)); err != nil {
 			return err
 		}
 	}
@@ -570,7 +570,7 @@ func (b *builder) home(perEntita map[string][]*fotoPubblicata, slugs []string) e
 			collegate++
 		}
 	}
-	corpo.Sottotitolo = fmt.Sprintf("%d foto, di cui %d collegate a %d dighe.", len(b.c.foto), collegate, len(slugs))
+	corpo.Sottotitolo = fmt.Sprintf("%d foto, di cui %d collegate a %d soggetti.", len(b.c.foto), collegate, len(slugs))
 	for _, st := range stati {
 		g := gruppo{Nome: st}
 		for _, reg := range chiaviOrdinate(albero[st]) {
@@ -580,17 +580,17 @@ func (b *builder) home(perEntita map[string][]*fotoPubblicata, slugs []string) e
 		}
 		corpo.Gruppi = append(corpo.Gruppi, g)
 	}
-	return b.scrivi("elenco", paginaSito{Titolo: "Tutte le dighe", Corpo: corpo, Briciole: []voce{{URL: b.url(), Testo: "Gallery"}}}, "dighe")
+	return b.scrivi("elenco", paginaSito{Titolo: "Tutti i soggetti", Corpo: corpo, Briciole: []voce{{URL: b.url(), Testo: "Gallery"}}}, "dighe")
 }
 
 type corpoBussola struct {
 	Sottotitolo string
-	Dati        template.JS // le dighe con foto, in JSON, lette dallo script della pagina
+	Dati        template.JS // le Entità con foto e le Altre foto, in JSON, lette dallo script della pagina
 	Porte       []voce
 	Cerca       string // la pagina /cerca/, a cui porta il campo sopra la Bussola (#26)
 }
 
-// bussola è la home: si restringono le dighe per Dove, Quando, Come e Per cosa (esplora.go).
+// bussola è la home: si restringono le Entità per Dove, Quando, Come e Per cosa (esplora.go).
 func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string, contributori int, altre map[int][]*fotoPubblicata) error {
 	d, err := json.Marshal(append(b.vociBussola(perEntita, slugs), b.vociGruppi(altre)...))
 	if err != nil {
@@ -605,9 +605,9 @@ func (b *builder) bussola(perEntita map[string][]*fotoPubblicata, slugs []string
 		Dati:        template.JS(d),
 		Cerca:       b.url("cerca"),
 		Porte: []voce{
-			{URL: b.url("dighe"), Testo: "Tutte le dighe", N: len(slugs), Sito: "dighe"},
+			{URL: b.url("dighe"), Testo: "Tutti i soggetti", N: len(slugs), Sito: "soggetti"},
 			{URL: b.url("contributori"), Testo: "Contributori", N: contributori, Sito: "contributori"},
-			{URL: b.url("altre"), Testo: "Da classificare", N: senza, Sito: "foto"},
+			{URL: b.url("altre"), Testo: "Altre foto", N: senza, Sito: "foto"},
 		},
 	}
 	return b.scrivi("bussola", paginaSito{Titolo: "Gallery", Corpo: corpo})
@@ -631,10 +631,10 @@ func (b *builder) elencoAltre(cids []int, altre map[int][]*fotoPubblicata, casa 
 		n += len(altre[cid])
 	}
 	corpo := corpoElenco{
-		Sottotitolo: fmt.Sprintf("%d foto non ancora collegate a una paginaSito del sito, divise per categoria di Coppermine.", n),
+		Sottotitolo: fmt.Sprintf("%d foto, divise per categoria.", n),
 		Gruppi:      []gruppo{{Sottogruppi: []sottogruppo{{Voci: v}}}},
 	}
-	return b.scrivi("elenco", paginaSito{Titolo: "Da classificare", Corpo: corpo, Briciole: []voce{casa}}, "altre")
+	return b.scrivi("elenco", paginaSito{Titolo: "Altre foto", Corpo: corpo, Briciole: []voce{casa}}, "altre")
 }
 
 // statici scrive CSS, JavaScript e icone del sito e l'Indice delle Foto per il Sito principale (ADR 0002).

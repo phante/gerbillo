@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -122,7 +123,7 @@ func TestBuildEntitaSenzaPagina(t *testing.T) {
 	filepath.WalkDir(dist, func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() && (strings.HasSuffix(p, ".html") || strings.HasSuffix(p, ".json")) {
 			b, _ := os.ReadFile(p)
-			for _, interno := range []string{"da-collegare", "da-classificare", "da-separare", "senza pagina", "non ancora sul sito"} {
+			for _, interno := range []string{"da-collegare", "da-classificare", "da classificare", "da-separare", "senza pagina", "non ancora sul sito", "non ancora collegate", "paginasito"} {
 				if strings.Contains(strings.ToLower(string(b)), interno) {
 					t.Errorf("%s contiene %q", p, interno)
 				}
@@ -130,6 +131,118 @@ func TestBuildEntitaSenzaPagina(t *testing.T) {
 		}
 		return nil
 	})
+}
+
+// La Gallery non presenta come dighe le Entità delle altre sezioni (ADR 0019, #74).
+func TestBuildNonSoloDighe(t *testing.T) {
+	dir, indice := contenutiProva(t)
+	for p, s := range map[string]string{
+		"entita/centrali/goglio.yaml":   "title: Goglio\n",
+		"entita/eventi/fiera-2008.yaml": "title: Fiera 2008\n",
+		"entita/opere/presa-agaro.yaml": "title: Presa Agaro\n",
+		"arricchimento/foto/3.yaml":     "slug: [centrali/goglio]\n",
+		"arricchimento/foto/4.yaml":     "slug: [eventi/fiera-2008]\n",
+		"arricchimento/foto/5.yaml":     "slug: [opere/presa-agaro]\n",
+	} {
+		p = filepath.Join(dir, p)
+		os.MkdirAll(filepath.Dir(p), 0o755)
+		if err := os.WriteFile(p, []byte(s), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	dist := filepath.Join(dir, "dist")
+	if err := build([]string{"-contenuti", dir, "-indice", indice, "-dist", dist, "-base", "/g/"}); err != nil {
+		t.Fatal(err)
+	}
+	leggi := func(p string) string {
+		b, err := os.ReadFile(filepath.Join(dist, p))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}
+	attesi := map[string]string{"dighe/vajont": "Dighe", "centrali/goglio": "Centrali", "eventi/fiera-2008": "Eventi", "opere/presa-agaro": "Opere"}
+
+	_, dati, _ := strings.Cut(leggi("index.html"), `id="dati-bussola">`)
+	dati, _, _ = strings.Cut(dati, "</script>")
+	var voci []voceBussola
+	if err := json.Unmarshal([]byte(dati), &voci); err != nil {
+		t.Fatal(err)
+	}
+	cosa := map[string]string{}
+	for _, v := range voci {
+		cosa[v.URL] = v.Cosa
+	}
+	var cerca indiceRicerca
+	if err := json.Unmarshal([]byte(leggi("statico/cerca.json")), &cerca); err != nil {
+		t.Fatal(err)
+	}
+	tipo := map[string]string{}
+	for _, p := range cerca.Pagine {
+		tipo[p.Slug] = p.Tipo
+	}
+	for s, atteso := range attesi {
+		if cosa["/g/"+s+"/"] != atteso {
+			t.Errorf("Cosa di %s = %q, atteso %q", s, cosa["/g/"+s+"/"], atteso)
+		}
+		if tipo[s] != atteso {
+			t.Errorf("tipo di %s nella ricerca = %q, atteso %q", s, tipo[s], atteso)
+		}
+	}
+	// Foto 9: senza Entità e senza Categoria.
+	home, altre := leggi("index.html"), leggi("altre/index.html")
+	if !strings.Contains(home, "Altre foto") || !strings.Contains(altre, "<title>Altre foto") {
+		t.Error("manca «Altre foto»")
+	}
+	if strings.Contains(home, "Tutte le dighe") || strings.Contains(leggi("dighe/index.html"), "Tutte le dighe") {
+		t.Error("«Tutte le dighe» per Entità che non sono dighe")
+	}
+	if !strings.Contains(leggi("dighe/index.html"), "collegate a 4 soggetti") {
+		t.Error("il sottotitolo di /dighe/ non conta le Entità")
+	}
+	filepath.WalkDir(dist, func(p string, d fs.DirEntry, err error) error {
+		if err == nil && !d.IsDir() && strings.HasSuffix(p, ".html") {
+			b, _ := os.ReadFile(p)
+			if l := strings.ToLower(string(b)); strings.Contains(l, "da classificare") || strings.Contains(l, "pagina del sito") {
+				t.Errorf("%s nomina un'informazione interna", p)
+			}
+		}
+		return nil
+	})
+}
+
+// La mappa dà a ogni Entità il tipo della sua sezione: un evento non è una diga.
+func TestTipoMappa(t *testing.T) {
+	c := &contenuti{entita: map[string]*entita{}}
+	per := map[string][]*fotoPubblicata{}
+	var slugs []string
+	for _, s := range []string{"centrali/goglio", "dighe/agaro", "eventi/fiera-2008"} {
+		e := &entita{Slug: s, Title: s}
+		e.Geolocation.Coords = &struct {
+			Latitudine  float64 `json:"latitudine"`
+			Longitudine float64 `json:"longitudine"`
+			Zoom        int     `json:"zoom,omitempty"`
+		}{46.29, 8.30, 0}
+		c.entita[s], per[s] = e, []*fotoPubblicata{{Pid: 1, Formato: "immagine"}}
+		slugs = append(slugs, s)
+	}
+	b := &builder{opzioniBuild: opzioniBuild{base: "/g/"}, c: c}
+	var geo struct {
+		Features []struct {
+			Properties map[string]any `json:"properties"`
+		} `json:"features"`
+	}
+	_, g, _ := b.geojsonDiga("eventi/fiera-2008", per, slugs)
+	if err := json.Unmarshal([]byte(g), &geo); err != nil {
+		t.Fatal(err)
+	}
+	tipi := map[string]any{}
+	for _, f := range geo.Features {
+		tipi[strings.Fields(f.Properties["name"].(string))[0]] = f.Properties["type"]
+	}
+	if tipi["centrali/goglio"] != "centrale" || tipi["dighe/agaro"] != "diga" || tipi["eventi/fiera-2008"] != "" {
+		t.Errorf("tipi sulla mappa: %v", tipi)
+	}
 }
 
 // Una Foto con uno Slug perde da-collegare: si sa cosa ritrae.

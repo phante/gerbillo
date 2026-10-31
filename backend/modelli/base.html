@@ -234,7 +234,7 @@ document.addEventListener("click",function(e){
 {{define "campo-cerca"}}<div class="search-input-group relative w-100">
 <div class="search-icona absolute left-0 pl3 flex items-center h-100"><img id="search-icon" src="{{statico "search-svgrepo-com.svg"}}" alt="" width="20" height="20"><div id="search-loader"><div class="search-loader-spinner"></div></div></div>
 <label for="search-input" class="clip">Cerca</label>
-<input type="search" id="search-input" name="q" value="{{.}}" class="input-reset ba b--black-20 pv3 pl5 pr4 db w-100 br2 f4 lh-copy" placeholder="Cerca dighe, foto, autori o luoghi..." autocomplete="off" spellcheck="false" enterkeyhint="search">
+<input type="search" id="search-input" name="q" value="{{.}}" class="input-reset ba b--black-20 pv3 pl5 pr4 db w-100 br2 f4 lh-copy" placeholder="Cerca dighe, centrali, foto, autori o luoghi..." autocomplete="off" spellcheck="false" enterkeyhint="search">
 </div>{{end}}
 
 {{define "bussola"}}{{template "testa" .}}
@@ -248,7 +248,7 @@ document.addEventListener("click",function(e){
 </div>
 <div id="risultati" class="flex flex-wrap ph2"></div>
 <div class="ph3 tc"><button type="button" id="altre" class="dn f6 b ttu tracked br2 ph3 pv2 bn pointer white bg-dark-gray dim mt2">Mostra altre</button></div>
-<noscript><p class="ph3"><a href="{{(index .Porte 0).URL}}">Tutte le dighe</a></p></noscript>
+<noscript><p class="ph3"><a href="{{(index .Porte 0).URL}}">{{(index .Porte 0).Testo}}</a></p></noscript>
 <h2 class="f6 ttu tracked black-60 ph3 mt5 mb2">Oppure</h2>
 <div class="flex flex-wrap ph2">
 {{range .Porte}}<a class="w-third-ns w-100 pa2 link dim black-80" href="{{.URL}}"><span class="db pa3 bg-white br3 shadow-4"><span class="db f5 b ttu tracked">{{.Testo}}</span><span class="db f6 black-60 mt1">{{.N}} {{.Sito}}</span></span></a>
@@ -257,16 +257,16 @@ document.addEventListener("click",function(e){
 {{end}}
 <script>
 (function(){
-  // Bussola (#25): ogni faccetta mostra solo le scelte più frequenti fra le dighe
+  // Bussola (#25): ogni faccetta mostra solo le scelte più frequenti fra le Entità
   // ancora possibili; ogni scelta restringe le altre. Dati calcolati al build.
-  var dighe=JSON.parse(document.getElementById("dati-bussola").textContent);
-  // Cosa conta le foto (dighe e gruppi da classificare non sono confrontabili),
-  // le altre faccette contano le dighe.
+  var voci=JSON.parse(document.getElementById("dati-bussola").textContent);
+  // Cosa conta le foto (Entità e gruppi di altre foto non sono confrontabili),
+  // le altre faccette contano le Entità.
   var faccette=[["k","Cosa"],["d","Dove"],["q","Quando"],["c","Come"],["p","Per cosa"]];
   var scelte={},aperte={},quante=12,MAX=6;
   var box=document.getElementById("bussola"),ris=document.getElementById("risultati"),esito=document.getElementById("esito"),altre=document.getElementById("altre");
   function passa(x,salta){
-    // I gruppi da classificare compaiono solo scegliendo il loro Cosa.
+    // I gruppi di altre foto compaiono solo scegliendo il loro Cosa.
     if(x.g&&salta!=="k"&&!scelte.k)return false;
     for(var k in scelte){if(k!==salta&&x[k]!==scelte[k])return false}return true;
   }
@@ -284,8 +284,8 @@ document.addEventListener("click",function(e){
     faccette.forEach(function(f){
       var k=f[0],riga=el("div","mb2"),conta={};
       riga.appendChild(el("span","db dib-ns w4-ns mb1 f6 ttu tracked black-60 v-mid",f[1]));
-      dighe.forEach(function(x){if(x[k]&&passa(x,k))conta[x[k]]=(conta[x[k]]||0)+(k==="k"?x.n:1)});
-      if(scelte[k]){riga.appendChild(chip(scelte[k],dighe.filter(function(x){return passa(x)}).length,true,function(){delete scelte[k];quante=12;disegna()}));box.appendChild(riga);return}
+      voci.forEach(function(x){if(x[k]&&passa(x,k))conta[x[k]]=(conta[x[k]]||0)+(k==="k"?x.n:1)});
+      if(scelte[k]){riga.appendChild(chip(scelte[k],voci.filter(function(x){return passa(x)}).length,true,function(){delete scelte[k];quante=12;disegna()}));box.appendChild(riga);return}
       var valori=Object.keys(conta).sort(function(a,b){return k==="q"?a.localeCompare(b):conta[b]-conta[a]});
       if(!valori.length){return}
       var vis=aperte[k]?valori:valori.slice(0,MAX);
@@ -293,10 +293,10 @@ document.addEventListener("click",function(e){
       if(valori.length>MAX)riga.appendChild(chip(aperte[k]?"Meno":"Altre",aperte[k]?null:valori.length-MAX,false,function(){aperte[k]=!aperte[k];disegna()}));
       box.appendChild(riga);
     });
-    var r=dighe.filter(function(x){return passa(x)});
+    var r=voci.filter(function(x){return passa(x)});
     var nd=r.filter(function(x){return !x.g}).length,ng=r.length-nd,parti=[];
-    if(nd)parti.push(nd+(nd===1?" diga":" dighe"));
-    if(ng)parti.push(ng+(ng===1?" gruppo":" gruppi")+" di foto da classificare");
+    if(nd)parti.push(nd+(nd===1?" soggetto":" soggetti"));
+    if(ng)parti.push(ng+(ng===1?" gruppo":" gruppi")+" di altre foto");
     esito.textContent=parti.join(" e ")||"Nessun risultato";
     ris.innerHTML="";
     r.slice(0,quante).forEach(function(x){
@@ -304,7 +304,7 @@ document.addEventListener("click",function(e){
       var q=el("div","aspect-ratio aspect-ratio--1x1"),i=el("img","aspect-ratio--object cover br4 bg-light-gray");
       i.src=x.m;i.alt="";i.loading="lazy";q.appendChild(i);a.appendChild(q);
       a.appendChild(el("span","db f5 b lh-title mt2",x.t));
-      a.appendChild(el("span","db f6 black-60",[x.d,x.n+" foto",x.o].filter(Boolean).join(" · ")));
+      a.appendChild(el("span","db f6 black-60",[x.d,x.n+" foto"].filter(Boolean).join(" · ")));
       ris.appendChild(a);
     });
     altre.className=(r.length>quante?"":"dn ")+"f6 b ttu tracked br2 ph3 pv2 bn pointer white bg-dark-gray dim mt2";
@@ -321,7 +321,7 @@ document.addEventListener("click",function(e){
      Entità delle Foto trovate, griglia delle Foto per pertinenza. L'indice si
      costruisce nel browser a ogni apertura della pagina. */}}
 <form class="ph3 mb3" role="search" action="" method="get" id="cerca">{{template "campo-cerca" ""}}</form>
-<noscript><p class="ph3">La ricerca richiede JavaScript. Puoi partire da <a href="{{.Dighe}}">Tutte le dighe</a>.</p></noscript>
+<noscript><p class="ph3">La ricerca richiede JavaScript. Puoi partire da <a href="{{.Dighe}}">Tutti i soggetti</a>.</p></noscript>
 <div class="ph3">
   <p id="esito" class="f5 b black-80 mt0 mb2" aria-live="polite"></p>
   <div id="pagine" class="flex flex-wrap nl2 nr2"></div>
