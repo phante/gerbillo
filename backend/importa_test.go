@@ -84,6 +84,7 @@ func TestConverti(t *testing.T) {
 			7: "2005:01:01 10:00:00"},
 		utenti:    map[int]string{25: "utente", 1: "Anonymous"},
 		riservati: map[int]int{390: 102},
+		album:     albumCoppermine{Album: map[int]albumYAML{0: {}, 3: {}, 390: {}}},
 	}
 	foto, rap := converti(d)
 	atteso := `altezza: 600
@@ -146,6 +147,27 @@ title: Città
 	}
 	if len(rap.cp1252) != 1 || rap.cp1252[0] != 1 {
 		t.Errorf("cp1252 %v", rap.cp1252)
+	}
+}
+
+func TestFotoOrfanaRiservata(t *testing.T) {
+	d := &datiCoppermine{
+		foto:  []rigaFoto{{pid: 1, aid: 3, filename: []byte("a.jpg")}, {pid: 2, aid: 77, filename: []byte("b.jpg")}},
+		album: albumCoppermine{Album: map[int]albumYAML{3: {}}},
+	}
+	foto, rap := converti(d)
+	if strings.Contains(string(foto[0].file), "riservata") {
+		t.Errorf("album pubblico diventato riservato:\n%s", foto[0].file)
+	}
+	if !strings.Contains(string(foto[1].file), "riservata: true") || rap.riservate != 1 {
+		t.Errorf("Foto orfana non riservata: %d\n%s", rap.riservate, foto[1].file)
+	}
+}
+
+func TestSoloApprovate(t *testing.T) {
+	foto := soloApprovate([]rigaFoto{{pid: 1, approved: "YES"}, {pid: 2, approved: "NO"}, {pid: 3}, {pid: 4, approved: "YES"}})
+	if len(foto) != 2 || foto[0].pid != 1 || foto[1].pid != 4 {
+		t.Errorf("%+v", foto)
 	}
 }
 
