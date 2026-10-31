@@ -22,6 +22,38 @@ func (f *utenteFinto) Accedi(w http.ResponseWriter, _ *http.Request) {
 }
 func (f *utenteFinto) Esci(http.ResponseWriter, *http.Request) { f.u = nil }
 
+// La password inviata riporta l'id del messaggio, che poi si cancella dalla stessa chat.
+func TestTelegramMandaECancella(t *testing.T) {
+	var cancellato, chat string
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/botTOK/sendMessage":
+			w.Write([]byte(`{"ok":true,"result":{"message_id":42}}`))
+		case "/botTOK/deleteMessage":
+			cancellato, chat = r.FormValue("message_id"), r.FormValue("chat_id")
+		default:
+			t.Errorf("percorso inatteso: %s", r.URL.Path)
+		}
+	}))
+	defer s.Close()
+	vecchia := apiTelegram
+	apiTelegram = s.URL
+	defer func() { apiTelegram = vecchia }()
+	t.Setenv("TELEGRAM_TOKEN", "TOK")
+	t.Setenv("TELEGRAM_CHAT_ID", "7")
+
+	id, err := telegram("ciao")
+	if err != nil || id != 42 {
+		t.Fatalf("telegram = %d, %v", id, err)
+	}
+	if err := telegramCancella(id); err != nil {
+		t.Fatal(err)
+	}
+	if cancellato != "42" || chat != "7" {
+		t.Errorf("cancellato %q dalla chat %q", cancellato, chat)
+	}
+}
+
 func TestSoloModeratore(t *testing.T) {
 	var visto *utente
 	pagina := func(w http.ResponseWriter, r *http.Request) { visto = utenteDi(r) }

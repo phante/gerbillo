@@ -7,6 +7,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 	_ "time/tzdata" // l'immagine distroless non ha i fusi orari
@@ -73,21 +75,44 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, h))
 }
 
-func telegram(testo string) error {
+// apiTelegram è una variabile per i test.
+var apiTelegram = "https://api.telegram.org"
+
+// telegram manda il messaggio e ne restituisce l'id.
+func telegram(testo string) (int, error) {
+	var risposta struct {
+		Result struct {
+			MessageID int `json:"message_id"`
+		} `json:"result"`
+	}
+	err := chiamaTelegram("sendMessage", url.Values{"text": {testo}, "parse_mode": {"HTML"}}, &risposta)
+	return risposta.Result.MessageID, err
+}
+
+func telegramCancella(id int) error {
+	return chiamaTelegram("deleteMessage", url.Values{"message_id": {strconv.Itoa(id)}}, nil)
+}
+
+// chiamaTelegram chiama un metodo della Bot API sulla chat configurata. Con risposta non nil
+// vi decodifica il JSON restituito.
+func chiamaTelegram(metodo string, v url.Values, risposta any) error {
 	tok, chat := os.Getenv("TELEGRAM_TOKEN"), os.Getenv("TELEGRAM_CHAT_ID")
 	if tok == "" || chat == "" {
 		return fmt.Errorf("TELEGRAM_TOKEN o TELEGRAM_CHAT_ID mancanti")
 	}
-	r, err := http.PostForm("https://api.telegram.org/bot"+tok+"/sendMessage",
-		url.Values{"chat_id": {chat}, "text": {testo}, "parse_mode": {"HTML"}})
+	v.Set("chat_id", chat)
+	r, err := http.PostForm(apiTelegram+"/bot"+tok+"/"+metodo, v)
 	if err != nil {
 		return err
 	}
-	r.Body.Close()
+	defer r.Body.Close()
 	if r.StatusCode != http.StatusOK {
 		return fmt.Errorf("HTTP %d", r.StatusCode)
 	}
-	return nil
+	if risposta == nil {
+		return nil
+	}
+	return json.NewDecoder(r.Body).Decode(risposta)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {

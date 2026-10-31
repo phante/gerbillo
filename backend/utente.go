@@ -175,10 +175,22 @@ func (p *passwordAnteprima) rinnova() {
 	// <code>: su Telegram un tocco copia il testo. base64url non ha caratteri HTML.
 	msg := fmt.Sprintf("Gerbillo dev %s@%s\nutente: <code>%s</code>\npassword: <code>%s</code>\nscade: %s",
 		template.HTMLEscapeString(branch), commit, utenteAnteprima, pw, scade.In(roma).Format("02/01 15:04"))
-	if err := telegram(msg); err != nil {
+	id, err := telegram(msg)
+	if err != nil {
 		// ponytail: senza Telegram (in locale) la password va nel log del container.
 		log.Printf("telegram: %v; password: %s", err, pw)
+		return
 	}
+	// Questa riga la legge gerbillo-dev-aggiorna.sh: al deploy cancella il messaggio del container
+	// vecchio, il cui timer qui sotto muore con lui.
+	log.Printf("telegram message_id=%d", id)
+	// ponytail: dopo un riavvio per crash il timer è perso, ci pensa il prossimo deploy (se entro
+	// le 48 ore oltre le quali Telegram non lascia cancellare).
+	time.AfterFunc(durataPassword, func() {
+		if err := telegramCancella(id); err != nil {
+			log.Printf("telegram: cancellazione di %d: %v", id, err)
+		}
+	})
 }
 
 // passwordGiusta dice se la richiesta porta la password usa e getta, che rinnova se è scaduta.
