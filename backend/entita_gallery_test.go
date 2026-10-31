@@ -259,3 +259,49 @@ func TestDaCollegareConSlug(t *testing.T) {
 		}
 	}
 }
+
+// #75: indice-entita legge ogni sezione del Sito, tranne quelle fuori dall'Indice.
+func TestLeggiSitoSezioni(t *testing.T) {
+	dir := t.TempDir()
+	for _, p := range []string{"dighe/vajont", "biblioteca/il-guardiadiga", "nuova/pagina", "blog/2022", "noi/ode"} {
+		os.MkdirAll(filepath.Join(dir, p), 0o755)
+		if err := os.WriteFile(filepath.Join(dir, p, "index.md"), []byte("---\ntitle: "+p+"\n---\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	idx, err := leggiSito(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var slug []string
+	for _, e := range idx {
+		slug = append(slug, e.Slug)
+	}
+	if !slices.Equal(slug, []string{"biblioteca/il-guardiadiga", "dighe/vajont", "nuova/pagina"}) {
+		t.Errorf("Indice: %v", slug)
+	}
+}
+
+// #75: senza Indice il build va chiesto, perché un -indice dimenticato toglierebbe le Entità del Sito.
+func TestBuildSenzaIndice(t *testing.T) {
+	dir, indice := contenutiProva(t)
+	conEntitaGallery(t, dir)
+	conf := filepath.Join(dir, "gerbillo.toml")
+	os.WriteFile(conf, []byte("contenuti = \""+dir+"\"\n"), 0o644)
+	dist := filepath.Join(dir, "dist")
+	for _, flag := range [][]string{nil, {"-indice", indice, "-senza-indice"}} {
+		if err := build(append([]string{"-config", conf, "-dist", dist, "-base", "/g/"}, flag...)); err == nil {
+			t.Errorf("build con %v riuscito", flag)
+		}
+	}
+	if err := build([]string{"-config", conf, "-dist", dist, "-base", "/g/", "-senza-indice"}); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(dist, "dighe", "pontesei", "index.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(b), "sul sito") {
+		t.Error("link al sito senza Indice")
+	}
+}

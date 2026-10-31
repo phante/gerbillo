@@ -2,7 +2,7 @@
 # Estrae dal Sito principale le pagine delle sezioni date come dati di prova:
 # solo il front matter di index.md (il corpo resta fuori) e geo.geojson.
 # Uso: scripts/estrai-sito.sh [percorso/progettodighe] [sezione…]
-# Senza sezioni: dighe centrali reportage tecnica, quelle lette da indice-entita.
+# Senza sezioni: dighe centrali reportage tecnica.
 set -euo pipefail
 src="${1:-$HOME/Siti/progettodighe}/content"
 shift || true

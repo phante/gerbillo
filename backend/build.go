@@ -83,6 +83,7 @@ func build(args []string) error {
 	fs := flag.NewFlagSet("build", flag.ExitOnError)
 	conf := fs.String("config", "gerbillo.toml", "file di configurazione TOML")
 	indice := fs.String("indice", "", "Indice delle Entità (JSON)")
+	senzaIndice := fs.Bool("senza-indice", false, "solo le Entità di entita/, senza link al sito")
 	dist := fs.String("dist", "dist", "cartella di uscita")
 	arr := fs.String("arricchimento", "", "cartella sovrapposta al Livello di arricchimento (anteprima: dati/arricchimento)")
 	dirContenuti := fs.String("contenuti", "", "Repository dei contenuti, al posto di quello della configurazione")
@@ -96,8 +97,9 @@ func build(args []string) error {
 	} else if _, err := toml.DecodeFile(*conf, &c); err != nil {
 		return err
 	}
-	if c.Contenuti == "" || *indice == "" {
-		return errors.New("servono contenuti nella configurazione e -indice")
+	// Il flag esplicito: un -indice dimenticato toglierebbe in silenzio le Entità del sito.
+	if c.Contenuti == "" || (*indice != "") == *senzaIndice {
+		return errors.New("servono contenuti nella configurazione e uno solo fra -indice e -senza-indice")
 	}
 	inizio := time.Now()
 	cont, err := leggiContenuti(c.Contenuti, *indice, nuovoLivello(c.Contenuti, *arr))

@@ -160,7 +160,7 @@ func mappature(cpg albumCoppermine, idx []entita, manuali fileMappature) (map[in
 		}
 		return chiaviEntita(v)
 	}
-	chiavi := map[int]map[string][]*entita{0: perSezione(sezioniEntita)}
+	chiavi := map[int]map[string][]*entita{0: perSezione(sezioniAbbinabili)}
 	for r, sez := range sezioniRadice {
 		chiavi[r] = perSezione(sez)
 	}

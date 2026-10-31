@@ -42,8 +42,12 @@ type entita struct {
 	} `json:"geolocation"`
 }
 
-// Sezioni del sito lette da `gerbillo indice-entita`.
-var sezioniEntita = []string{"dighe", "centrali", "reportage", "tecnica"}
+var (
+	// Sezioni del sito che `gerbillo indice-entita` non legge: tutte le altre sì (ADR 0019).
+	sezioniFuoriIndice = []string{"blog", "noi"}
+	// Sezioni in cui la Mappatura cerca da sola il nome di un album: nelle altre si collega a mano.
+	sezioniAbbinabili = []string{"dighe", "centrali", "reportage", "tecnica"}
+)
 
 var (
 	reSlug = regexp.MustCompile(`^[a-z0-9_-]+/[a-z0-9_-]+$`)
@@ -168,30 +172,33 @@ func indiceEntita(args []string) error {
 
 func leggiSito(dir string) ([]entita, error) {
 	var idx []entita
-	for _, sez := range sezioniEntita {
-		pagine, err := filepath.Glob(filepath.Join(dir, sez, "*", "index.md"))
+	pagine, err := filepath.Glob(filepath.Join(dir, "*", "*", "index.md"))
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range pagine {
+		cartella := filepath.Dir(p)
+		sez := filepath.Base(filepath.Dir(cartella))
+		if slices.Contains(sezioniFuoriIndice, sez) {
+			continue
+		}
+		b, err := os.ReadFile(p)
 		if err != nil {
 			return nil, err
 		}
-		for _, p := range pagine {
-			b, err := os.ReadFile(p)
-			if err != nil {
-				return nil, err
-			}
-			var e entita
-			if err := frontMatter(b, &e); err != nil {
-				return nil, fmt.Errorf("%s: %w", p, err)
-			}
-			var blocchi struct {
-				Diga, Centrale struct{ Nome string }
-			}
-			if err := frontMatter(b, &blocchi); err != nil {
-				return nil, fmt.Errorf("%s: %w", p, err)
-			}
-			e.Nome = cmp.Or(blocchi.Diga.Nome, blocchi.Centrale.Nome)
-			e.Slug = sez + "/" + filepath.Base(filepath.Dir(p))
-			idx = append(idx, e)
+		var e entita
+		if err := frontMatter(b, &e); err != nil {
+			return nil, fmt.Errorf("%s: %w", p, err)
 		}
+		var blocchi struct {
+			Diga, Centrale struct{ Nome string }
+		}
+		if err := frontMatter(b, &blocchi); err != nil {
+			return nil, fmt.Errorf("%s: %w", p, err)
+		}
+		e.Nome = cmp.Or(blocchi.Diga.Nome, blocchi.Centrale.Nome)
+		e.Slug = sez + "/" + filepath.Base(cartella)
+		idx = append(idx, e)
 	}
 	slices.SortFunc(idx, func(a, b entita) int { return strings.Compare(a.Slug, b.Slug) })
 	return idx, nil
