@@ -301,16 +301,21 @@ func (r *redazione) prepara(st *strati, idx []entita, pid int, modifica func(att
 			togli(arr, percorso) // il valore importato non si scrive
 			continue
 		}
+		// Solo ciò che si aggiunge: una voce già presente e non più valida non blocca gli altri campi (#88).
+		aggiunte := slices.DeleteFunc(strings.Split(v, "\n"), func(k string) bool {
+			return k == "" || slices.Contains(strings.Split(attuali[c.chiave], "\n"), k)
+		})
 		if c.chiave == "categories" && r.voc != nil {
-			for _, k := range strings.Split(v, "\n") {
-				if k != "" && !slices.Contains(r.voc.Categories, k) {
+			for _, k := range aggiunte {
+				if !slices.Contains(r.voc.Categories, k) {
 					return fileNuovo{}, fmt.Errorf("Categoria %q non è nel vocabolario (dati/vocabolario.yaml)", k)
 				}
 			}
 		}
 		if c.chiave == "slug" {
-			for _, s := range strings.Split(v, "\n") {
-				if s != "" && !slices.ContainsFunc(idx, func(e entita) bool { return e.Slug == s }) {
+			for _, s := range aggiunte {
+				_, alias := st.rimandi[s] // uno Slug vecchio vale come quello attuale
+				if !alias && !slices.ContainsFunc(idx, func(e entita) bool { return e.Slug == s }) {
 					return fileNuovo{}, fmt.Errorf("slug %q non è fra le Entità", s)
 				}
 			}

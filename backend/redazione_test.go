@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -221,6 +222,53 @@ func TestPuntoEreditatoNonSiCopia(t *testing.T) {
 	}
 	if strings.Contains(string(y), "coords") {
 		t.Errorf("Punto copiato nella Foto:\n%s", y)
+	}
+}
+
+// #88: si controlla solo ciò che si aggiunge, e uno Slug vecchio vale come quello attuale.
+func TestSalvaVociGiaPresenti(t *testing.T) {
+	r := redazioneProva(t)
+	conEntitaGallery(t, r.contenuti)
+	r.voc = &vocabolario{Categories: []string{"documenti"}}
+	scrivi := func(pid, s string) {
+		if err := os.WriteFile(filepath.Join(r.contenuti, "arricchimento", "foto", pid+".yaml"), []byte(s), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	scrivi("3", "slug: [dighe/pontesei-vecchia]\n")
+	scrivi("4", "slug: [dighe/tolta]\ncategories: [fuori-vocabolario]\n")
+	if err := registra(r.contenuti, ".", "Foto con voci vecchie", ""); err != nil {
+		t.Fatal(err)
+	}
+	admin := &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}
+	for _, pid := range []int{3, 4} {
+		m := moduloDi(t, r, pid)
+		m["fonte"] = "Archivio"
+		if cambiati, err := r.salva(pid, m, admin); err != nil || !slices.Equal(cambiati, []string{"fonte"}) {
+			t.Errorf("Foto %d: %v, %v", pid, cambiati, err)
+		}
+	}
+	// In blocco, una Foto così non ferma l'operazione.
+	e, _, err := r.applicaBlocco([]int{3, 4}, leggiModificaBlocco(url.Values{"modo.fonte": {"imposta"}, "valore.fonte": {"Altro archivio"}}), admin)
+	if err != nil || len(e.errori) > 0 {
+		t.Errorf("blocco: %v, %v", e.errori, err)
+	}
+	// Un Alias si può anche aggiungere.
+	m := moduloDi(t, r, 1)
+	m["slug"] = "dighe/vajont\ndighe/pontesei-vecchia"
+	if _, err := r.salva(1, m, admin); err != nil {
+		t.Errorf("aggiunta di un Alias: %v", err)
+	}
+	// Le voci nuove si controllano, anche accanto a una voce vecchia.
+	m = moduloDi(t, r, 4)
+	m["slug"] = "dighe/tolta\ndighe/inventata"
+	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "dighe/inventata") {
+		t.Errorf("Slug inesistente aggiunto: %v", err)
+	}
+	m = moduloDi(t, r, 4)
+	m["categories"] = "fuori-vocabolario\ninventata"
+	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "inventata") {
+		t.Errorf("Categoria inesistente aggiunta: %v", err)
 	}
 }
 
