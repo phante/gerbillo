@@ -199,6 +199,31 @@ func TestPaginaRedazione(t *testing.T) {
 	}
 }
 
+// #78: il Punto della prima Entità si mostra come riferimento e non finisce nella Foto.
+func TestPuntoEreditatoNonSiCopia(t *testing.T) {
+	r := redazioneProva(t)
+	os.WriteFile(r.indice, []byte(`[{"slug":"dighe/vajont","title":"Vajont","geolocation":{"coords":{"latitudine":46.2672,"longitudine":12.3292}}}]`), 0o644)
+	h := soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)
+	w := httptest.NewRecorder()
+	h(w, httptest.NewRequest("GET", "/admin/foto/1", nil))
+	b := w.Body.String()
+	if !strings.Contains(b, "è il Punto di Vajont: vale se la Foto non ne ha uno.") || strings.Contains(b, "usa-diga") {
+		t.Errorf("scheda senza il riferimento, o con il pulsante:\n%s", b)
+	}
+	m := moduloDi(t, r, 1)
+	m["description"] = "Il coronamento"
+	if _, err := r.salva(1, m, &utente{ID: 2, Nome: "admin"}); err != nil {
+		t.Fatal(err)
+	}
+	y, err := os.ReadFile(filepath.Join(r.contenuti, "arricchimento", "foto", "1.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(y), "coords") {
+		t.Errorf("Punto copiato nella Foto:\n%s", y)
+	}
+}
+
 // #85: un POST incompleto non svuota la Foto e non risponde «Salvato».
 func TestPostIncompleto(t *testing.T) {
 	r := redazioneProva(t)

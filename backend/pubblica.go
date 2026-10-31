@@ -268,7 +268,8 @@ var licenze = map[string]struct{ nome, url string }{
 }
 
 // completa valida gli slug ed eredita dalla prima Entità i campi geografici mancanti.
-// Le coords no: il Punto geografico mancante lo sostituisce la Vista per mappa.
+// Le coords no: se la Foto non ha un Punto geografico vale quello della prima Entità,
+// calcolato quando serve e mai copiato nella Foto (ADR 0013).
 func (c *contenuti) completa(f *fotoPubblicata) {
 	if f.Licenza == "" {
 		f.Licenza = licenzaSito

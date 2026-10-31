@@ -108,8 +108,7 @@
 <p class="nota esito-punto" aria-live="polite"></p>
 <div class="mappa-punto" data-campo="geolocation.coords"{{with .Ereditato}} data-ereditato="{{.Lat}},{{.Lon}}" data-diga="{{.Diga}}"{{end}}></div>
 <p class="nota">Tocca la mappa per mettere il pin, poi trascinalo. Lo sfondo satellitare è nel selettore in alto a destra.</p>
-{{with .Ereditato}}<button type="button" class="pulsante pulsante-secondario usa-diga">Usa quello della diga</button>
-<span class="nota">Svuota il Punto: la Foto eredita quello di {{.Diga}}.</span>{{end}}{{end}}
+{{with .Ereditato}}<p class="nota">Il cerchio tratteggiato è il Punto di {{.Diga}}: vale se la Foto non ne ha uno.</p>{{end}}{{end}}
 
 {{define "file-foto"}}<table class="file-foto">
   <thead><tr><th>File</th><th>Dimensioni</th><th>Peso</th></tr></thead>

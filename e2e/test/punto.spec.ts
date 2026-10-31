@@ -23,9 +23,10 @@ test('Punto geografico dalla mappa e dal campo', async ({ page }) => {
   await expect(page.getByRole('status')).toContainText('Salvato: geolocation.coords');
   await expect(campo).toHaveValue('46.290556, 8.298611');
 
-  // «Usa quello della diga» svuota il Punto: la Foto torna a ereditarlo.
-  await page.getByRole('button', { name: 'Usa quello della diga' }).click();
-  await expect(campo).toHaveValue('');
+  // Svuotando il campo la Foto torna a valere il Punto della diga, indicato come riferimento.
+  await expect(page.getByText(/Il cerchio tratteggiato è il Punto di .*: vale se la Foto non ne ha uno\./)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Usa quello della diga' })).toHaveCount(0);
+  await campo.fill('');
   await expect(page.locator('.pin-punto')).toHaveCount(0);
   await page.getByRole('button', { name: 'Salva' }).click();
   await expect(page.getByRole('status')).toContainText('Salvato: geolocation.coords');
