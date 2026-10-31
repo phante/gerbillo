@@ -121,6 +121,22 @@ func TestMappature(t *testing.T) {
 	}
 }
 
+// #75: una sezione diversa dalle quattro abbinabili si collega solo a mano.
+func TestAbbinaSoloSezioniAbbinabili(t *testing.T) {
+	cpg := albumCoppermine{Album: map[int]albumYAML{1: {Title: "Il guardiadiga"}}}
+	e := func(slug string) entita {
+		var x entita
+		x.Slug, x.Title = slug, "Il guardiadiga"
+		return x
+	}
+	if m, _ := mappature(cpg, []entita{e("biblioteca/il-guardiadiga")}, fileMappature{}); m[1] != nil && len(m[1].Slug) > 0 {
+		t.Errorf("biblioteca abbinata: %v", m[1].Slug)
+	}
+	if m, _ := mappature(cpg, []entita{e("dighe/il-guardiadiga")}, fileMappature{}); m[1] == nil || !slices.Equal(m[1].Slug, []string{"dighe/il-guardiadiga"}) {
+		t.Errorf("diga non abbinata: %+v", m[1])
+	}
+}
+
 func TestFrontMatterChiaviRipetute(t *testing.T) {
 	var e entita
 	b := []byte("---\ntitle: Alpe Gera\ncategories: ''\ncategories: ''\ntags:\n  - valmalenco\ndraft: true\n---\ntesto\n")
