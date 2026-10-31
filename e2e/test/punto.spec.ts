@@ -31,3 +31,15 @@ test('Punto geografico dalla mappa e dal campo', async ({ page }) => {
   await expect(page.getByRole('status')).toContainText('Salvato: geolocation.coords');
   await expect(campo).toHaveValue('');
 });
+
+// #82: il nome dell'Entità nel tooltip del Punto ereditato è testo, non HTML.
+test('Il tooltip del Punto ereditato non interpreta il nome', async ({ page }) => {
+  await page.route('**/admin/foto/8', async (route) => {
+    const r = await route.fetch();
+    await route.fulfill({ response: r, body: (await r.text()).replace(/data-diga="[^"]*"/, 'data-diga="&lt;b&gt;Selva&lt;/b&gt;"') });
+  });
+  await page.goto('admin/foto/8');
+  await page.locator('.leaflet-interactive').hover();
+  await expect(page.locator('.leaflet-tooltip')).toHaveText('Punto di <b>Selva</b>');
+  await expect(page.locator('.leaflet-tooltip b')).toHaveCount(0);
+});

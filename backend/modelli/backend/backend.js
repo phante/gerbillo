@@ -125,7 +125,7 @@ document.addEventListener("htmx:beforeSwap", function (e) {
     L.control.layers({ Mappa: osm, Satellite: sat }, null, { collapsed: false }).addTo(m);
     L.control.scale().addTo(m);
     if (ered) L.circleMarker(ered, { radius: 8, color: "#555", weight: 2, dashArray: "4 3", fillOpacity: 0.1 })
-      .addTo(m).bindTooltip("Punto di " + (div.dataset.diga || "della diga"));
+      .addTo(m).bindTooltip(document.createTextNode("Punto di " + (div.dataset.diga || "della diga")));
     var icona = L.divIcon({ className: "pin-punto", html: "<span></span>", iconSize: [26, 26], iconAnchor: [13, 30] });
     var pin = null;
     function metti(lat, lon, centra) {
