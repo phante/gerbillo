@@ -154,12 +154,6 @@ document.addEventListener("htmx:beforeSwap", function (e) {
       });
     }
     campo.addEventListener("input", function () { clearTimeout(attesa); attesa = setTimeout(function () { leggi(true); }, 400); });
-    var usa = div.parentNode.querySelector(".usa-diga");
-    if (usa && ered) usa.addEventListener("click", function () {
-      campo.value = ""; togli(); leggi(false);
-      campo.dispatchEvent(new Event("change", { bubbles: true }));
-      m.setView(ered, 14);
-    });
     if (campo.value.trim()) {
       var p = campo.value.split(",").map(Number);
       if (p.length === 2 && !isNaN(p[0]) && !isNaN(p[1])) { metti(p[0], p[1]); m.setView(p, 15); } else leggi(true);
