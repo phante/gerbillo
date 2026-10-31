@@ -143,6 +143,40 @@ func TestLeggiContenutiArricchimentoSovrapposto(t *testing.T) {
 	}
 }
 
+// #83: una voce dell'Indice con uno Slug non valido si scarta, senza fermare il build.
+func TestIndiceSlugNonValidi(t *testing.T) {
+	dir, indice := contenutiProva(t)
+	os.WriteFile(indice, []byte(`[{"slug":"dighe/vajont","title":"Vajont"},{"slug":"senzabarra","title":"Senza barra"},
+		{"slug":"dighe/../../fuori","title":"Fuori"},{"slug":"f/rubata","title":"Rubata"}]`), 0o644)
+	for pid, slug := range map[string]string{"3": "senzabarra", "4": `dighe/../../fuori`, "5": "f/rubata"} {
+		os.WriteFile(filepath.Join(dir, "arricchimento", "foto", pid+".yaml"), []byte("slug: ["+slug+"]\n"), 0o644)
+	}
+	c, err := leggiContenuti(dir, indice, nuovoLivello(dir, ""))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.entita) != 1 || c.entita["dighe/vajont"] == nil {
+		t.Errorf("Entità: %v", c.entita)
+	}
+	avvisi := strings.Join(c.avvisi, "\n")
+	for _, atteso := range []string{`"senzabarra"`, `"dighe/../../fuori"`, `"f/rubata"`} {
+		if !strings.Contains(avvisi, "Indice delle Entità: "+atteso) {
+			t.Errorf("avvisi senza %s:\n%s", atteso, avvisi)
+		}
+	}
+	conf := filepath.Join(dir, "gerbillo.toml")
+	os.WriteFile(conf, []byte("contenuti = \""+dir+"\"\n"), 0o644)
+	dist := filepath.Join(dir, "dist")
+	if err := build([]string{"-config", conf, "-indice", indice, "-dist", dist, "-base", "/g/"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{filepath.Join(dir, "fuori"), filepath.Join(dist, "f", "rubata"), filepath.Join(dist, "senzabarra")} {
+		if _, err := os.Stat(p); err == nil {
+			t.Errorf("%s scritto", p)
+		}
+	}
+}
+
 func TestBuild(t *testing.T) {
 	dir, indice := contenutiProva(t)
 	conf := filepath.Join(dir, "gerbillo.toml")

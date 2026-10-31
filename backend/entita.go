@@ -72,6 +72,14 @@ func leggiEntita(dir, indice string, l livelloArricchimento) (*entitaUnite, erro
 		if u.idx, err = leggiIndice(indice); err != nil {
 			return nil, err
 		}
+		// Lo Slug diventa un percorso in dist/: la voce non valida non ci arriva (#83).
+		u.idx = slices.DeleteFunc(u.idx, func(e entita) bool {
+			if slugValido(e.Slug) {
+				return false
+			}
+			u.avvisi = append(u.avvisi, fmt.Sprintf("Indice delle Entità: %q non si può usare come Slug, voce scartata", e.Slug))
+			return true
+		})
 	}
 	noti := map[string]bool{}
 	for _, e := range u.idx {
