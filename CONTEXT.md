@@ -23,7 +23,7 @@ Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione,
 _Avoid_: master, sorgente
 
 **Variante**:
-Una versione derivata dell'Originale (miniatura, versione a schermo, ecc.), servita a un URL legato al pid. La più grande (2048 px sul lato lungo) è quella che si scarica dalla pagina della Foto.
+Una versione derivata dell'Originale (miniatura, versione a schermo, ecc.), servita a un URL legato al pid. La più grande (2048 px sul lato lungo) è quella che si scarica dalla pagina della Foto. Per un PDF la Variante documento è una copia del file stesso, pubblica (ADR 0015).
 _Avoid_: thumb, normal (termini Coppermine)
 
 **Licenza**:

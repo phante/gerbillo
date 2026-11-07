@@ -156,7 +156,7 @@ document.addEventListener("click",function(e){
 <div class="ph3">
   <figure class="reset-figure visore relative">
     {{if .Schermo}}<a class="db" href="{{.Schermo}}"><img class="db center h-auto br4 shadow-4" src="{{.Schermo}}" alt="{{.Alt}}" width="{{.Larghezza}}" height="{{.Altezza}}" fetchpriority="high"></a>
-    {{else}}<a class="db tc pa4 link black-80 bg-white br4 shadow-4" href="{{.Originale}}"><img class="db center" src="{{.Mini}}" alt="" width="120" height="120"><span class="db mt2">Apri il documento ({{.Formato}})</span></a>{{end}}
+    {{else}}<a class="db tc pa4 link black-80 bg-white br4 shadow-4" href="{{.Documento}}"><img class="db center" src="{{.Mini}}" alt="" width="120" height="120"><span class="db mt2">Apri il documento ({{.Formato}})</span></a>{{end}}
     {{if $.Indietro}}<a class="freccia indietro" href="{{$.Indietro}}" aria-label="Foto precedente">{{icona "left-arrow"}}</a>{{end}}
     {{if $.Avanti}}<a class="freccia avanti" href="{{$.Avanti}}" aria-label="Foto successiva">{{icona "right-arrow"}}</a>{{end}}
   </figure>
