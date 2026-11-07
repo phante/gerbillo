@@ -636,7 +636,7 @@ func (r *redazione) admin(w http.ResponseWriter, req *http.Request) {
 	}
 	idx := r.indiceCorrente()
 	mostraPagina(w, req, "home", "Gerbillo", corpoHome{Build: r.statoBuild(), Aggiornato: aggiornatoAlle(idx),
-		Filtri: filtro{}.vociDaSistemare(idx), Totale: len(idx.Foto), Admin: utenteDi(req).Admin()})
+		Filtri: filtro{}.vociDaSistemare(idx), Totale: len(idx.Foto), Admin: utenteDi(req).Admin(), Avvisi: idx.Avvisi})
 }
 
 // ricalcola rilancia il build completo, e con lui l'indice. Solo per l'admin.

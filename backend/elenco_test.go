@@ -1,9 +1,11 @@
 package main
 
 import (
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -190,4 +192,40 @@ func TestAltriFiltri(t *testing.T) {
 			t.Errorf("barra %q: %q, atteso %q", in, d, out)
 		}
 	}
+}
+
+// #91: gli avvisi del build arrivano ai Moderatori nella home del Backend.
+func TestAvvisiNellaHome(t *testing.T) {
+	r := redazioneProva(t)
+	conEntitaGallery(t, r.contenuti)
+	// Foto 1 e 2 sullo stesso Slug sconosciuto: una riga sola.
+	for _, pid := range []string{"1", "2"} {
+		os.WriteFile(filepath.Join(r.contenuti, "arricchimento", "foto", pid+".yaml"), []byte("slug: [dighe/tolta]\n"), 0o644)
+	}
+	r.fileIndice = filepath.Join(t.TempDir(), "redazione.json")
+	dist := filepath.Join(t.TempDir(), "dist")
+	if err := build([]string{"-contenuti", r.contenuti, "-indice", r.indice, "-dist", dist, "-redazione", r.fileIndice}); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.caricaIndice(); err != nil {
+		t.Fatal(err)
+	}
+	home := soloModeratore(&utenteFinto{u: &utente{ID: 3, Nome: "x", Gruppi: []string{gruppoModeratori}}}, r.admin)
+	w := httptest.NewRecorder()
+	home(w, httptest.NewRequest("GET", "/admin/", nil))
+	for _, atteso := range []string{"Avvisi del build", "slug dighe/tolta non è fra le Entità: 2 Foto", "entita/dighe/vajont.yaml: il sito ha la stessa pagina"} {
+		if !strings.Contains(w.Body.String(), atteso) {
+			t.Errorf("home senza %q:\n%s", atteso, w.Body)
+		}
+	}
+	// Sono informazioni interne: fuori dalla Gallery pubblica (ADR 0019).
+	filepath.WalkDir(dist, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		if b, _ := os.ReadFile(p); strings.Contains(string(b), "non è fra le Entità") {
+			t.Errorf("avviso pubblicato in %s", p)
+		}
+		return nil
+	})
 }

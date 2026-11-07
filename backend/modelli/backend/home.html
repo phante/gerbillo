@@ -7,6 +7,10 @@
   </ul>
   <p class="nota"><a class="link blue" href="foto/">Tutte le {{.Totale}} Foto</a>{{if .Aggiornato}} · indice aggiornato alle {{.Aggiornato}}{{end}}</p>
 </section>{{end}}
+{{if .Avvisi}}<section class="riquadro">
+  <h2 class="f5 mt0">Avvisi del build</h2>
+  <ul class="mb0">{{range .Avvisi}}<li>{{.}}</li>{{end}}</ul>
+</section>{{end}}
 <section class="riquadro">
   <h2 class="f5 mt0">Apri una Foto</h2>
   {{template "campo-pid"}}

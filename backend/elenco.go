@@ -44,12 +44,13 @@ type fotoIndice struct {
 type indiceRedazione struct {
 	Generato time.Time    `json:"generato"`
 	Foto     []fotoIndice `json:"foto"` // per album, poi per pid
+	Avvisi   []string     `json:"avvisi,omitempty"`
 	perPid   map[int]int
 }
 
 // scriviIndiceRedazione è la parte del build che scrive redazione.json (build -redazione).
 func (b *builder) scriviIndiceRedazione(p string) error {
-	idx := indiceRedazione{Generato: time.Now()}
+	idx := indiceRedazione{Generato: time.Now(), Avvisi: b.c.avvisiRedazione()}
 	for _, f := range b.c.foto {
 		v := fotoIndice{Pid: f.Pid, Titolo: f.Title, Descrizione: f.Description, Slug: f.Slug, Categorie: f.Categories,
 			Tag: f.Tags, Autori: f.Authors, Datazione: f.Datazione, User3: f.Coppermine.Data, Aid: f.Coppermine.Aid,
@@ -74,6 +75,21 @@ func (b *builder) scriviIndiceRedazione(p string) error {
 		return err
 	}
 	return os.Rename(p+".nuovo", p)
+}
+
+// avvisiRedazione sono le cose da sistemare per i Moderatori (#91): gli avvisi delle Entità
+// e gli Slug sconosciuti, una riga per Slug perché le Foto di un album sono spesso centinaia.
+func (c *contenuti) avvisiRedazione() []string {
+	perSlug := map[string]int{}
+	for _, s := range c.ignoti {
+		_, slug, _ := strings.Cut(s, ": ")
+		perSlug[slug]++
+	}
+	avvisi := slices.Clone(c.avvisi)
+	for _, s := range chiaviOrdinate(perSlug) {
+		avvisi = append(avvisi, fmt.Sprintf("slug %s non è fra le Entità: %d Foto", s, perSlug[s]))
+	}
+	return avvisi
 }
 
 func ordinaIndice(fs []fotoIndice) {
@@ -262,6 +278,7 @@ type corpoHome struct {
 	Filtri     []voceFiltro
 	Totale     int
 	Admin      bool
+	Avvisi     []string
 }
 
 func atoi(s string) int { n, _ := strconv.Atoi(s); return n }
