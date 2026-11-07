@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"maps"
 	"net/http"
 	"net/http/httptest"
@@ -50,7 +51,7 @@ func TestSalvaFoto(t *testing.T) {
 	admin := &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}
 	file := filepath.Join(r.contenuti, "arricchimento", "foto", "1.yaml")
 	m := moduloDi(t, r, 1)
-	if cambiati, err := r.salva(1, m, admin); err != nil || len(cambiati) != 0 {
+	if cambiati, err := r.salva(1, r.versione(1), m, admin); err != nil || len(cambiati) != 0 {
 		t.Fatalf("salvataggio senza modifiche: %v, %v", cambiati, err)
 	}
 	if gitLog(t, r.contenuti, "%s") != "contenuti di prova" {
@@ -59,7 +60,7 @@ func TestSalvaFoto(t *testing.T) {
 	m["title"] = "  Diga del Vajont  "
 	m["tags"] = "vajont\n\n longarone \n"
 	m["geolocation.coords"] = "46.2672, 12.3292"
-	cambiati, err := r.salva(1, m, admin)
+	cambiati, err := r.salva(1, r.versione(1), m, admin)
 	if err != nil || strings.Join(cambiati, ",") != "title,tags,geolocation.coords" {
 		t.Fatalf("salvataggio: %v, %v", cambiati, err)
 	}
@@ -93,7 +94,7 @@ title: Diga del Vajont
 	}
 	// Riportare i campi al valore importato li toglie dal file.
 	m["title"], m["tags"], m["geolocation.coords"], m["authors"], m["datazione"] = "Diga", "", "", "", ""
-	if _, err := r.salva(1, m, admin); err != nil {
+	if _, err := r.salva(1, r.versione(1), m, admin); err != nil {
 		t.Fatal(err)
 	}
 	b, _ = os.ReadFile(file)
@@ -103,14 +104,14 @@ title: Diga del Vajont
 	// Un campo che l'Importazione ha e il modulo svuota si scrive vuoto.
 	m = moduloDi(t, r, 3)
 	m["title"] = ""
-	if _, err := r.salva(3, m, admin); err != nil {
+	if _, err := r.salva(3, r.versione(3), m, admin); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := os.ReadFile(filepath.Join(r.contenuti, "arricchimento", "foto", "3.yaml")); string(b) != "title: \"\"\n" {
 		t.Errorf("titolo svuotato:\n%s", b)
 	}
 	m["title"] = "Altrove" // di nuovo quello importato: il file sparisce
-	if _, err := r.salva(3, m, admin); err != nil {
+	if _, err := r.salva(3, r.versione(3), m, admin); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(filepath.Join(r.contenuti, "arricchimento", "foto", "3.yaml")); !os.IsNotExist(err) {
@@ -119,7 +120,7 @@ title: Diga del Vajont
 	for campo, valore := range map[string]string{"slug": "dighe/inventata", "geolocation.coords": "46,2672"} {
 		m := moduloDi(t, r, 4)
 		m[campo] = valore
-		if _, err := r.salva(4, m, admin); err == nil {
+		if _, err := r.salva(4, r.versione(4), m, admin); err == nil {
 			t.Errorf("%s %q accettato", campo, valore)
 		}
 	}
@@ -171,6 +172,7 @@ func TestPaginaRedazione(t *testing.T) {
 		v.Set(k, x)
 	}
 	v.Set("description", "Il coronamento")
+	v.Set("versione", r.versione(1))
 	v.Set("modulo_completo", "1")
 	req := httptest.NewRequest("POST", "/admin/foto/1", strings.NewReader(v.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -213,7 +215,7 @@ func TestPuntoEreditatoNonSiCopia(t *testing.T) {
 	}
 	m := moduloDi(t, r, 1)
 	m["description"] = "Il coronamento"
-	if _, err := r.salva(1, m, &utente{ID: 2, Nome: "admin"}); err != nil {
+	if _, err := r.salva(1, r.versione(1), m, &utente{ID: 2, Nome: "admin"}); err != nil {
 		t.Fatal(err)
 	}
 	y, err := os.ReadFile(filepath.Join(r.contenuti, "arricchimento", "foto", "1.yaml"))
@@ -244,7 +246,7 @@ func TestSalvaVociGiaPresenti(t *testing.T) {
 	for _, pid := range []int{3, 4} {
 		m := moduloDi(t, r, pid)
 		m["fonte"] = "Archivio"
-		if cambiati, err := r.salva(pid, m, admin); err != nil || !slices.Equal(cambiati, []string{"fonte"}) {
+		if cambiati, err := r.salva(pid, r.versione(pid), m, admin); err != nil || !slices.Equal(cambiati, []string{"fonte"}) {
 			t.Errorf("Foto %d: %v, %v", pid, cambiati, err)
 		}
 	}
@@ -256,18 +258,18 @@ func TestSalvaVociGiaPresenti(t *testing.T) {
 	// Un Alias si può anche aggiungere.
 	m := moduloDi(t, r, 1)
 	m["slug"] = "dighe/vajont\ndighe/pontesei-vecchia"
-	if _, err := r.salva(1, m, admin); err != nil {
+	if _, err := r.salva(1, r.versione(1), m, admin); err != nil {
 		t.Errorf("aggiunta di un Alias: %v", err)
 	}
 	// Le voci nuove si controllano, anche accanto a una voce vecchia.
 	m = moduloDi(t, r, 4)
 	m["slug"] = "dighe/tolta\ndighe/inventata"
-	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "dighe/inventata") {
+	if _, err := r.salva(4, r.versione(4), m, admin); err == nil || !strings.Contains(err.Error(), "dighe/inventata") {
 		t.Errorf("Slug inesistente aggiunto: %v", err)
 	}
 	m = moduloDi(t, r, 4)
 	m["categories"] = "fuori-vocabolario\ninventata"
-	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "inventata") {
+	if _, err := r.salva(4, r.versione(4), m, admin); err == nil || !strings.Contains(err.Error(), "inventata") {
 		t.Errorf("Categoria inesistente aggiunta: %v", err)
 	}
 }
@@ -303,11 +305,11 @@ func TestSalvaDatazione(t *testing.T) {
 	admin := &utente{ID: 2, Nome: "admin"}
 	m := moduloDi(t, r, 4)
 	m["datazione"] = "Pippo"
-	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "non valida") {
+	if _, err := r.salva(4, r.versione(4), m, admin); err == nil || !strings.Contains(err.Error(), "non valida") {
 		t.Errorf("Pippo: %v", err)
 	}
 	m["datazione"] = "maggio 2006"
-	if _, err := r.salva(4, m, admin); err != nil {
+	if _, err := r.salva(4, r.versione(4), m, admin); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := os.ReadFile(filepath.Join(r.contenuti, "arricchimento", "foto", "4.yaml")); string(b) != "datazione: 2006-05\n" {
@@ -335,7 +337,7 @@ func TestSalvaCategorie(t *testing.T) {
 	admin := &utente{ID: 2, Nome: "admin"}
 	m := moduloDi(t, r, 4)
 	m["categories"] = "tecnica/turbine/inventata"
-	if _, err := r.salva(4, m, admin); err == nil || !strings.Contains(err.Error(), "vocabolario") {
+	if _, err := r.salva(4, r.versione(4), m, admin); err == nil || !strings.Contains(err.Error(), "vocabolario") {
 		t.Errorf("Categoria fuori dal vocabolario: %v", err)
 	}
 	// Dal modulo le Categorie arrivano come più valori dello stesso campo.
@@ -345,6 +347,7 @@ func TestSalvaCategorie(t *testing.T) {
 		v.Set(k, x)
 	}
 	v["categories"] = []string{"documenti", "tecnica/turbine/pelton"}
+	v.Set("versione", r.versione(4))
 	v.Set("modulo_completo", "1")
 	req := httptest.NewRequest("POST", "/admin/foto/4", strings.NewReader(v.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -357,4 +360,84 @@ func TestSalvaCategorie(t *testing.T) {
 			t.Errorf("scheda senza %q", atteso)
 		}
 	}
+}
+
+// Due salvataggi dallo stesso stato di partenza: il secondo si rifiuta e il primo resta (#86).
+func TestSalvaDaModuloVecchio(t *testing.T) {
+	r := redazioneProva(t)
+	admin := &utente{ID: 2, Nome: "admin"}
+	partenza := r.versione(1)
+	primo, secondo := moduloDi(t, r, 1), moduloDi(t, r, 1)
+	primo["tags"] += "\nprimo"
+	if _, err := r.salva(1, partenza, primo, admin); err != nil {
+		t.Fatal(err)
+	}
+	secondo["title"] = "Secondo"
+	if _, err := r.salva(1, partenza, secondo, admin); !errors.Is(err, errFotoCambiata) {
+		t.Fatalf("secondo salvataggio: %v", err)
+	}
+	if m := moduloDi(t, r, 1); !strings.Contains(m["tags"], "primo") || m["title"] == "Secondo" {
+		t.Errorf("dopo il rifiuto: %v", m)
+	}
+	// Dalla scheda il rifiuto tiene la versione vecchia, così un altro Salva si rifiuta ancora.
+	h := soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)
+	v := url.Values{"versione": {partenza}, "modulo_completo": {"1"}}
+	for k, x := range secondo {
+		v.Set(k, x)
+	}
+	req := httptest.NewRequest("POST", "/admin/foto/1", strings.NewReader(v.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	h(w, req)
+	if b := w.Body.String(); !strings.Contains(b, "Ricarica la pagina") || !strings.Contains(b, `name="versione" value="`+partenza+`"`) {
+		t.Errorf("scheda dopo il rifiuto:\n%s", b)
+	}
+}
+
+// pulito controlla che l'albero di lavoro e l'indice siano come HEAD.
+func pulito(t *testing.T, r *redazione) {
+	t.Helper()
+	if out, err := r.git("status", "--porcelain"); err != nil || out != "" {
+		t.Errorf("albero non pulito: %q, %v", out, err)
+	}
+}
+
+// Un commit che fallisce non lascia attivi i file scritti, né li lascia al commit dopo (#87).
+func TestRegistraFallitoRipristina(t *testing.T) {
+	r := redazioneConIndice(t)
+	admin := &utente{ID: 2, Nome: "admin"}
+	prima := gitLog(t, r.contenuti, "%H")
+	gancio := filepath.Join(r.contenuti, ".git", "hooks", "pre-commit")
+	if err := os.WriteFile(gancio, []byte("#!/bin/sh\nexit 1\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	m := leggiModificaBlocco(url.Values{"modo.fonte": {"imposta"}, "valore.fonte": {"Archivio"}})
+	if _, _, err := r.applicaBlocco([]int{4, 5, 1}, m, admin); err == nil {
+		t.Fatal("blocco riuscito con il commit rifiutato")
+	}
+	pulito(t, r)
+	mod := moduloDi(t, r, 1)
+	mod["title"] = "Mai salvato"
+	if _, err := r.salva(1, r.versione(1), mod, admin); err == nil {
+		t.Fatal("salvataggio riuscito con il commit rifiutato")
+	}
+	pulito(t, r)
+	if gitLog(t, r.contenuti, "%H") != prima {
+		t.Error("commit fatto")
+	}
+}
+
+// Un errore a metà scrittura riporta anche i file già scritti (#87).
+func TestScritturaFallitaRipristina(t *testing.T) {
+	r := redazioneProva(t)
+	vecchio, _ := os.ReadFile(filepath.Join(r.contenuti, "arricchimento", "foto", "1.yaml"))
+	// Il secondo file sta sotto un file normale: la sua cartella non si crea.
+	file := []fileNuovo{
+		{rel: "arricchimento/foto/1.yaml", vecchio: vecchio, nuovo: []byte("title: nuovo\n")},
+		{rel: "arricchimento/foto/1.yaml/sotto.yaml", nuovo: []byte("x: 1\n")},
+	}
+	if err := r.scriviERegistra(file, "arricchimento", "prova", ""); err == nil {
+		t.Fatal("scrittura riuscita")
+	}
+	pulito(t, r)
 }

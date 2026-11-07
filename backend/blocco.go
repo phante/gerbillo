@@ -182,11 +182,6 @@ func (r *redazione) applicaBlocco(pids []int, m modificaBlocco, u *utente) (esit
 	if len(e.file) == 0 {
 		return e, "", nil
 	}
-	for _, f := range e.file {
-		if err := f.scrivi(r.contenuti); err != nil {
-			return e, "", err
-		}
-	}
 	id := idOperazione()
 	var campi []string
 	for _, c := range append(slices.Clone(campiListaBlocco), campiSingoliBlocco...) {
@@ -196,7 +191,7 @@ func (r *redazione) applicaBlocco(pids []int, m modificaBlocco, u *utente) (esit
 	}
 	msg := fmt.Sprintf("blocco: %d Foto: %s\n\nModifica in blocco dal Backend (#50).\n%s\n\nOperazione: %s",
 		len(e.file), strings.Join(campi, ", "), strings.Join(m.descrizione(), "\n"), id)
-	if err := registra(r.contenuti, "arricchimento", msg, autoreCommit(u)); err != nil {
+	if err := r.scriviERegistra(e.file, "arricchimento", msg, autoreCommit(u)); err != nil {
 		return e, "", err
 	}
 	return e, id, nil
