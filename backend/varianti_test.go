@@ -85,3 +85,20 @@ func TestScriviVarianti(t *testing.T) {
 		t.Error("la Variante contiene EXIF")
 	}
 }
+
+// La Variante documento è il file stesso, e una seconda volta non si riscrive (#90).
+func TestCopiaDocumento(t *testing.T) {
+	orig, dir := t.TempDir(), filepath.Join(t.TempDir(), "2")
+	if err := os.WriteFile(filepath.Join(orig, "a.pdf"), []byte("%PDF-1.4"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	f := fotoOriginale{pid: 2, formato: "pdf", filename: "a.pdf"}
+	for range 2 {
+		if err := copiaDocumento(nil, orig, dir, f); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if b, _ := os.ReadFile(filepath.Join(dir, "documento.pdf")); string(b) != "%PDF-1.4" {
+		t.Errorf("documento.pdf: %q", b)
+	}
+}

@@ -103,11 +103,21 @@ func generaVarianti(args []string) error {
 		go func() {
 			defer wg.Done()
 			for f := range coda {
-				if f.formato != "immagine" {
-					altri.Add(1) // PDF e altro: icona generica nella Gallery pubblica
+				dir := filepath.Join(c.Varianti, strconv.Itoa(f.pid))
+				if f.formato == "pdf" {
+					// La Variante documento è il file stesso, pubblico (#90).
+					if err := copiaDocumento(client, c.Originali, dir, f); err != nil {
+						mu.Lock()
+						errori = append(errori, fmt.Sprintf("%d %s%s: %v", f.pid, f.filepath, f.filename, err))
+						mu.Unlock()
+					}
+					altri.Add(1)
 					continue
 				}
-				dir := filepath.Join(c.Varianti, strconv.Itoa(f.pid))
+				if f.formato != "immagine" {
+					altri.Add(1) // altro: non si pubblica
+					continue
+				}
 				if presenti(dir) {
 					gia.Add(1)
 					continue
@@ -155,6 +165,25 @@ func generaVarianti(args []string) error {
 		fmt.Fprintln(os.Stderr, "errore:", e)
 	}
 	return nil
+}
+
+// copiaDocumento scrive la Variante documento di f, se manca.
+func copiaDocumento(client *http.Client, originali, dir string, f fotoOriginale) error {
+	p := filepath.Join(dir, nomeDocumento(f.formato))
+	if _, err := os.Stat(p); err == nil {
+		return nil
+	}
+	b, err := leggiOriginale(client, originali, f)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(p+".tmp", b, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(p+".tmp", p)
 }
 
 func presenti(dir string) bool {

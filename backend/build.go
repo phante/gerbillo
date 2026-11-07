@@ -212,7 +212,7 @@ type sottogruppo struct {
 }
 
 type corpoFoto struct {
-	Schermo, Mini, Originale, Alt, Formato        string
+	Schermo, Mini, Documento, Alt, Formato        string
 	Description, Authors, Fonte, Datazione, Luogo string
 	Caricata                                      string
 	BBCode                                        string
@@ -296,6 +296,21 @@ func (b *builder) originale(f *fotoPubblicata) string {
 	}
 	return ""
 }
+
+// documento è l'URL del file di una Foto che non è un'immagine: con -media quello di
+// Coppermine, altrimenti la Variante documento, pubblica (#90).
+func (b *builder) documento(f *fotoPubblicata) string {
+	switch {
+	case f.Formato == "immagine":
+		return ""
+	case b.media != "":
+		return b.originale(f)
+	}
+	return b.base + "f/" + strconv.Itoa(f.Pid) + "/" + nomeDocumento(f.Formato)
+}
+
+// nomeDocumento è il file della Variante documento: il file stesso, che per un PDF è il contenuto.
+func nomeDocumento(formato string) string { return "documento." + formato }
 
 // titolo ripiega sul nome della prima Entità: un terzo delle Foto non ha titolo.
 func (b *builder) titolo(f *fotoPubblicata) string {
@@ -500,7 +515,7 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 		Schermo: b.schermo(f), Mini: b.mini(f), Formato: f.Formato,
 		Alt: f.Alt, Description: f.Description, Authors: strings.Join(f.Authors, ", "), Fonte: f.Fonte,
 		Datazione: f.datazioneTesto(), Luogo: f.Coppermine.Luogo, Tags: f.tagPubblici(),
-		BBCode: fmt.Sprintf("[url=%sf/%s/][img]%sf/%s/mini.webp[/img][/url]", b.pubblico, pid, b.pubblico, pid),
+		BBCode: fmt.Sprintf("[url=%sf/%s/][img]%s[/img][/url]", b.pubblico, pid, b.assoluto(b.mini(f))),
 	}
 	c.Licenza = voce{Testo: f.Licenza}
 	if l, ok := licenze[f.Licenza]; ok {
@@ -511,7 +526,7 @@ func (b *builder) paginaFoto(f *fotoPubblicata, casa voce) error {
 	if c.Alt == "" {
 		c.Alt = f.Title
 	}
-	c.Originale = b.originale(f)
+	c.Documento = b.documento(f)
 	c.Modifica = b.base + "admin/foto/" + pid
 	if t, err := time.Parse(time.RFC3339, f.Date); err == nil {
 		c.Caricata = t.Format("02/01/2006")
