@@ -10,6 +10,7 @@ package main
 import (
 	"bytes"
 	"cmp"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"log"
@@ -226,14 +227,67 @@ func (f fileNuovo) scrivi(contenuti string) error {
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(p, f.nuovo, 0o644)
+	// Su un file temporaneo e poi rename: un disco pieno non lascia uno YAML troncato (#87).
+	// ponytail: un crash fra CreateTemp e Remove lascia il temporaneo, che il commit dopo includerebbe.
+	tmp, err := os.CreateTemp(filepath.Dir(p), "."+filepath.Base(p)+".*")
+	if err != nil {
+		return err
+	}
+	_, err = tmp.Write(f.nuovo)
+	err = errors.Join(err, tmp.Chmod(0o644), tmp.Close())
+	if err == nil {
+		err = os.Rename(tmp.Name(), p)
+	}
+	if err != nil {
+		os.Remove(tmp.Name())
+	}
+	return err
 }
 
-// salva scrive i valori del modulo e ne fa il commit con autore u. Restituisce i campi
-// cambiati rispetto alla Foto pubblicata; nessuno vuol dire nessun commit.
-func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]string, error) {
+// scriviERegistra scrive i file e ne fa un commit solo. A un errore riporta i file com'erano
+// e li toglie dall'indice: niente resta attivo senza commit, né finisce nel commit dopo (#87).
+func (r *redazione) scriviERegistra(file []fileNuovo, percorso, msg, autore string) error {
+	err := func() error {
+		for _, f := range file {
+			if err := f.scrivi(r.contenuti); err != nil {
+				return err
+			}
+		}
+		return registra(r.contenuti, percorso, msg, autore)
+	}()
+	if err == nil {
+		return nil
+	}
+	for _, f := range file {
+		r.git("reset", "-q", "--", f.rel)
+		if e := (fileNuovo{rel: f.rel, nuovo: f.vecchio}).scrivi(r.contenuti); e != nil {
+			log.Printf("ripristino di %s: %v", f.rel, e)
+		}
+	}
+	return err
+}
+
+// versione è l'impronta del file di arricchimento di pid: la scheda la manda col modulo, e
+// il salvataggio si rifiuta se nel frattempo il file è cambiato (#86).
+func (r *redazione) versione(pid int) string {
+	b, err := os.ReadFile(filepath.Join(r.contenuti, "arricchimento", fileFoto(pid)))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return "" // non combacia con nessun modulo: non si salva
+	}
+	return fmt.Sprintf("%x", sha256.Sum256(b))
+}
+
+var errFotoCambiata = errors.New("la Foto è cambiata dopo che hai aperto la scheda (un'altra modifica o un'operazione in blocco). Ricarica la pagina e rifai la modifica")
+
+// salva scrive i valori del modulo e ne fa il commit con autore u. versione è quella da cui
+// è partito il modulo. Restituisce i campi cambiati rispetto alla Foto pubblicata; nessuno
+// vuol dire nessun commit.
+func (r *redazione) salva(pid int, versione string, modulo map[string]string, u *utente) ([]string, error) {
 	r.salvataggio.Lock()
 	defer r.salvataggio.Unlock()
+	if versione != r.versione(pid) {
+		return nil, errFotoCambiata
+	}
 	st, idx, err := r.strati()
 	if err != nil {
 		return nil, err
@@ -242,11 +296,8 @@ func (r *redazione) salva(pid int, modulo map[string]string, u *utente) ([]strin
 	if err != nil || len(f.cambiati) == 0 {
 		return nil, err
 	}
-	if err := f.scrivi(r.contenuti); err != nil {
-		return nil, err
-	}
 	msg := fmt.Sprintf("foto %d: %s\n\nModifica diretta dal Backend (#43).", pid, strings.Join(f.cambiati, ", "))
-	if err := registra(r.contenuti, f.rel, msg, autoreCommit(u)); err != nil {
+	if err := r.scriviERegistra([]fileNuovo{f}, f.rel, msg, autoreCommit(u)); err != nil {
 		return nil, err
 	}
 	return f.cambiati, nil
@@ -440,6 +491,7 @@ func gruppiCategorie(voc *vocabolario, scelte []string) []gruppoCategorie {
 // corpoFotoBackend è la scheda di una Foto: il modulo e l'esito dell'ultimo salvataggio.
 type corpoFotoBackend struct {
 	Pid             int
+	Versione        string // del file di arricchimento da cui parte il modulo (#86)
 	Pubblica, Build string
 	Errore, Salvato string
 	Voci            []voceModulo
@@ -501,8 +553,11 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 			// Le liste arrivano come più valori (select multiple, chip) o come righe di un testo.
 			modulo[k.chiave] = strings.Join(req.PostForm[k.chiave], "\n")
 		}
-		cambiati, err := r.salva(pid, modulo, utenteDi(req))
+		cambiati, err := r.salva(pid, req.PostForm.Get("versione"), modulo, utenteDi(req))
 		switch {
+		case errors.Is(err, errFotoCambiata):
+			// Si tiene la versione vecchia: un altro Salva non sovrascrive quello che è cambiato.
+			c.Errore, c.Versione = "Non salvato: "+err.Error()+".", req.PostForm.Get("versione")
 		case err != nil:
 			c.Errore = "Non salvato: " + err.Error()
 		case len(cambiati) == 0:
@@ -555,6 +610,7 @@ func (r *redazione) foto(w http.ResponseWriter, req *http.Request) {
 		}
 		c.Voci = append(c.Voci, vm)
 	}
+	c.Versione = cmp.Or(c.Versione, r.versione(pid))
 	c.Build = r.statoBuild()
 	c.Testata = r.testataDi(pub)
 	if req.Method == http.MethodPost && daHtmx(req) {

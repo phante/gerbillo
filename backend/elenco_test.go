@@ -108,7 +108,7 @@ func TestElencoEScheda(t *testing.T) {
 	// Un salvataggio che toglie da-collegare fa uscire la Foto dall'elenco a fine build.
 	m := moduloDi(t, r, 4)
 	m["slug"], m["tags"] = "dighe/vajont", ""
-	if _, err := r.salva(4, m, &utente{ID: 2, Nome: "admin"}); err != nil {
+	if _, err := r.salva(4, r.versione(4), m, &utente{ID: 2, Nome: "admin"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := r.build(); err != nil {
