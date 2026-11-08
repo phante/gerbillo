@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -282,5 +284,36 @@ func TestBuild(t *testing.T) {
 	var idx map[string][]int
 	if err := json.Unmarshal([]byte(leggi("indice-foto.json")), &idx); err != nil || len(idx["dighe/vajont"]) != 2 {
 		t.Errorf("Indice delle Foto %v %v", idx, err)
+	}
+}
+
+// Con -confronta le pagine che il build non genera più finiscono in .rimosse, e l'anteprima
+// non le serve dalla Gallery dell'immagine (#93).
+func TestPagineRimosseNellAnteprima(t *testing.T) {
+	dir, indice := contenutiProva(t)
+	prima, dopo := filepath.Join(t.TempDir(), "prima"), filepath.Join(t.TempDir(), "dopo")
+	if err := build([]string{"-contenuti", dir, "-indice", indice, "-dist", prima}); err != nil {
+		t.Fatal(err)
+	}
+	os.MkdirAll(filepath.Join(dir, "arricchimento", "foto"), 0o755)
+	if err := os.WriteFile(filepath.Join(dir, "arricchimento", "foto", "3.yaml"), []byte("riservata: true\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := build([]string{"-contenuti", dir, "-indice", indice, "-dist", dopo, "-confronta", prima}); err != nil {
+		t.Fatal(err)
+	}
+	if b, _ := os.ReadFile(filepath.Join(dopo, fileRimosse)); !strings.Contains(string(b), "f/3/index.html\n") {
+		t.Fatalf(".rimosse: %q", b)
+	}
+	s := sovrapposte{http.Dir(dopo), http.Dir(prima)}
+	for _, nome := range []string{"/f/3/index.html", "/f/3", "/" + fileRimosse} {
+		if _, err := s.Open(nome); !errors.Is(err, os.ErrNotExist) {
+			t.Errorf("%s servito: %v", nome, err)
+		}
+	}
+	if f, err := s.Open("/f/1/index.html"); err != nil {
+		t.Errorf("f/1: %v", err)
+	} else {
+		f.Close()
 	}
 }
