@@ -731,6 +731,11 @@ func redazioneAnteprima(seme, contenuti, dist, modifiche, indiceRed string) (*re
 	if err != nil {
 		return nil, err
 	}
+	// GERBILLO_MEDIA: i file di Coppermine da un altro server per la scheda, come il server
+	// finto dei test end-to-end (e2e/media-finto.mjs). Il build della Gallery non cambia.
+	if m := os.Getenv("GERBILLO_MEDIA"); m != "" {
+		opz.media = m
+	}
 	args := append([]string{"build", "-contenuti", contenuti, "-indice", filepath.Join(seme, "indice.json"), "-dist", modifiche, "-confronta", dist,
 		"-redazione", indiceRed}, opzioni...)
 	eseguibile, err := os.Executable()

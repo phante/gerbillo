@@ -5,6 +5,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const porta = process.env.PORTA || '8091';
+const portaMedia = process.env.PORTA_MEDIA || '8092'; // e2e/media-finto.mjs, al posto di progettodighe.it
 const remoto = process.env.E2E_URL;
 const base = remoto || `http://127.0.0.1:${porta}/gerbillo/`;
 
@@ -27,11 +28,19 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'telefono', use: { ...devices['Pixel 7'] } }],
-  webServer: remoto ? undefined : {
-    command: './avvia.sh',
-    url: `http://127.0.0.1:${porta}/gerbillo/admin/statico/backend.css`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    env: { PORTA: porta },
-  },
+  webServer: remoto ? undefined : [
+    {
+      command: 'node media-finto.mjs',
+      url: `http://127.0.0.1:${portaMedia}/albums/`,
+      reuseExistingServer: !process.env.CI,
+      env: { PORTA_MEDIA: portaMedia },
+    },
+    {
+      command: './avvia.sh',
+      url: `http://127.0.0.1:${porta}/gerbillo/admin/statico/backend.css`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      env: { PORTA: porta, PORTA_MEDIA: portaMedia },
+    },
+  ],
 });
