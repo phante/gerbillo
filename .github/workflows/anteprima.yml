@@ -36,12 +36,14 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
       - name: gallery
+        env:
+          BRANCH: ${{ github.ref_name }} # fuori dallo script: un nome di branch non diventa shell
         run: |
           gunzip -c testdata/coppermine.sql.gz | mysql -h 127.0.0.1 -u root
           mysql -h 127.0.0.1 -u root -e "CREATE USER 'gerbillo_ro'@'%' IDENTIFIED BY 'gerbillo';
             GRANT SELECT ON progettodighe_it_gallery.* TO 'gerbillo_ro'@'%';
             GRANT SELECT ON progettodighe_it_forum.* TO 'gerbillo_ro'@'%';"
-          scripts/anteprima-gallery.sh 127.0.0.1:3306 "${{ github.ref_name }} @ $(echo ${{ github.sha }} | cut -c1-7)"
+          scripts/anteprima-gallery.sh 127.0.0.1:3306 "$BRANCH @ ${GITHUB_SHA::7}"
       - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ghcr.io
@@ -61,10 +63,11 @@ jobs:
         if: failure()
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           [ -n "$TELEGRAM_TOKEN" ] || exit 0
           curl -s -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-            -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — build dev fallita ❌\nBranch: %s\nCommit: %.7s\n%s' "${{ github.ref_name }}" "${{ github.sha }}" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")"
+            -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — build dev fallita ❌\nBranch: %s\nCommit: %.7s\n%s' "$BRANCH" "$GITHUB_SHA" "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID")"
   test:
     runs-on: ubuntu-latest
     # Lancia npm ci e playwright install: niente permessi di scrittura.
@@ -131,7 +134,8 @@ jobs:
         if: failure()
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           [ -n "$TELEGRAM_TOKEN" ] || exit 0
           curl -s -o /dev/null -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage" \
-            -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — test falliti ❌ (anteprima non bloccata)\nBranch: %s\nCommit: %.7s\n%s' "${{ github.ref_name }}" "${{ github.sha }}" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")"
+            -d chat_id=21449581 --data-urlencode text="$(printf 'gerbillo — test falliti ❌ (anteprima non bloccata)\nBranch: %s\nCommit: %.7s\n%s' "$BRANCH" "$GITHUB_SHA" "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID")"

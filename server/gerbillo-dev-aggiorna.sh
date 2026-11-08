@@ -32,7 +32,8 @@ avvia() {
   docker rm -f "$NOME" >/dev/null 2>&1
   docker run -d --name "$NOME" --restart unless-stopped \
     -p 127.0.0.1:8090:8080 \
-    --memory 384m --memory-swap 384m --cpus 0.5 \
+    --memory 384m --memory-swap 384m --cpus 0.5 --pids-limit 256 \
+    --cap-drop=ALL --security-opt no-new-privileges \
     --read-only --tmpfs /tmp:size=200m \
     --log-opt max-size=10m --log-opt max-file=2 \
     --env-file "$ENV" \
@@ -45,7 +46,8 @@ docker pull -q "$IMG" >/dev/null 2>&1
 dopo=$(docker image inspect -f '{{.Id}}' "$IMG" 2>/dev/null)
 in_uso=$(docker inspect -f '{{.Image}}' "$NOME" 2>/dev/null)
 if [ -n "$dopo" ] && [ "$dopo" != "$in_uso" ]; then
-  avvia && docker image prune -f >/dev/null
+  # Solo l'immagine del container vecchio: le altre dell'host non sono di gerbillo.
+  avvia && [ -n "$in_uso" ] && docker rmi "$in_uso" >/dev/null 2>&1
 fi
 
 # Stato: numeri soltanto, letti dal container in sola lettura.
