@@ -17,6 +17,6 @@ test('la scheda mostra la Foto e i suoi file', async ({ page }) => {
   const file = tecniche.locator('.file-foto');
   await expect(file.getByRole('link', { name: 'Originale' })).toBeVisible({ timeout: 20_000 });
   await expect(file.getByRole('link', { name: 'Mini' })).toHaveAttribute('href', /thumb_2005-condotta_forzata\.jpg$/);
-  // Dimensioni e peso dal file vero, su progettodighe.it.
+  // Dimensioni e peso dal file: in locale e in CI quello di e2e/media-finto.mjs.
   await expect(file.locator('tr', { hasText: 'Originale' })).toContainText(/681 × 1024.*kB/);
 });
