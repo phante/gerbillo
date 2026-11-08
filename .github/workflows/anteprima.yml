@@ -102,7 +102,7 @@ jobs:
         run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./... # la stessa versione di mise.toml
       - name: go test
         working-directory: backend
-        run: go test ./...
+        run: go test -race ./...
       - name: test del bridge phpBB
         run: php ext/gerbillo/bridge/tests/utente_test.php
       # Gli stessi dati dell'anteprima, in dist/ e seme/, per il Backend dei test.
