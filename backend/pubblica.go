@@ -35,7 +35,7 @@ type fotoPubblicata struct {
 		ID   int
 		Nome string
 	}
-	Formato    string
+	Formato    formato
 	Larghezza  int
 	Altezza    int
 	Coppermine struct {
@@ -58,7 +58,7 @@ type geolocFoto struct {
 
 // tagInterni sono promemoria di lavoro, mai mostrati nella Gallery pubblica.
 // Gli stessi di tags_interni in dati/vocabolario.yaml (TestVocabolarioDelRepo).
-var tagInterni = map[string]bool{"da-classificare": true, "da-collegare": true, "da-separare": true}
+var tagInterni = map[string]bool{daClassificare: true, "da-collegare": true, "da-separare": true}
 
 type contenuti struct {
 	foto   []*fotoPubblicata
@@ -131,7 +131,7 @@ func leggiContenuti(dir, indice string, l livelloArricchimento) (*contenuti, err
 			return nil, err
 		}
 		// Il Formato altro (zip, xls) resta fuori finché non si decide file per file (#21).
-		if f.Riservata || f.Formato == "altro" {
+		if f.Riservata || f.Formato == formatoAltro {
 			continue
 		}
 		c.completa(f)
@@ -202,7 +202,22 @@ func (st *strati) arricchisci(f *fotoPubblicata) error {
 	return st.l.leggi(fileFoto(f.Pid), f)
 }
 
-func fileFoto(pid int) string { return filepath.Join("foto", strconv.Itoa(pid)+".yaml") }
+func fileFoto(pid int) string { return filepath.Join("foto", nomeFoto(pid)) }
+
+// nomeFoto è il nome del YAML di una Foto, in importazione/foto/ e in arricchimento/foto/.
+func nomeFoto(pid int) string { return strconv.Itoa(pid) + ".yaml" }
+
+// formato è il Formato di una Foto (CONTEXT): dice quali Varianti si possono generare.
+type formato string
+
+const (
+	formatoImmagine formato = "immagine"
+	formatoPDF      formato = "pdf"
+	formatoAltro    formato = "altro" // non si pubblica
+)
+
+// Tag interni con un significato nel codice.
+const daClassificare = "da-classificare" // né Entità né Categoria (CONTEXT)
 
 // Decisioni su un album non pubblico di Coppermine, in arricchimento/riservati.yaml (#35).
 // Un album senza riga resta riservato: la protezione di #9 regge anche senza arricchimento.
@@ -289,8 +304,9 @@ func (c *contenuti) completa(f *fotoPubblicata) {
 	}
 	f.Slug = validi
 	// Da classificare è chi non ha né Entità né Categoria (CONTEXT).
+	// Il tag non si aggiunge: chi non ha né l'una né l'altra lo riceve dall'Importazione, o ha da-collegare.
 	if len(f.Slug) > 0 || len(f.Categories) > 0 {
-		f.Tags = slices.DeleteFunc(f.Tags, func(t string) bool { return t == "da-classificare" })
+		f.Tags = slices.DeleteFunc(f.Tags, func(t string) bool { return t == daClassificare })
 	}
 	if len(f.Slug) == 0 {
 		return

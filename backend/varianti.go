@@ -55,7 +55,7 @@ type configVarianti struct {
 
 type fotoOriginale struct {
 	pid                int
-	formato            string
+	formato            formato
 	filepath, filename string
 }
 
@@ -104,7 +104,7 @@ func generaVarianti(args []string) error {
 			defer wg.Done()
 			for f := range coda {
 				dir := filepath.Join(c.Varianti, strconv.Itoa(f.pid))
-				if f.formato == "pdf" {
+				if f.formato == formatoPDF {
 					// La Variante documento è il file stesso, pubblico (#90).
 					if err := copiaDocumento(client, c.Originali, dir, f); err != nil {
 						mu.Lock()
@@ -114,7 +114,7 @@ func generaVarianti(args []string) error {
 					altri.Add(1)
 					continue
 				}
-				if f.formato != "immagine" {
+				if f.formato != formatoImmagine {
 					altri.Add(1) // altro: non si pubblica
 					continue
 				}
@@ -180,13 +180,7 @@ func copiaDocumento(client *http.Client, originali, dir string, f fotoOriginale)
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-	if err := os.WriteFile(p+".tmp", b, 0o644); err != nil {
-		return err
-	}
-	return os.Rename(p+".tmp", p)
+	return scriviAtomico(p, b)
 }
 
 func presenti(dir string) bool {
@@ -212,7 +206,7 @@ func leggiFotoImportate(dir string) ([]fotoOriginale, error) {
 		}
 		var y struct {
 			Pid        int
-			Formato    string
+			Formato    formato
 			Coppermine struct{ Filepath, Filename string }
 		}
 		if err := yaml.Unmarshal(b, &y); err != nil {
@@ -260,11 +254,7 @@ func scriviVarianti(dir string, b []byte) ([]int, error) {
 		if err := webp.Encode(&buf, ridimensiona(img, v.lato), webp.Options{Quality: v.qualita, Method: metodoWebP}); err != nil {
 			return nil, err
 		}
-		p := filepath.Join(dir, v.nome+".webp")
-		if err := os.WriteFile(p+".tmp", buf.Bytes(), 0o644); err != nil {
-			return nil, err
-		}
-		if err := os.Rename(p+".tmp", p); err != nil {
+		if err := scriviAtomico(filepath.Join(dir, v.nome+".webp"), buf.Bytes()); err != nil {
 			return nil, err
 		}
 		dim = append(dim, buf.Len())

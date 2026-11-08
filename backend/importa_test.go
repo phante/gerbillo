@@ -196,7 +196,7 @@ func TestScrivi(t *testing.T) {
 	os.MkdirAll(cart, 0o755)
 	os.WriteFile(filepath.Join(cart, "1.yaml"), []byte("pid: 1\n"), 0o644)
 	os.WriteFile(filepath.Join(cart, "7.yaml"), []byte("pid: 7\n"), 0o644)
-	rap := &rapporto{formati: map[string]int{}, cancellati: map[int]int{},
+	rap := &rapporto{formati: map[formato]int{}, cancellati: map[int]int{},
 		autori: map[string]int{"Mario Rossi": 3, "Rossi M.": 1, "-": 1, "A | B": 1},
 		alias:  aliasAutori{"-": {}, "Rossi M.": {"Mario Rossi"}}}
 	rap.mappature = &rapportoMappature{radici: map[int]*contoRadice{}, interni: map[string]int{daCollegare: 5},

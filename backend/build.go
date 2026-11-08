@@ -214,7 +214,8 @@ type sottogruppo struct {
 }
 
 type corpoFoto struct {
-	Schermo, Mini, Documento, Alt, Formato        string
+	Formato                                       formato
+	Schermo, Mini, Documento, Alt                 string
 	Description, Authors, Fonte, Datazione, Luogo string
 	Caricata                                      string
 	BBCode                                        string
@@ -272,7 +273,7 @@ func (b *builder) statico(nome string) string {
 
 func (b *builder) mini(f *fotoPubblicata) string {
 	switch {
-	case f.Formato != "immagine":
+	case f.Formato != formatoImmagine:
 		return b.statico("documento.svg")
 	case b.media != "":
 		return b.media + f.Coppermine.Filepath + "thumb_" + f.Coppermine.Filename
@@ -282,7 +283,7 @@ func (b *builder) mini(f *fotoPubblicata) string {
 
 func (b *builder) schermo(f *fotoPubblicata) string {
 	switch {
-	case f.Formato != "immagine":
+	case f.Formato != formatoImmagine:
 		return ""
 	case b.media != "":
 		return b.media + f.Coppermine.Filepath + f.Coppermine.Filename
@@ -299,20 +300,20 @@ func (b *builder) originale(f *fotoPubblicata) string {
 	return ""
 }
 
-// documento è l'URL del file di una Foto che non è un'immagine: con -media quello di
-// Coppermine, altrimenti la Variante documento, pubblica (#90).
+// documento è l'URL di una Foto in PDF: con -media il file di Coppermine, altrimenti la
+// Variante documento, pubblica (#90).
 func (b *builder) documento(f *fotoPubblicata) string {
 	switch {
-	case f.Formato == "immagine":
-		return ""
+	case f.Formato != formatoPDF:
+		return "" // altro non si pubblica, e un'immagine non è un documento
 	case b.media != "":
 		return b.originale(f)
 	}
 	return b.base + "f/" + strconv.Itoa(f.Pid) + "/" + nomeDocumento(f.Formato)
 }
 
-// nomeDocumento è il file della Variante documento: il file stesso, che per un PDF è il contenuto.
-func nomeDocumento(formato string) string { return "documento." + formato }
+// nomeDocumento è il nome della Variante documento: una copia dell'Originale, che per un PDF è il contenuto.
+func nomeDocumento(f formato) string { return "documento." + string(f) }
 
 // titolo ripiega sul nome della prima Entità: un terzo delle Foto non ha titolo.
 func (b *builder) titolo(f *fotoPubblicata) string {

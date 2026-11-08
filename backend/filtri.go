@@ -52,7 +52,7 @@ var dimensioni = []dimensione{
 	}},
 	{"au", "Autore", func(x *fotoIndice, _ func(string) string) [][2]string { return uguali(x.Autori) }},
 	{"f", "Formato", func(x *fotoIndice, _ func(string) string) [][2]string {
-		if x.Formato == "immagine" {
+		if x.Formato == formatoImmagine {
 			return [][2]string{{"immagine", "immagine"}}
 		}
 		return [][2]string{{"documento", "documento"}}

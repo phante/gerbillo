@@ -8,6 +8,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -164,4 +165,28 @@ func envOr(k, d string) string {
 		return v
 	}
 	return d
+}
+
+// suffissoTemporaneo distingue i file temporanei di scriviAtomico: registra non li mette nei commit.
+const suffissoTemporaneo = ".tmp-"
+
+// scriviAtomico scrive d in p su un file temporaneo nella stessa cartella e poi fa rename:
+// un disco pieno o un errore a metà non lasciano un file troncato (#87).
+func scriviAtomico(p string, d []byte) error {
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		return err
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(p), "."+filepath.Base(p)+suffissoTemporaneo+"*")
+	if err != nil {
+		return err
+	}
+	_, err = tmp.Write(d)
+	err = errors.Join(err, tmp.Chmod(0o644), tmp.Close())
+	if err == nil {
+		err = os.Rename(tmp.Name(), p)
+	}
+	if err != nil {
+		os.Remove(tmp.Name()) // l'errore che conta è quello della scrittura
+	}
+	return err
 }
