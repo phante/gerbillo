@@ -10,6 +10,9 @@ import (
 
 // TestCopieSito verifica che le copie in modelli/sito siano ancora identiche ai
 // file del Sito principale (#25). Si salta se il repo del sito non è accanto a questo.
+// ponytail: in CI si salta sempre, perché phante/progettodighe è privato; serve un token di
+// sola lettura su quel repo per clonarlo. mappa.js e leaflet.css non si confrontano: li
+// costruisce scripts/mappa-sito.sh, e il controllo vero è rilanciarlo e guardare git diff.
 func TestCopieSito(t *testing.T) {
 	tema := filepath.Join("..", "..", "progettodighe", "themes", "progettodighe")
 	if _, err := os.Stat(tema); err != nil {

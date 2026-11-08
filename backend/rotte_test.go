@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"slices"
 	"strconv"
 	"testing"
@@ -83,6 +84,25 @@ func TestPermessiRotte(t *testing.T) {
 					t.Errorf("%s, redazione %v, %s %s: HTTP %d, atteso %d", caso.nome, red != nil, caso.metodo, p, w.Code, caso.atteso)
 				}
 			}
+		}
+	}
+}
+
+// Le pagine del Backend, come le genera il server, non caricano codice o stili da altri domini:
+// solo immagini (tessere della mappa, Foto della scheda). TestStaticiBackend guarda i modelli (#93).
+func TestPagineSenzaCodiceEsterno(t *testing.T) {
+	r := redazioneConIndice(t)
+	mux := http.NewServeMux()
+	rotteBackend(mux, &utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r)
+	esterno := regexp.MustCompile(`<(script|link)[^>]*(src|href)="(https?:)?//`)
+	for _, p := range []string{"/admin/", "/admin/foto/", "/admin/foto/1", "/admin/foto/2", "/admin/operazioni"} {
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, httptest.NewRequest("GET", p, nil))
+		if w.Code != http.StatusOK {
+			t.Errorf("%s: HTTP %d", p, w.Code)
+		}
+		if m := esterno.FindString(w.Body.String()); m != "" {
+			t.Errorf("%s carica da un altro dominio: %s", p, m)
 		}
 	}
 }
