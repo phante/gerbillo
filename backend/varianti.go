@@ -164,6 +164,9 @@ func generaVarianti(args []string) error {
 	for _, e := range errori {
 		fmt.Fprintln(os.Stderr, "errore:", e)
 	}
+	if len(errori) > 0 {
+		return fmt.Errorf("%d Foto con errori", len(errori))
+	}
 	return nil
 }
 
@@ -303,7 +306,7 @@ func orientamento(b []byte) int {
 	}
 	for i := 2; i+4 <= len(b) && b[i] == 0xff; {
 		marker, n := b[i+1], int(binary.BigEndian.Uint16(b[i+2:]))
-		if marker == 0xda || i+2+n > len(b) { // inizio dei dati: niente più segmenti
+		if marker == 0xda || n < 2 || i+2+n > len(b) { // inizio dei dati: niente più segmenti
 			break
 		}
 		seg := b[i+4 : i+2+n]

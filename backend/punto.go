@@ -55,7 +55,7 @@ func interpretaPunto(s string) (lat, lon float64, err error) {
 			ok = e1 == nil && e2 == nil
 		}
 	}
-	if !ok || math.IsNaN(lat) || lat < -90 || lat > 90 || lon < -180 || lon > 180 {
+	if !ok || math.IsNaN(lat) || math.IsNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180 {
 		return 0, 0, errore
 	}
 	return lat, lon, nil

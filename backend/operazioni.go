@@ -176,11 +176,14 @@ func (r *redazione) paginaOperazioni(w http.ResponseWriter, req *http.Request) {
 		dopo, err := r.annulla(hash, utenteDi(req))
 		ops, _ := r.operazioni()
 		i := slices.IndexFunc(ops, func(o operazione) bool { return o.Hash == hash })
-		if i < 0 {
+		op := operazione{Hash: hash, Breve: hash[:min(7, len(hash))]}
+		switch {
+		case i >= 0:
+			op = ops[i]
+		case err != nil:
 			http.NotFound(w, req)
 			return
-		}
-		op := ops[i]
+		} // riuscito, ma l'annullamento l'ha spinta fuori dalle ultime maxOperazioni
 		switch {
 		case errors.Is(err, errCambiate):
 			op.Errore, op.CambiateDopo = "Non annullata: queste Foto sono cambiate dopo, e l'annullamento le riporterebbe indietro.", dopo

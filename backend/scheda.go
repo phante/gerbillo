@@ -176,7 +176,7 @@ func (r *redazione) testataDi(pub *fotoPubblicata) testata {
 	if t.Immagine == "" {
 		t.Immagine = r.opz.assoluto(b.mini(pub))
 	}
-	if strings.HasPrefix(t.Immagine, r.opz.base+"statico/") || strings.HasPrefix(t.Immagine, "statico/") {
+	if pub.Formato != "immagine" {
 		t.Immagine = "" // l'icona del documento: nella scheda basta il Formato
 	}
 	if d, err := time.Parse(time.RFC3339, pub.Date); err == nil {

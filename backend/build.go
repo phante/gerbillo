@@ -3,7 +3,9 @@ package main
 // gerbillo build (ADR 0012): genera la Gallery pubblica statica in dist/ dalla Foto
 // pubblicata (pubblica.go). dist/ contiene solo HTML, CSS e l'Indice delle Foto: le
 // Varianti stanno nella loro cartella e nginx le serve a /gallery/f/<pid>/<variante>.webp.
-// Il build scrive una cartella nuova e la sostituisce alla vecchia in un colpo solo.
+// Il build scrive una cartella nuova e la sostituisce alla vecchia con due rename: per un
+// istante dist/ manca, e nginx risponde 404.
+// ponytail: due rename, non atomico; uno symlink da scambiare se il 404 di un istante dà fastidio.
 
 import (
 	"bytes"
