@@ -12,6 +12,10 @@ Default five-role vocabulary: needs-triage, needs-info, ready-for-agent, ready-f
 
 Single-context: one `CONTEXT.md` + `docs/adr/` at repo root. See `docs/agents/domain.md`.
 
+### Regole di scrittura del codice
+
+Regole Go per scrivere e rivedere il codice: `CODING_STANDARDS.md`.
+
 ## Lavoro remoto
 
 Nelle sessioni cloud valgono le decisioni di `docs/lavoro-remoto.md` (server non toccabile da remoto, `testdata/` pubblico, `gh api` al posto di `gh issue`/`gh pr`). Leggilo prima di lavorare.
