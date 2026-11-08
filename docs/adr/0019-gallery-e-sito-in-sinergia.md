@@ -20,7 +20,7 @@ Deciso il 30/10/2026, nel grill di #62. Corregge il modello di partenza, in cui 
 
 ## Consequences
 
-- Il codice e le issue si allineano in passi successivi (ADR 0018, #62): finché non è fatto, il codice ha ancora `da_censire` e `/da-censire/`.
+- Il codice e le issue si allineano in passi successivi (ADR 0018, #62). Nel codice `da_censire` e `/da-censire/` non ci sono più.
 - La Vista per Categoria non esiste ancora: fino ad allora quelle Foto si trovano con la ricerca.
 - L'unica dipendenza che resta è la pagina tolta dal sito, che il build segnala.
 - `gerbillo build` funziona anche senza Indice, ma va chiesto con `-senza-indice`: un `-indice` dimenticato toglierebbe in silenzio tutte le Entità del sito.

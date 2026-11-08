@@ -3,7 +3,9 @@ package main
 // Interfaccia del Backend (ADR 0017): HTML generato dal server con un solo modello di
 // pagina, htmx per gli aggiornamenti parziali e Alpine.js per lo stato locale dei
 // componenti. Le librerie sono incorporate nel binario (scripts/librerie-backend.sh):
-// nessuna pagina carica risorse da altri domini.
+// nessuna pagina carica codice o stili da altri domini. Da fuori arrivano solo immagini:
+// le tessere della mappa (OpenStreetMap ed Esri, backend.js) e le Foto della scheda da
+// progettodighe.it.
 
 import (
 	"bytes"
