@@ -16,6 +16,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -60,8 +61,7 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	if esiste(filepath.Join(dist, "index.html")) {
-		cartelle := sovrapposte{http.Dir(modifiche), http.Dir(dist)}
-		mux.Handle("/", http.FileServer(cartelle))
+		mux.Handle("/", http.FileServer(sovrapposte{http.Dir(modifiche), http.Dir(dist)}))
 	} else {
 		mux.HandleFunc("/", home)
 	}
@@ -147,6 +147,18 @@ func conBarra(w http.ResponseWriter, r *http.Request) {
 type sovrapposte []http.Dir
 
 func (s sovrapposte) Open(nome string) (http.File, error) {
+	// Le pagine che il build della prima cartella ha tolto non si servono dalle altre (#93).
+	// ponytail: legge .rimosse a ogni richiesta; una cache sul tempo di modifica se pesasse.
+	rel := strings.TrimPrefix(path.Clean("/"+nome), "/")
+	if rel == fileRimosse {
+		return nil, os.ErrNotExist
+	}
+	if b, err := os.ReadFile(filepath.Join(string(s[0]), fileRimosse)); err == nil {
+		// Una cartella senza più index.html sparisce anche lei: niente elenco dei file.
+		if r := strings.Split(string(b), "\n"); slices.Contains(r, rel) || slices.Contains(r, path.Join(rel, "index.html")) {
+			return nil, os.ErrNotExist
+		}
+	}
 	var primo error
 	for _, d := range s {
 		f, err := d.Open(nome)

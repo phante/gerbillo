@@ -15,6 +15,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -123,6 +124,9 @@ func build(args []string) error {
 			return err
 		}
 	}
+	if err := b.scriviRimosse(); err != nil {
+		return err
+	}
 	vecchia := strings.TrimSuffix(*dist, "/") + ".vecchia"
 	os.RemoveAll(vecchia)
 	if err := os.Rename(*dist, vecchia); err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -150,10 +154,11 @@ func build(args []string) error {
 
 type builder struct {
 	opzioniBuild
-	c       *contenuti
-	dir     string
-	scritte int
-	diversi int // file scritti con -confronta
+	c        *contenuti
+	dir      string
+	scritte  int
+	diversi  int             // file scritti con -confronta
+	generati map[string]bool // con -confronta: tutti i file della Gallery nuova, anche quelli uguali
 	// per ogni Foto: l'elenco in cui sta (per precedente e successiva) e la sua posizione
 	contesto map[int]contestoFoto
 	mappe    map[string]int // map_ids → Entità che la hanno (stessaMappa)
@@ -255,6 +260,10 @@ func (b *builder) scrivi(modello string, p paginaSito, parti ...string) error {
 // scriviFile scrive rel nella Gallery nuova; con -confronta solo se è diverso.
 func (b *builder) scriviFile(rel string, d []byte) error {
 	if b.confronta != "" {
+		if b.generati == nil {
+			b.generati = map[string]bool{}
+		}
+		b.generati[filepath.ToSlash(rel)] = true
 		if v, err := os.ReadFile(filepath.Join(b.confronta, rel)); err == nil && bytes.Equal(v, d) {
 			return nil
 		}
@@ -705,4 +714,29 @@ func chiaviOrdinate[K int | string, V any](m map[K]V) []K {
 	}
 	slices.Sort(k)
 	return k
+}
+
+// fileRimosse elenca, con -confronta, i file della Gallery confrontata che il build non ha più
+// generato: l'anteprima li sovrappone e non li serve più (#93).
+const fileRimosse = ".rimosse"
+
+func (b *builder) scriviRimosse() error {
+	if b.confronta == "" {
+		return nil
+	}
+	var rimosse []string
+	err := filepath.WalkDir(b.confronta, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		rel, err := filepath.Rel(b.confronta, p)
+		if rel = filepath.ToSlash(rel); err == nil && !b.generati[rel] {
+			rimosse = append(rimosse, rel)
+		}
+		return err
+	})
+	if err != nil || len(rimosse) == 0 {
+		return err
+	}
+	return os.WriteFile(filepath.Join(b.dir, fileRimosse), []byte(strings.Join(rimosse, "\n")+"\n"), 0o644)
 }
