@@ -236,7 +236,7 @@ type campoBlocco struct {
 }
 
 type corpoAnteprimaBlocco struct {
-	Pid, Modifica         string // Modifica: la query dei campi, rimandata con la conferma
+	Pid                   string
 	Descrizione           []string
 	N, Cambiano, APosto   int
 	PerCampo              [][2]string
@@ -281,7 +281,6 @@ func (r *redazione) blocco(w http.ResponseWriter, req *http.Request) {
 	case "anteprima", "applica":
 		m := leggiModificaBlocco(req.PostForm)
 		a := corpoAnteprimaBlocco{Pid: scriviPids(pids), N: len(pids), Descrizione: m.descrizione(), Soglia: len(pids) > sogliaConferma, Campi: m.valori()}
-		a.Modifica = a.Campi.Encode()
 		if m.vuota() {
 			a.Errori = []string{"Nessuna modifica: scegli cosa aggiungere, togliere, impostare o svuotare."}
 			mostraFrammento(w, "anteprima-blocco", a)
