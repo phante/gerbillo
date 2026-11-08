@@ -485,8 +485,27 @@ func scrivi(dir string, foto []fotoYAML, rap *rapporto) error {
 	}
 	presenti := map[string]bool{}
 	for _, f := range foto {
+		presenti[strconv.Itoa(f.pid)+".yaml"] = true
+	}
+	voci, err := os.ReadDir(cart)
+	if err != nil {
+		return err
+	}
+	esistenti, sparirebbero := 0, 0
+	for _, v := range voci {
+		if strings.HasSuffix(v.Name(), ".yaml") {
+			esistenti++
+			if !presenti[v.Name()] {
+				sparirebbero++
+			}
+		}
+	}
+	// Un dump vuoto o tagliato toglierebbe le Foto: ci si ferma prima di scrivere.
+	if len(foto) == 0 || sparirebbero > max(10, esistenti/10) {
+		return fmt.Errorf("importazione fermata: %d Foto nel dump, ne sparirebbero %d su %d. Se è giusto, togli a mano i YAML in %s", len(foto), sparirebbero, esistenti, cart)
+	}
+	for _, f := range foto {
 		nome := strconv.Itoa(f.pid) + ".yaml"
-		presenti[nome] = true
 		p := filepath.Join(cart, nome)
 		if vecchio, err := os.ReadFile(p); err == nil && bytes.Equal(vecchio, f.file) {
 			continue
@@ -495,10 +514,6 @@ func scrivi(dir string, foto []fotoYAML, rap *rapporto) error {
 			return err
 		}
 		rap.scritte++
-	}
-	voci, err := os.ReadDir(cart)
-	if err != nil {
-		return err
 	}
 	for _, v := range voci {
 		if presenti[v.Name()] || !strings.HasSuffix(v.Name(), ".yaml") {

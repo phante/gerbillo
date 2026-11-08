@@ -23,7 +23,7 @@ func TestInterpretaPunto(t *testing.T) {
 			t.Errorf("%q: %s, %v; atteso %s", in, testoPunto(lat, lon), err, out)
 		}
 	}
-	for _, in := range []string{"46,2672", "46,2905, 8,2987", "Pippo", "95, 10", "46.29", "https://example.com/x"} {
+	for _, in := range []string{"46,2672", "46,2905, 8,2987", "Pippo", "95, 10", "46.29", "https://example.com/x", "46.2, NaN", "NaN, 8.2"} {
 		if lat, lon, err := interpretaPunto(in); err == nil {
 			t.Errorf("%q accettato: %v, %v", in, lat, lon)
 		}

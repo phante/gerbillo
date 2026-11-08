@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -200,7 +201,20 @@ func TestScrivi(t *testing.T) {
 		alias:  aliasAutori{"-": {}, "Rossi M.": {"Mario Rossi"}}}
 	rap.mappature = &rapportoMappature{radici: map[int]*contoRadice{}, interni: map[string]int{daCollegare: 5},
 		daFare: []voceRapporto{{aid: 21, foto: 5, percorso: "Dighe - Dams / Sconosciuta"}}}
+	// Un dump vuoto, o che ne toglierebbe troppe, si ferma senza toccare niente (#93).
+	if err := scrivi(dir, nil, rap); err == nil {
+		t.Error("Importazione vuota accettata")
+	}
+	for i := 100; i < 111; i++ {
+		os.WriteFile(filepath.Join(cart, strconv.Itoa(i)+".yaml"), []byte("x\n"), 0o644)
+	}
 	foto := []fotoYAML{{1, []byte("pid: 1\n")}, {2, []byte("pid: 2\n")}}
+	if err := scrivi(dir, foto, rap); err == nil || !esiste(filepath.Join(cart, "100.yaml")) {
+		t.Errorf("13 Foto, ne sparirebbero 12: %v", err)
+	}
+	for i := 100; i < 111; i++ {
+		os.Remove(filepath.Join(cart, strconv.Itoa(i)+".yaml"))
+	}
 	if err := scrivi(dir, foto, rap); err != nil {
 		t.Fatal(err)
 	}

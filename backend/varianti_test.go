@@ -40,6 +40,12 @@ func TestOrientamento(t *testing.T) {
 	if orientamento([]byte("\x89PNG")) != 1 {
 		t.Error("PNG senza EXIF")
 	}
+	// Un segmento con lunghezza 0 o 1 non ferma il lotto (#93).
+	for _, b := range []string{"\xff\xd8\xff\xe1\x00\x00\xff\xd9", "\xff\xd8\xff\xe1\x00\x01\xff\xd9"} {
+		if orientamento([]byte(b)) != 1 {
+			t.Errorf("JPEG anomalo %q", b)
+		}
+	}
 }
 
 func TestRaddrizza(t *testing.T) {

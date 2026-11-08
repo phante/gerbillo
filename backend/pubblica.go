@@ -288,6 +288,10 @@ func (c *contenuti) completa(f *fotoPubblicata) {
 		}
 	}
 	f.Slug = validi
+	// Da classificare è chi non ha né Entità né Categoria (CONTEXT).
+	if len(f.Slug) > 0 || len(f.Categories) > 0 {
+		f.Tags = slices.DeleteFunc(f.Tags, func(t string) bool { return t == "da-classificare" })
+	}
 	if len(f.Slug) == 0 {
 		return
 	}

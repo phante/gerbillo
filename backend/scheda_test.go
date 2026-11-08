@@ -41,6 +41,10 @@ func TestFileDellaFoto(t *testing.T) {
 	if u := r.opz.assoluto(r.builderScheda().mini(&fotoPubblicata{Pid: 7, Formato: "immagine"})); u != "https://progettodighe.it/gallery/f/7/mini.webp" {
 		t.Errorf("mini: %s", u)
 	}
+	// Un documento non ha immagine nella testata: l'icona del build non si mostra (#93).
+	if i := r.testataDi(&fotoPubblicata{Pid: 2, Formato: "pdf"}).Immagine; i != "" {
+		t.Errorf("immagine di un PDF: %s", i)
+	}
 	if peso(1536) != "2 kB" || peso(3<<20) != "3,0 MB" {
 		t.Errorf("peso: %s, %s", peso(1536), peso(3<<20))
 	}

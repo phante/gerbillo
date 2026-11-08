@@ -29,13 +29,13 @@ type suggerimento struct {
 
 // voci calcolate una volta per indice della redazione: si ricalcolano dopo ogni build.
 type vociNote struct {
-	idx           *indiceRedazione
-	tag, autori   map[string]int // valore → Foto che lo usano
-	entita        []entita
-	perSlug       map[string]*entita
-	tagSito       map[string]bool
-	aliasCaricati bool
-	nomiAlias     []string
+	idx         *indiceRedazione
+	tag, autori map[string]int // valore → Foto che lo usano
+	entita      []entita
+	perSlug     map[string]*entita
+	tagSito     map[string]bool
+	entitaLette bool // false se la lettura è fallita: si riprova al prossimo indice
+	nomiAlias   []string
 }
 
 type cacheVoci struct {
@@ -59,12 +59,12 @@ func (r *redazione) vociNote() *vociNote {
 			v.autori[a]++
 		}
 	}
-	if old := r.cache.voci; old != nil {
-		v.entita, v.perSlug, v.tagSito = old.entita, old.perSlug, old.tagSito // le Entità non cambiano: il Backend non le scrive ancora (#62)
+	if old := r.cache.voci; old != nil && old.entitaLette {
+		v.entita, v.perSlug, v.tagSito, v.entitaLette = old.entita, old.perSlug, old.tagSito, true // le Entità non cambiano: il Backend non le scrive ancora (#62)
 	} else if u, err := leggiEntita(r.contenuti, r.indice, nuovoLivello(r.contenuti, "")); err != nil {
 		log.Printf("Entità: %v", err)
 	} else {
-		v.entita = u.idx
+		v.entita, v.entitaLette = u.idx, true
 		for i := range v.entita {
 			v.perSlug[v.entita[i].Slug] = &v.entita[i]
 			for _, t := range v.entita[i].Tags {

@@ -305,3 +305,24 @@ func TestBuildSenzaIndice(t *testing.T) {
 		t.Error("link al sito senza Indice")
 	}
 }
+
+// Da classificare è solo chi non ha né Entità né Categoria (#93).
+func TestDaClassificare(t *testing.T) {
+	c := &contenuti{entita: map[string]*entita{"dighe/vajont": {}}}
+	for nome, caso := range map[string]struct {
+		f     fotoPubblicata
+		resta bool
+	}{
+		"con Entità":    {fotoPubblicata{Slug: []string{"dighe/vajont"}}, false},
+		"con Categoria": {fotoPubblicata{Categories: []string{"tecnica"}}, false},
+		"senza":         {fotoPubblicata{}, true},
+		"Slug ignoto":   {fotoPubblicata{Slug: []string{"dighe/inventata"}}, true},
+	} {
+		f := caso.f
+		f.Tags = []string{"da-classificare", "vajont"}
+		c.completa(&f)
+		if slices.Contains(f.Tags, "da-classificare") != caso.resta || !slices.Contains(f.Tags, "vajont") {
+			t.Errorf("%s: %v", nome, f.Tags)
+		}
+	}
+}
