@@ -15,6 +15,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -145,7 +146,8 @@ type daSistemare struct {
 	vale                func(f *fotoIndice) bool
 }
 
-func filtriDaSistemare() []daSistemare {
+// filtriDaSistemare si calcola una volta: tagInterni e le descrizioni non cambiano.
+var filtriDaSistemare = sync.OnceValue(func() []daSistemare {
 	var d []daSistemare
 	for _, t := range chiaviOrdinate(tagInterni) {
 		d = append(d, daSistemare{t, t, descrizioneTagInterno(t), func(f *fotoIndice) bool { return slices.Contains(f.Tag, t) }})
@@ -154,7 +156,7 @@ func filtriDaSistemare() []daSistemare {
 		daSistemare{senzaDatazione, "senza Datazione", "", func(f *fotoIndice) bool { return f.Datazione == "" }},
 		daSistemare{datazioneDaSistemare, "Datazione da sistemare", "user3 di Coppermine c'è, ma non è diventato una Datazione",
 			func(f *fotoIndice) bool { return f.Datazione == "" && strings.TrimSpace(f.User3) != "" }})
-}
+})
 
 type miniaturaBackend struct {
 	Pid                 int
