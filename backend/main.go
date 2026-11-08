@@ -79,6 +79,9 @@ func main() {
 // apiTelegram è una variabile per i test.
 var apiTelegram = "https://api.telegram.org"
 
+// clientTelegram ha un timeout: senza, un Telegram che non risponde bloccherebbe l'accesso all'anteprima.
+var clientTelegram = &http.Client{Timeout: 15 * time.Second}
+
 // telegram manda il messaggio e ne restituisce l'id.
 func telegram(testo string) (int, error) {
 	var risposta struct {
@@ -102,8 +105,10 @@ func chiamaTelegram(metodo string, v url.Values, risposta any) error {
 		return fmt.Errorf("TELEGRAM_TOKEN o TELEGRAM_CHAT_ID mancanti")
 	}
 	v.Set("chat_id", chat)
-	r, err := http.PostForm(apiTelegram+"/bot"+tok+"/"+metodo, v)
-	if err != nil {
+	r, err := clientTelegram.PostForm(apiTelegram+"/bot"+tok+"/"+metodo, v)
+	if ue := (*url.Error)(nil); errors.As(err, &ue) {
+		return fmt.Errorf("telegram %s: %w", metodo, ue.Err) // l'URL contiene il token: fuori dall'errore
+	} else if err != nil {
 		return err
 	}
 	defer r.Body.Close()

@@ -191,3 +191,17 @@ func TestCookieModeratore(t *testing.T) {
 		t.Errorf("esci: %q, utente %+v", w.Header().Get("Set-Cookie"), f.u)
 	}
 }
+
+// Un errore di rete non porta nel testo l'URL della Bot API, che contiene il token (#93).
+func TestTelegramErroreSenzaToken(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	s.Close() // nessuno risponde
+	vecchio := apiTelegram
+	apiTelegram = s.URL
+	t.Cleanup(func() { apiTelegram = vecchio })
+	t.Setenv("TELEGRAM_TOKEN", "SEGRETO")
+	t.Setenv("TELEGRAM_CHAT_ID", "1")
+	if _, err := telegram("ciao"); err == nil || strings.Contains(err.Error(), "SEGRETO") {
+		t.Errorf("errore: %v", err)
+	}
+}

@@ -160,18 +160,24 @@ func nuovaPasswordAnteprima(fissa string) *passwordAnteprima {
 		return &passwordAnteprima{password: fissa, scadenza: time.Now().AddDate(100, 0, 0)}
 	}
 	p := &passwordAnteprima{}
-	p.rinnova()
+	p.mu.Lock()
+	pw, scade := p.genera()
+	p.mu.Unlock()
+	p.invia(pw, scade)
 	return p
 }
 
-func (p *passwordAnteprima) rinnova() {
+// genera una password nuova; chi la chiama tiene p.mu.
+func (p *passwordAnteprima) genera() (string, time.Time) {
 	b := make([]byte, 12)
-	rand.Read(b)
-	p.mu.Lock()
+	rand.Read(b) // crypto/rand: non restituisce errori (Go 1.24)
 	p.password = base64.RawURLEncoding.EncodeToString(b)
 	p.scadenza = time.Now().Add(durataPassword)
-	pw, scade := p.password, p.scadenza
-	p.mu.Unlock()
+	return p.password, p.scadenza
+}
+
+// invia la password su Telegram, fuori dal lock: la chiamata può durare.
+func (p *passwordAnteprima) invia(pw string, scade time.Time) {
 	// <code>: su Telegram un tocco copia il testo. base64url non ha caratteri HTML.
 	msg := fmt.Sprintf("Gerbillo dev %s@%s\nutente: <code>%s</code>\npassword: <code>%s</code>\nscade: %s",
 		template.HTMLEscapeString(branch), commit, utenteAnteprima, pw, scade.In(roma).Format("02/01 15:04"))
@@ -195,15 +201,17 @@ func (p *passwordAnteprima) rinnova() {
 
 // passwordGiusta dice se la richiesta porta la password usa e getta, che rinnova se è scaduta.
 func (p *passwordAnteprima) passwordGiusta(r *http.Request) bool {
+	// Controllo e rinnovo sotto lo stesso lock: con richieste simultanee si rinnova una volta sola.
 	p.mu.Lock()
-	scaduta := time.Now().After(p.scadenza)
+	pw, scade := p.password, p.scadenza
+	scaduta := time.Now().After(scade)
+	if scaduta {
+		pw, scade = p.genera()
+	}
 	p.mu.Unlock()
 	if scaduta {
-		p.rinnova()
+		p.invia(pw, scade)
 	}
-	p.mu.Lock()
-	pw := p.password
-	p.mu.Unlock()
 	u, inviata, ok := r.BasicAuth()
 	return ok && u == utenteAnteprima && subtle.ConstantTimeCompare([]byte(inviata), []byte(pw)) == 1
 }
