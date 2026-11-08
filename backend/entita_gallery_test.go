@@ -17,7 +17,7 @@ func conEntitaGallery(t *testing.T, dir string) {
 	for p, s := range map[string]string{
 		"entita/dighe/pontesei.yaml": "title: Pontesei\naliases: [dighe/pontesei-vecchia, dighe/vajont, altre/1, ../fuori]\ngeolocation: {stato: Italia, regione: Veneto, provincia: Belluno}\n",
 		"entita/dighe/vajont.yaml":   "title: Doppione\n",
-		"arricchimento/foto/3.yaml":  "slug: [dighe/pontesei]\n",
+		"arricchimento/foto/3.yaml":  "slug: [dighe/pontesei]\ntags: [da-separare, coronamento]\n", // un tag interno e uno pubblico
 		"arricchimento/foto/4.yaml":  "slug: [dighe/pontesei]\n",
 		"arricchimento/foto/5.yaml":  "slug: [dighe/pontesei-vecchia]\n",
 	} {
@@ -119,7 +119,11 @@ func TestBuildEntitaSenzaPagina(t *testing.T) {
 	if strings.Contains(leggi("f/2/index.html"), `/g/altre/`) {
 		t.Error("la Foto con una Categoria è ancora «Da classificare»")
 	}
-	// Le informazioni interne non finiscono in dist/ (ADR 0019).
+	// Le informazioni interne non finiscono in dist/ (ADR 0019): il tag interno della Foto 3 no,
+	// quello pubblico sì, così il controllo qui sotto vede davvero i tag delle pagine (#93).
+	if !strings.Contains(leggi("f/3/index.html"), "coronamento") {
+		t.Error("f/3 senza il tag pubblico")
+	}
 	filepath.WalkDir(dist, func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() && (strings.HasSuffix(p, ".html") || strings.HasSuffix(p, ".json")) {
 			b, _ := os.ReadFile(p)

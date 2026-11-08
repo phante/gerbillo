@@ -56,10 +56,6 @@ func dove(e *entita) string {
 	return e.Geolocation.Regione
 }
 
-func usoPrincipale(e *entita) string {
-	return e.campo("uso")
-}
-
 // voceBussola è una diga con foto nel JSON della home.
 type voceBussola struct {
 	URL    string `json:"u"`
@@ -110,7 +106,7 @@ func (b *builder) vociBussola(perEntita map[string][]*fotoPubblicata, slugs []st
 	var v []voceBussola
 	for _, s := range slugs {
 		e, fs := b.c.entita[s], perEntita[s]
-		x := voceBussola{URL: b.url(s), Titolo: e.Title, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e), Uso: usoPrincipale(e), Cosa: tipoEntita(s)}
+		x := voceBussola{URL: b.url(s), Titolo: e.Title, Mini: b.mini(fs[0]), N: len(fs), Dove: dove(e), Uso: e.campo("uso"), Cosa: tipoEntita(s)}
 		x.Quando, x.Come = decennio(e.campo("anno")), famiglia(e.campo("tipologia"))
 		v = append(v, x)
 	}

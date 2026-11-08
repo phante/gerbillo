@@ -207,6 +207,20 @@ func TestBuild(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dist, "f/10")); err == nil {
 		t.Error("f/10 pubblicata")
 	}
+	// Le Foto riservate (7 cancellata, 8 senza decisione) non sono in nessun file di dist/ (#93).
+	filepath.WalkDir(dist, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(dist, p)
+		if rel == filepath.Join("f", "7") || rel == filepath.Join("f", "8") {
+			t.Errorf("%s pubblicata", rel)
+		}
+		if b, _ := os.ReadFile(p); !d.IsDir() && (strings.Contains(string(b), "/f/7/") || strings.Contains(string(b), "/f/8/")) { // anche l'Indice delle Foto, che ha gli URL
+			t.Errorf("%s nomina una Foto riservata", rel)
+		}
+		return nil
+	})
 	foto1 := leggi("f/1/index.html")
 	for _, atteso := range []string{
 		`src="/g/f/1/schermo.webp"`,
