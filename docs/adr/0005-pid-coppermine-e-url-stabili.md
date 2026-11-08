@@ -1,6 +1,6 @@
 # Il pid di Coppermine è l'identificativo permanente e la base degli URL
 
-Ogni Foto è identificata dal `pid` di Coppermine, e le foto nuove proseguono la numerazione. Gli URL dei media dipendono solo dal pid, non dalla classificazione: `/gallery/f/<pid>/<variante>.webp`. In questo modo, allo Switch, ogni URL di Coppermine (pagine e file `albums/…`, comprese le varianti `thumb_` e `normal_`) si mappa con un redirect 301 deterministico. Riclassificare una Foto non rompe nessun link.
+Ogni Foto è identificata dal `pid` di Coppermine, e le foto nuove proseguono la numerazione. Gli URL dei media dipendono solo dal pid, non dalla classificazione: `/gallery/f/<pid>/<variante>.webp`, e per un PDF la Variante documento `/gallery/f/<pid>/documento.pdf` (ADR 0015, #90). La configurazione di nginx per `/gallery/f/` deve servire entrambi. In questo modo, allo Switch, ogni URL di Coppermine (pagine e file `albums/…`, comprese le varianti `thumb_` e `normal_`) si mappa con un redirect 301 deterministico. Riclassificare una Foto non rompe nessun link.
 
 ## Consequences
 

@@ -162,11 +162,12 @@ func (r *redazione) fileDellaFoto(w http.ResponseWriter, req *http.Request, pid 
 
 // testata è la parte alta della scheda: la Foto e le informazioni tecniche.
 type testata struct {
-	Immagine, Formato, Caricata, Contributore string
-	Larghezza, Altezza                        int
-	Aid                                       int
-	Album, LinkAlbum                          string
-	Exif, User3                               string
+	Formato                          formato
+	Immagine, Caricata, Contributore string
+	Larghezza, Altezza               int
+	Aid                              int
+	Album, LinkAlbum                 string
+	Exif, User3                      string
 }
 
 func (r *redazione) testataDi(pub *fotoPubblicata) testata {
@@ -176,7 +177,7 @@ func (r *redazione) testataDi(pub *fotoPubblicata) testata {
 	if t.Immagine == "" {
 		t.Immagine = r.opz.assoluto(b.mini(pub))
 	}
-	if pub.Formato != "immagine" {
+	if pub.Formato != formatoImmagine {
 		t.Immagine = "" // l'icona del documento: nella scheda basta il Formato
 	}
 	if d, err := time.Parse(time.RFC3339, pub.Date); err == nil {

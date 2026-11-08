@@ -322,7 +322,7 @@ type fotoYAML struct {
 
 type rapporto struct {
 	totale          int
-	formati         map[string]int
+	formati         map[formato]int
 	altro           []string // "pid filename"
 	cp1252          []int
 	nonDecodificati []string // "pid campo"
@@ -346,18 +346,18 @@ type rapporto struct {
 	mappature       *rapportoMappature // solo con importa -indice
 }
 
-func formato(nome string) string {
+func formatoDi(nome string) formato {
 	switch strings.ToLower(filepath.Ext(nome)) {
 	case ".jpg", ".jpeg", ".png", ".gif":
-		return "immagine"
+		return formatoImmagine
 	case ".pdf":
-		return "pdf"
+		return formatoPDF
 	}
-	return "altro"
+	return formatoAltro
 }
 
 func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
-	rap := &rapporto{totale: len(d.foto), formati: map[string]int{}, cancellati: map[int]int{}, autori: map[string]int{},
+	rap := &rapporto{totale: len(d.foto), formati: map[formato]int{}, cancellati: map[int]int{}, autori: map[string]int{},
 		candidate: map[string]map[string]int{}}
 	var out []fotoYAML
 	for _, f := range d.foto {
@@ -448,10 +448,10 @@ func converti(d *datiCoppermine) ([]fotoYAML, *rapporto) {
 			rap.riservate++
 		}
 
-		fm := formato(nome)
+		fm := formatoDi(nome)
 		y["formato"] = fm
 		rap.formati[fm]++
-		if fm == "altro" {
+		if fm == formatoAltro {
 			rap.altro = append(rap.altro, fmt.Sprintf("%d %s", f.pid, nome))
 		}
 		// Ospiti: owner_id 0 e 1 (Anonymous). Un id non più in phpbb_users non è un'informazione.
@@ -485,7 +485,7 @@ func scrivi(dir string, foto []fotoYAML, rap *rapporto) error {
 	}
 	presenti := map[string]bool{}
 	for _, f := range foto {
-		presenti[strconv.Itoa(f.pid)+".yaml"] = true
+		presenti[nomeFoto(f.pid)] = true
 	}
 	voci, err := os.ReadDir(cart)
 	if err != nil {
@@ -501,12 +501,11 @@ func scrivi(dir string, foto []fotoYAML, rap *rapporto) error {
 		}
 	}
 	// Un dump vuoto o tagliato toglierebbe le Foto: ci si ferma prima di scrivere.
-	if len(foto) == 0 || sparirebbero > max(10, esistenti/10) {
+	if len(foto) == 0 || sparirebbero > max(10, esistenti/100) {
 		return fmt.Errorf("importazione fermata: %d Foto nel dump, ne sparirebbero %d su %d. Se è giusto, togli a mano i YAML in %s", len(foto), sparirebbero, esistenti, cart)
 	}
 	for _, f := range foto {
-		nome := strconv.Itoa(f.pid) + ".yaml"
-		p := filepath.Join(cart, nome)
+		p := filepath.Join(cart, nomeFoto(f.pid))
 		if vecchio, err := os.ReadFile(p); err == nil && bytes.Equal(vecchio, f.file) {
 			continue
 		}
@@ -540,7 +539,7 @@ func (r *rapporto) markdown() []byte {
 		}
 	}
 	p("# Anomalie dell'Importazione\n\nFoto importate: %d.\n\n## Formato\n\n", r.totale)
-	for _, f := range []string{"immagine", "pdf", "altro"} {
+	for _, f := range []formato{formatoImmagine, formatoPDF, formatoAltro} {
 		p("- %s: %d\n", f, r.formati[f])
 	}
 	p("\nFoto `altro` (pid, file): %d.\n\n", len(r.altro))
@@ -693,7 +692,7 @@ func registra(dir, percorso, msg, autore string) error {
 			return err
 		}
 	}
-	if err := git("add", "-A", percorso).Run(); err != nil {
+	if err := git("add", "-A", "--", percorso, ":(exclude,glob)**/.*"+suffissoTemporaneo+"*").Run(); err != nil {
 		return err
 	}
 	if git("diff", "--cached", "--quiet").Run() == nil {

@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime/debug"
 	"slices"
 	"strconv"
@@ -36,9 +35,9 @@ type fotoIndice struct {
 		ID   int    `json:"id"`
 		Nome string `json:"nome"`
 	} `json:"contributore,omitempty"`
-	Formato string `json:"formato"`
-	Data    string `json:"data,omitempty"` // Data di caricamento, RFC 3339
-	Mini    string `json:"mini"`           // URL della miniatura, come nella Gallery pubblica
+	Formato formato `json:"formato"`
+	Data    string  `json:"data,omitempty"` // Data di caricamento, RFC 3339
+	Mini    string  `json:"mini"`           // URL della miniatura, come nella Gallery pubblica
 }
 
 type indiceRedazione struct {
@@ -68,13 +67,7 @@ func (b *builder) scriviIndiceRedazione(p string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
-		return err
-	}
-	if err := os.WriteFile(p+".nuovo", d, 0o644); err != nil {
-		return err
-	}
-	return os.Rename(p+".nuovo", p)
+	return scriviAtomico(p, d)
 }
 
 // avvisiRedazione sono le cose da sistemare per i Moderatori (#91): gli avvisi delle Entità

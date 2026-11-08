@@ -15,7 +15,7 @@ func TestOperazioniEAnnulla(t *testing.T) {
 	cambia := func(pid int, campo, v string) {
 		m := moduloDi(t, r, pid)
 		m[campo] = v
-		if _, err := r.salva(pid, r.versione(pid), m, admin); err != nil {
+		if _, err := r.salva(pid, r.impronta(pid), m, admin); err != nil {
 			t.Fatal(err)
 		}
 	}

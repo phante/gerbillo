@@ -234,6 +234,9 @@ func TestBuild(t *testing.T) {
 	if !strings.Contains(leggi("f/2/index.html"), "statico/documento.svg") {
 		t.Error("PDF senza icona")
 	}
+	if u := (&builder{}).documento(&fotoPubblicata{Pid: 10, Formato: formatoAltro}); u != "" {
+		t.Errorf("documento di un Formato altro: %s", u)
+	}
 	// Senza -media il PDF si apre dalla Variante documento, e il BBCode usa la sua icona (#90).
 	for _, atteso := range []string{`href="/g/f/2/documento.pdf"`, "[img]https://progettodighe.it/gallery/statico/documento.svg[/img]"} {
 		if !strings.Contains(leggi("f/2/index.html"), atteso) {
