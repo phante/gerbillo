@@ -94,6 +94,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: e2e/package-lock.json
+      - name: go vet
+        working-directory: backend
+        run: go vet ./...
+      - name: staticcheck
+        working-directory: backend
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./... # la stessa versione di mise.toml
       - name: go test
         working-directory: backend
         run: go test ./...
