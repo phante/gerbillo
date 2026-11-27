@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-27T00:00:00Z",
+  "title": "Design System: Gallery ProgettoDighe",
+  "extensions": {
+    "colorMeta": {
+      "calcestruzzo": { "role": "primary", "displayName": "Grigio calcestruzzo", "canonical": "#333333", "tonalRamp": ["#111111", "#1f1f1f", "#333333", "#555555", "#777777", "#999999", "#cccccc", "#eeeeee"] },
+      "giallo-cantiere": { "role": "secondary", "displayName": "Giallo cantiere", "canonical": "#ffd700", "tonalRamp": ["#4d4000", "#806b00", "#b39600", "#e6c200", "#ffd700", "#ffe34d", "#ffef99", "#fffae0"] },
+      "giallo-segnale": { "role": "secondary", "displayName": "Giallo segnale (solo Backend)", "canonical": "#ffee00" },
+      "fondo-pagina": { "role": "neutral", "displayName": "Fondo pagina", "canonical": "#f4f4f4" },
+      "grigio-chiaro": { "role": "neutral", "displayName": "Grigio chiaro", "canonical": "#eeeeee" },
+      "bianco": { "role": "neutral", "displayName": "Bianco", "canonical": "#ffffff" },
+      "testo": { "role": "neutral", "displayName": "Testo", "canonical": "rgba(0, 0, 0, 0.8)" },
+      "testo-secondario": { "role": "neutral", "displayName": "Testo secondario", "canonical": "rgba(0, 0, 0, 0.6)" },
+      "interno-fondo": { "role": "status", "displayName": "Interno (solo Backend)", "canonical": "#ffe6cc" }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "h1 di ogni pagina pubblica, maiuscolo spaziato." },
+      "title": { "displayName": "Title", "purpose": "Nome di un'Entità o di una scheda." },
+      "body": { "displayName": "Body", "purpose": "Descrizioni e testo corrente." },
+      "label": { "displayName": "Label", "purpose": "Etichette, intestazioni di sezione, pulsanti; maiuscolo spaziato." },
+      "mono": { "displayName": "Mono", "purpose": "Dati grezzi nel Backend." }
+    },
+    "shadows": [
+      { "name": "foglio", "value": "2px 2px 8px 0 rgba(0,0,0,.2)", "purpose": "Miniature delle Foto, immagine a schermo, schede toccabili." },
+      { "name": "popup", "value": "0 4px 12px rgba(0,0,0,.12)", "purpose": "Popup del Backend." },
+      { "name": "barra-bassa", "value": "0 -2px 8px rgba(0,0,0,.1)", "purpose": "Barra di selezione fissa del Backend." }
+    ],
+    "motion": [
+      { "name": "solleva", "value": "all 0.2s ease-in-out; translateY(-2px)", "purpose": "Link dei metadati al passaggio del mouse." },
+      { "name": "fumetto", "value": "opacity 0.15s ease, transform 0.15s ease", "purpose": "Fumetto «Copiato!»." }
+    ],
+    "breakpoints": [
+      { "name": "ns", "value": "30em" },
+      { "name": "l", "value": "60em" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Pulsante primario",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Azione principale nella Gallery pubblica: Copia per il forum, Mostra altre, paginazione.",
+      "html": "<button class=\"ds-btn\">Copia per il forum</button>",
+      "css": ".ds-btn { font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; font-size: .875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: .5rem 1rem; border: 0; border-radius: .25rem; background: #333; color: #fff; cursor: pointer; transition: opacity .15s ease-in; } .ds-btn:hover { opacity: .5; } .ds-btn:focus-visible { outline: 2px solid #333; outline-offset: 2px; }"
+    },
+    {
+      "name": "Pulsante Moderatore",
+      "kind": "button",
+      "refersTo": "button-moderatore",
+      "description": "«Modifica», visibile solo ai Moderatori.",
+      "html": "<a class=\"ds-btn-mod\" href=\"#\">Modifica</a>",
+      "css": ".ds-btn-mod { display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; font-size: .875rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; padding: .5rem 1rem; border-radius: .25rem; background: #ffd700; color: rgba(0,0,0,.8); text-decoration: none; transition: opacity .15s ease-in; } .ds-btn-mod:hover { opacity: .5; } .ds-btn-mod:focus-visible { outline: 2px solid #333; outline-offset: 2px; }"
+    },
+    {
+      "name": "Briciole di percorso",
+      "kind": "nav",
+      "refersTo": "breadcrumb",
+      "description": "Blocchi pieni calcestruzzo sopra il titolo di ogni pagina pubblica.",
+      "html": "<nav class=\"ds-briciole\"><a href=\"#\">Dighe</a><a href=\"#\">Piemonte</a></nav>",
+      "css": ".ds-briciole { display: flex; flex-wrap: wrap; font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; } .ds-briciole a { display: inline-block; padding: .5rem; margin: 0 .25rem .25rem 0; background: #333; color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; text-decoration: none; } .ds-briciole a:focus-visible { outline: 2px solid #ffd700; outline-offset: 2px; }"
+    },
+    {
+      "name": "Chip filtro",
+      "kind": "chip",
+      "refersTo": "chip-filtro",
+      "description": "Faccette della Bussola e filtro «Dove» della ricerca.",
+      "html": "<button class=\"ds-chip\">Piemonte<span class=\"ds-conta\">42</span></button> <button class=\"ds-chip ds-attivo\">Lombardia<span class=\"ds-conta\">12</span> ×</button>",
+      "css": ".ds-chip { font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; font-size: .7rem; font-weight: 600; padding: .4rem .8rem; background: #f4f4f4; color: #666; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; } .ds-chip:hover:not(.ds-attivo) { background: #e0e0e0; } .ds-chip:focus-visible { outline: 2px solid #333; outline-offset: 2px; } .ds-conta { margin-left: .4rem; padding: 1px 6px; background: rgba(0,0,0,.06); border-radius: 10px; font-size: .65rem; } .ds-attivo { background: #333; color: #fff; border-color: #333; } .ds-attivo .ds-conta { background: rgba(255,255,255,.2); color: #fff; }"
+    },
+    {
+      "name": "Link metadato",
+      "kind": "custom",
+      "refersTo": "link-metadato-hover",
+      "description": "Valore-link nella griglia dei metadati della Foto: si evidenzia in giallo cantiere.",
+      "html": "<div class=\"ds-meta\"><small>Ritrae:</small> <a href=\"#\">Diga di Agaro</a></div>",
+      "css": ".ds-meta { font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; color: rgba(0,0,0,.7); } .ds-meta small { text-transform: uppercase; letter-spacing: .1em; margin-right: .5rem; } .ds-meta a { color: rgba(0,0,0,.8); padding: 0 .25rem; border-radius: .125rem; transition: all .2s ease-in-out; display: inline-block; } .ds-meta a:hover { background: #ffd700; transform: translateY(-2px); } .ds-meta a:focus-visible { outline: 2px solid #333; outline-offset: 2px; }"
+    },
+    {
+      "name": "Miniatura Entità",
+      "kind": "card",
+      "description": "Scheda di un'Entità negli elenchi: miniatura quadrata, nome, conteggio.",
+      "html": "<a class=\"ds-entita\" href=\"#\"><span class=\"ds-img\"></span><span class=\"ds-nome\">Diga di Agaro</span><span class=\"ds-n\">128 foto</span></a>",
+      "css": ".ds-entita { display: flex; flex-direction: column; width: 10rem; font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; color: rgba(0,0,0,.8); text-decoration: none; padding-bottom: .5rem; border-bottom: 1px solid rgba(0,0,0,.1); transition: opacity .15s ease-in; } .ds-entita:hover { opacity: .5; } .ds-entita:focus-visible { outline: 2px solid #333; outline-offset: 2px; } .ds-img { display: block; aspect-ratio: 1; border-radius: 1rem; background: #eee; } .ds-nome { margin-top: .5rem; font-size: 1rem; line-height: 1.25; } .ds-n { margin-top: .25rem; font-size: .875rem; color: rgba(0,0,0,.6); }"
+    },
+    {
+      "name": "Campo Backend",
+      "kind": "input",
+      "refersTo": "backend-campo",
+      "description": "Campo a tutta larghezza con etichetta sopra, nel Backend.",
+      "html": "<label class=\"ds-campo\"><span>Titolo</span><input type=\"text\" value=\"Coronamento\"></label>",
+      "css": ".ds-campo { display: block; font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; } .ds-campo span { display: block; font-weight: 600; margin-bottom: .25rem; } .ds-campo input { box-sizing: border-box; width: 100%; font: inherit; padding: .5rem; border: 1px solid #bbb; border-radius: 4px; background: #fff; } .ds-campo input:focus-visible { outline: 2px solid #333; outline-offset: 1px; }"
+    },
+    {
+      "name": "Pulsanti Backend",
+      "kind": "button",
+      "refersTo": "backend-pulsante",
+      "description": "Primario, secondario ed evidente del Backend.",
+      "html": "<button class=\"ds-p\">Pubblica</button> <button class=\"ds-p ds-sec\">Annulla</button> <button class=\"ds-p ds-evi\">Approva</button>",
+      "css": ".ds-p { font-family: -apple-system, BlinkMacSystemFont, 'helvetica neue', helvetica, arial, sans-serif; font-weight: 600; padding: .5rem 1rem; border: 1px solid #333; border-radius: 4px; background: #333; color: #fff; cursor: pointer; } .ds-p:disabled { opacity: .5; } .ds-p:focus-visible { outline: 2px solid #333; outline-offset: 2px; } .ds-sec { background: #fff; color: #333; } .ds-evi { background: #000; box-shadow: 0 0 0 3px #fe0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "L'archivio di cantiere",
+    "overview": "La Gallery è un archivio tecnico, non una vetrina. Le Foto sono documenti di cantiere: stanno su un fondo grigio chiaro come fogli su un tavolo da disegno, ognuna con la sua scheda di dati ordinata. L'interfaccia parla con etichette in maiuscolo spaziato e con il grigio del calcestruzzo; il colore vero sta nelle fotografie. Il sistema è ereditato dal Sito principale; il Backend usa gli stessi colori e font con un layout da strumento, pensato prima per il telefono.",
+    "keyCharacteristics": [
+      "Quasi monocromo: calcestruzzo, bianco e grigi; un solo accento, il giallo cantiere.",
+      "Etichette e titoli in maiuscolo spaziato (0.1em).",
+      "Font di sistema, nessun web font.",
+      "Piatto: un'ombra morbida solo sulle Foto e sulle schede che si toccano.",
+      "Pagine strette (max 64rem), griglie di miniature quadrate o 4:3."
+    ],
+    "rules": [
+      { "name": "La regola del giallo raro", "body": "Il giallo cantiere segnala un'interazione: il passaggio del mouse, o un'azione riservata. Non è un colore di sfondo, di sezione o di decorazione.", "section": "colors" },
+      { "name": "La regola dell'arancio interno", "body": "Il colore Interno compare solo nel Backend. Se lo vedi in dist/, è un'Informazione interna trapelata.", "section": "colors" },
+      { "name": "La regola del maiuscoletto", "body": "Ciò che etichetta (sezioni, metadati, pulsanti, briciole) va in maiuscolo con spaziatura 0.1em. Ciò che si legge (nomi, descrizioni, valori) resta in minuscolo normale.", "section": "typography" },
+      { "name": "La regola del foglio", "body": "L'ombra è per le fotografie e per ciò che sta sopra la pagina (popup, barre). Pulsanti, chip e intestazioni restano piatti.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usare le classi Tachyons già presenti prima di scrivere CSS nuovo; le regole proprie vanno in backend/modelli/stile.css (pubblico) o backend/modelli/backend/backend.css (Backend).",
+      "Do mettere in maiuscolo spaziato (0.1em) etichette, intestazioni di sezione, briciole e pulsanti.",
+      "Do dare alle miniature un segnaposto grigio chiaro (#eee) e un rapporto fisso (1:1 o 4:3).",
+      "Do usare il calcestruzzo (#333) per ogni azione principale, sia nella Gallery sia nel Backend.",
+      "Do progettare il Backend prima per il telefono: campi a tutta larghezza, azioni fisse in basso."
+    ],
+    "donts": [
+      "Don't modificare i file copiati dal sito in backend/modelli/sito/: si ricopiano dal Sito principale (TestCopieSito).",
+      "Don't usare il giallo cantiere come fondo di sezioni o titoli: segnala solo l'interazione.",
+      "Don't mostrare nella Gallery pubblica i colori di stato del Backend, in particolare l'arancio Interno.",
+      "Don't aggiungere web font o CDN: il font è quello di sistema, e le librerie stanno nel repo.",
+      "Don't far sembrare il Backend una pagina del sito: niente header e piede del Sito principale."
+    ]
+  }
+}
