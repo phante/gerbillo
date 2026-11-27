@@ -146,7 +146,7 @@ type daSistemare struct {
 	vale                func(f *fotoIndice) bool
 }
 
-// conDatazioneDaSistemare: user3 c'è, ma nessuna Datazione (i residui di #39).
+// conDatazioneDaSistemare è il filtro datazioneDaSistemare, usato anche da segni.
 func conDatazioneDaSistemare(f *fotoIndice) bool {
 	return f.Datazione == "" && strings.TrimSpace(f.User3) != ""
 }

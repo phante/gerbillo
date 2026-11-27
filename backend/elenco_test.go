@@ -261,6 +261,7 @@ func TestSegniDelleMiniature(t *testing.T) {
 		{"", 5, []string{"da-collegare", "Datazione da sistemare"}}, // non anche «senza Datazione»
 		{"s=da-collegare", 5, []string{"Datazione da sistemare"}},
 		{"s=datazione-da-sistemare", 5, []string{"da-collegare"}},
+		{"s=senza-datazione", 5, []string{"da-collegare", "Datazione da sistemare"}},
 		{"", 4, []string{"da-collegare", "senza Datazione"}},
 		{"", 1, nil},
 	}
