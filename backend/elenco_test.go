@@ -262,7 +262,7 @@ func TestSegniDelleMiniature(t *testing.T) {
 		{"s=da-collegare", 5, []string{"Datazione da sistemare"}},
 		{"s=datazione-da-sistemare", 5, []string{"da-collegare"}},
 		{"s=senza-datazione", 5, []string{"da-collegare", "Datazione da sistemare"}},
-		{"", 4, []string{"da-collegare", "senza Datazione"}},
+		{"", 4, []string{"da-collegare", "Senza Datazione"}},
 		{"", 1, nil},
 	}
 	for _, c := range casi {
@@ -283,7 +283,7 @@ func TestElencoVuoto(t *testing.T) {
 	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/?s=senza-datazione&s=da-separare", nil))
 	b := w.Body.String()
 	for _, atteso := range []string{"<b>0</b> Foto", "Nessuna Foto con questi filtri", `href="foto/?s=senza-datazione" aria-label="Togli il filtro da-separare"`,
-		`href="foto/?s=da-separare" aria-label="Togli il filtro senza Datazione"`, `<span class="scelta vuota" aria-disabled="true" title="user3 di Coppermine`} {
+		`href="foto/?s=da-separare" aria-label="Togli il filtro Senza Datazione"`, `<span class="scelta vuota" aria-disabled="true" title="user3 di Coppermine`} {
 		if !strings.Contains(b, atteso) {
 			t.Errorf("elenco vuoto senza %q", atteso)
 		}
@@ -302,5 +302,17 @@ func TestElencoVuoto(t *testing.T) {
 	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/", nil))
 	if strings.Contains(w.Body.String(), "Nessuna Foto con questi filtri") {
 		t.Error("invito a togliere i filtri senza filtri")
+	}
+}
+
+// «Tutte le N» solo con un filtro: senza sarebbe l'intero archivio.
+func TestTutteSoloConFiltro(t *testing.T) {
+	r := redazioneConIndice(t)
+	for u, atteso := range map[string]bool{"/admin/foto/": false, "/admin/foto/?o=data": false, "/admin/foto/?s=da-collegare": true, "/admin/foto/?f=immagine": true} {
+		w := httptest.NewRecorder()
+		soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", u, nil))
+		if c := strings.Contains(w.Body.String(), `aria-label="Seleziona tutte le`); c != atteso {
+			t.Errorf("%s: «Tutte» %v, atteso %v", u, c, atteso)
+		}
 	}
 }

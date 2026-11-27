@@ -333,7 +333,7 @@ func TestSalvaDatazione(t *testing.T) {
 func TestSalvaCategorie(t *testing.T) {
 	r := redazioneProva(t)
 	r.usaVocabolario(vocabolario{Categories: []string{"documenti", "tecnica/turbine/pelton"},
-		TagsInterni: []tagInterno{{"da-collegare", "manca lo Slug"}}})
+		TagsInterni: []tagInterno{{Nome: "da-collegare", Descrizione: "manca lo Slug"}}})
 	admin := &utente{ID: 2, Nome: "admin"}
 	m := moduloDi(t, r, 4)
 	m["categories"] = "tecnica/turbine/inventata"

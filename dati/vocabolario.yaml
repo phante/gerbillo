@@ -24,11 +24,14 @@ categories:
     - tecnica/turbine/kaplan
     - tecnica/turbine/pelton
 # Segnali di lavoro editoriale: il build non li mostra mai e allo Switch non devono restare Foto che li hanno.
-# La descrizione è l'aiuto che il Backend mostra accanto al tag (#52).
+# La descrizione è l'aiuto che il Backend mostra accanto al tag (#52); l'etichetta è il suo nome nei filtri «Da sistemare».
 tags_interni:
     - nome: da-classificare
+      etichetta: Senza classificazione
       descrizione: manca la classificazione
     - nome: da-collegare
+      etichetta: Senza Slug
       descrizione: manca lo Slug
     - nome: da-separare
+      etichetta: Album da dividere
       descrizione: "l'album copre più pagine: le Foto vanno divise"

@@ -38,6 +38,7 @@ type vocabolario struct {
 type tagInterno struct {
 	Nome        string `yaml:"nome"`
 	Descrizione string `yaml:"descrizione"`
+	Etichetta   string `yaml:"etichetta"` // il nome nel Backend, al posto della sigla
 }
 
 func leggiVocabolario(p string) (vocabolario, error) {

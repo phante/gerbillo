@@ -8,13 +8,13 @@ test.beforeEach(async ({ page }) => {
 // #49: dalla home all'elenco filtrato, alla scheda, alla successiva e di nuovo all'elenco.
 test('filtro da-collegare, scheda e Foto successiva', async ({ page }) => {
   await page.goto('admin/');
-  const voce = page.locator('.cruscotto a', { hasText: 'da-collegare' });
+  const voce = page.locator('.cruscotto a', { hasText: 'Senza Slug' });
   const n = Number(await voce.locator('.numero').innerText());
   expect(n).toBeGreaterThan(60);
   await voce.click();
   await expect(page).toHaveURL(/foto\/\?s=da-collegare$/);
   await expect(page.locator('main')).toContainText(`${n} Foto`);
-  await expect(page.locator('.scelta.attiva')).toContainText('da-collegare');
+  await expect(page.locator('.scelta.attiva')).toContainText('Senza Slug');
   await expect(page.locator('.griglia li')).toHaveCount(60);
 
   // La seconda pagina, poi indietro: il filtro resta nell'URL.
