@@ -4,7 +4,7 @@
   <summary class="b pointer">Da sistemare</summary>
   <ul class="scelte">{{range .Filtri}}
     <li>{{if or .Attivo .N}}<a class="scelta{{if .Attivo}} attiva{{end}}" href="{{.Link}}" {{if .Attivo}}aria-current="true"{{end}} title="{{.Aiuto}}">{{.Nome}} <span class="numero">{{.N}}</span></a>
-      {{- else}}<span class="scelta vuota" title="{{.Aiuto}}">{{.Nome}} <span class="numero">0</span></span>{{end}}</li>{{end}}
+      {{- else}}<span class="scelta vuota" aria-disabled="true" title="{{.Aiuto}}">{{.Nome}} <span class="numero">0</span></span>{{end}}</li>{{end}}
   </ul>
 </details>
 {{/* Sopra i filtri, che con filtri attivi sono aperti: sul telefono sotto non si vedrebbe. */}}

@@ -246,6 +246,7 @@ func (f filtro) togli(fc []faccetta) []voceFiltro {
 		for _, o := range c.Opzioni {
 			if o.Valore == c.Scelto {
 				testo = o.Testo
+				break
 			}
 		}
 		v = append(v, voceFiltro{Nome: c.Nome + ": " + testo, Link: "foto/" + g.query()})

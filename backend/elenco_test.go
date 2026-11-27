@@ -283,7 +283,7 @@ func TestElencoVuoto(t *testing.T) {
 	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/?s=senza-datazione&s=da-separare", nil))
 	b := w.Body.String()
 	for _, atteso := range []string{"<b>0</b> Foto", "Nessuna Foto con questi filtri", `href="foto/?s=senza-datazione" aria-label="Togli il filtro da-separare"`,
-		`href="foto/?s=da-separare" aria-label="Togli il filtro senza Datazione"`, `<span class="scelta vuota" title="user3 di Coppermine`} {
+		`href="foto/?s=da-separare" aria-label="Togli il filtro senza Datazione"`, `<span class="scelta vuota" aria-disabled="true" title="user3 di Coppermine`} {
 		if !strings.Contains(b, atteso) {
 			t.Errorf("elenco vuoto senza %q", atteso)
 		}
