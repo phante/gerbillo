@@ -304,3 +304,15 @@ func TestElencoVuoto(t *testing.T) {
 		t.Error("invito a togliere i filtri senza filtri")
 	}
 }
+
+// «Tutte le N» solo con un filtro: senza sarebbe l'intero archivio.
+func TestTutteSoloConFiltro(t *testing.T) {
+	r := redazioneConIndice(t)
+	for u, atteso := range map[string]bool{"/admin/foto/": false, "/admin/foto/?o=data": false, "/admin/foto/?s=da-collegare": true, "/admin/foto/?f=immagine": true} {
+		w := httptest.NewRecorder()
+		soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", u, nil))
+		if c := strings.Contains(w.Body.String(), `aria-label="Seleziona tutte le`); c != atteso {
+			t.Errorf("%s: «Tutte» %v, atteso %v", u, c, atteso)
+		}
+	}
+}
