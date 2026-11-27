@@ -144,18 +144,19 @@ const (
 type daSistemare struct {
 	chiave, nome, aiuto string
 	vale                func(f *fotoIndice) bool
+	include             string // la chiave di un altro filtro che questo implica: sulla miniatura basta questo
 }
 
 // filtriDaSistemare si calcola una volta: tagInterni e le descrizioni non cambiano.
 var filtriDaSistemare = sync.OnceValue(func() []daSistemare {
 	var d []daSistemare
 	for _, t := range chiaviOrdinate(tagInterni) {
-		d = append(d, daSistemare{t, t, descrizioneTagInterno(t), func(f *fotoIndice) bool { return slices.Contains(f.Tag, t) }})
+		d = append(d, daSistemare{t, t, descrizioneTagInterno(t), func(f *fotoIndice) bool { return slices.Contains(f.Tag, t) }, ""})
 	}
 	return append(d,
-		daSistemare{senzaDatazione, "senza Datazione", "", func(f *fotoIndice) bool { return f.Datazione == "" }},
+		daSistemare{senzaDatazione, "senza Datazione", "", func(f *fotoIndice) bool { return f.Datazione == "" }, ""},
 		daSistemare{datazioneDaSistemare, "Datazione da sistemare", "user3 di Coppermine c'è, ma non è diventato una Datazione",
-			func(f *fotoIndice) bool { return f.Datazione == "" && strings.TrimSpace(f.User3) != "" }})
+			func(f *fotoIndice) bool { return f.Datazione == "" && strings.TrimSpace(f.User3) != "" }, senzaDatazione})
 })
 
 type miniaturaBackend struct {
@@ -173,10 +174,15 @@ type segno struct {
 
 // segni sono i «Da sistemare» che valgono per x, tranne quelli del filtro: lì li hanno tutte.
 func (f filtro) segni(x *fotoIndice) []segno {
-	var out []segno
+	var veri []daSistemare
 	for _, d := range filtriDaSistemare() {
-		// «Datazione da sistemare» dice già che la Datazione manca.
-		if slices.Contains(f.sistemare, d.chiave) || !d.vale(x) || d.chiave == senzaDatazione && strings.TrimSpace(x.User3) != "" {
+		if d.vale(x) {
+			veri = append(veri, d)
+		}
+	}
+	var out []segno
+	for _, d := range veri {
+		if slices.Contains(f.sistemare, d.chiave) || slices.ContainsFunc(veri, func(e daSistemare) bool { return e.include == d.chiave }) {
 			continue
 		}
 		out = append(out, segno{d.nome, tagInterni[d.chiave]})

@@ -232,7 +232,16 @@ func TestAvvisiNellaHome(t *testing.T) {
 
 // Sulle miniature, i «Da sistemare» di ogni Foto tranne quelli del filtro.
 func TestSegniDelleMiniature(t *testing.T) {
-	idx := redazioneConIndice(t).indiceCorrente()
+	r := redazioneConIndice(t)
+	idx := r.indiceCorrente()
+	// Dall'handler: i tag interni con il colore Interno, la Datazione senza.
+	w := httptest.NewRecorder()
+	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/", nil))
+	for _, atteso := range []string{`<span class="segno interno">da-collegare</span>`, `<span class="segno">Datazione da sistemare</span>`} {
+		if !strings.Contains(w.Body.String(), atteso) {
+			t.Errorf("elenco senza %q", atteso)
+		}
+	}
 	nomi := func(q string, pid int) []string {
 		v, _ := url.ParseQuery(q)
 		var n []string
@@ -257,7 +266,7 @@ func TestSegniDelleMiniature(t *testing.T) {
 			t.Errorf("%q, pid %d: %v, attesi %v", c.q, c.pid, n, c.attesi)
 		}
 	}
-	if s := (filtro{}).segni(&idx.Foto[idx.perPid[4]]); !s[0].Interno || s[1].Interno {
+	if s := (filtro{}).segni(&idx.Foto[idx.perPid[4]]); len(s) != 2 || !s[0].Interno || s[1].Interno {
 		t.Errorf("interno: %+v", s)
 	}
 }

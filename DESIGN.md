@@ -42,6 +42,11 @@ typography:
     fontWeight: 400
     lineHeight: 1.25
     letterSpacing: "0.1em"
+  micro:
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'helvetica neue', helvetica, ubuntu, roboto, noto, 'segoe ui', arial, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 400
+    lineHeight: 1.3
   mono:
     fontFamily: "monospace, monospace"
     fontSize: "0.8rem"
