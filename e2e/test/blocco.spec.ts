@@ -63,6 +63,10 @@ test('tutte le N del filtro, con la conferma esplicita oltre 500', async ({ page
   await page.locator('.griglia li a').nth(0).click();
   await page.locator('.griglia li a').nth(1).click();
   await expect(conta).toHaveText('2');
+  // La card scelta ha il bordo, e non prende la forma dei chip: stessa larghezza delle altre.
+  await expect(page.locator('.griglia li.presa')).toHaveCount(2);
+  const larghezza = async (i: number) => (await page.locator('.griglia li img').nth(i).boundingBox())!.width;
+  expect(await larghezza(0)).toBeCloseTo(await larghezza(3), 0); // stessa colonna
   await page.getByRole('button', { name: `Seleziona tutte le ${n}` }).click();
   await expect(conta).toHaveText(n);
   await expect(filtro).toBeVisible();

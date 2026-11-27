@@ -101,8 +101,9 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .azioni-filtri { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; grid-column: 1 / -1; }
 .griglia .casella { position: absolute; top: .3rem; right: .3rem; width: 1.4rem; height: 1.4rem; accent-color: #333; }
 .griglia.in-selezione li { cursor: pointer; }
-.griglia li.scelta { outline: 3px solid #333; outline-offset: -3px; }
-.griglia li.scelta img { opacity: .8; }
+/* «presa», non «scelta»: con il nome dei chip la card ne prendeva padding e altezza. */
+.griglia li.presa { outline: 3px solid #333; outline-offset: -3px; }
+.griglia li.presa img { opacity: .8; }
 /* Bassa, perché la griglia deve restare visibile (#50): una riga, due sul telefono o quando non ci sta. */
 .barra-selezione {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem;

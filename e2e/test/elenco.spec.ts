@@ -55,3 +55,9 @@ test('l\'elenco si aggiorna da solo a fine build', async ({ page }) => {
   await expect(totale).toHaveText(String(n - 1), { timeout: 150_000 });
   await expect(page.locator('.griglia .pid', { hasText: new RegExp(`^${pid}$`) })).toHaveCount(0);
 });
+
+// Sul telefono la riga dei «Da sistemare» scorre: quello attivo si porta in vista.
+test('il «Da sistemare» attivo resta visibile', async ({ page }) => {
+  await page.goto('admin/foto/?s=datazione-da-sistemare');
+  await expect(page.locator('.scelte .scelta.attiva')).toBeInViewport();
+});
