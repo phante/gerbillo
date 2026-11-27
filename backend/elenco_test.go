@@ -237,6 +237,9 @@ func TestSegniDelleMiniature(t *testing.T) {
 	// Dall'handler: i tag interni con il colore Interno, la Datazione senza.
 	w := httptest.NewRecorder()
 	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("elenco: %d", w.Code)
+	}
 	for _, atteso := range []string{`<span class="segno interno">da-collegare</span>`, `<span class="segno">Datazione da sistemare</span>`} {
 		if !strings.Contains(w.Body.String(), atteso) {
 			t.Errorf("elenco senza %q", atteso)
