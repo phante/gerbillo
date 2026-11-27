@@ -203,8 +203,9 @@ type corpoElencoBackend struct {
 	Testo, Ordine string
 	Ordinamenti   []opzioneFaccetta
 	Attivi        int
-	Sistemare     []string // i «Da sistemare» attivi, da rimandare con il modulo
-	Filtro        string   // la query del filtro senza la pagina: la selezione vale per lui (#50)
+	Sistemare     []string     // i «Da sistemare» attivi, da rimandare con il modulo
+	Filtro        string       // la query del filtro senza la pagina: la selezione vale per lui (#50)
+	Togli         []voceFiltro // con l'elenco vuoto: i filtri attivi, da togliere uno a uno
 }
 
 func (r *redazione) avvisoBuild() string {
@@ -249,6 +250,9 @@ func (r *redazione) elencoFoto(w http.ResponseWriter, req *http.Request) {
 	}
 	for _, x := range trovate[min((c.Pagina-1)*fotoPerPaginaBackend, len(trovate)):min(c.Pagina*fotoPerPaginaBackend, len(trovate))] {
 		c.Foto = append(c.Foto, miniaturaBackend{Pid: x.Pid, Titolo: x.Titolo, Album: x.Album, Mini: x.Mini, Link: fmt.Sprintf("foto/%d%s", x.Pid, c.Query), Segni: f.segni(x)})
+	}
+	if c.Totale == 0 && len(idx.Foto) > 0 { // senza indice togliere i filtri non serve
+		c.Togli = f.togli(c.Faccette)
 	}
 	c.Versione, c.Aggiornato, c.Avviso = versioneIndice(idx), aggiornatoAlle(idx), r.avvisoBuild()
 	mostraPagina(w, req, "elenco", "Foto", c)
