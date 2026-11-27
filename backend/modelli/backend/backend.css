@@ -100,9 +100,9 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .griglia.in-selezione li { cursor: pointer; }
 .griglia li.scelta { outline: 3px solid #333; outline-offset: -3px; }
 .griglia li.scelta img { opacity: .8; }
-/* Una riga sola, bassa: sul telefono la griglia deve restare visibile (#50). */
+/* Bassa, perché la griglia deve restare visibile (#50): una riga, due sul telefono o quando non ci sta. */
 .barra-selezione {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; align-items: center; gap: .5rem;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem;
     padding: .4rem .75rem calc(.4rem + env(safe-area-inset-bottom)); background: #fff; border-top: 2px solid #333;
     box-shadow: 0 -2px 8px rgba(0,0,0,.1); font-size: .9rem;
 }
@@ -139,16 +139,12 @@ fieldset.riquadro { min-width: 0; }
     .scelte { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -.75rem; padding: 0 .75rem; }
     .scelte::-webkit-scrollbar { display: none; }
     .scelte li { flex: none; }
+    /* La barra di selezione: il conteggio sopra, i pulsanti sotto, × a destra. */
+    .barra-selezione .conta { flex-basis: 100%; }
+    .barra-selezione .chiudi { margin-left: auto; }
+    .con-barra { padding-bottom: calc(6rem + env(safe-area-inset-bottom)); }
 }
 /* Cosa c'è da sistemare in ogni Foto, sotto il titolo: i tag interni in arancio Interno. */
 .griglia .segni { display: flex; flex-wrap: wrap; gap: .2rem; padding: 0 .4rem .4rem; }
 .segno { font-size: .75rem; line-height: 1.3; padding: 0 .3rem; border-radius: .25rem; background: #fff6bf; color: rgba(0, 0, 0, 0.8); }
 .segno.interno { background: #ffe6cc; color: #8a4b00; }
-/* Telefono: il conteggio sopra, i pulsanti sotto. Su una riga sola «Tutte le N» o «Solo le scelte»
-   spingevano Modifica e × fuori dallo schermo. */
-@media (max-width: 29.99em) {
-    .barra-selezione { flex-wrap: wrap; row-gap: .3rem; }
-    .barra-selezione .conta { flex-basis: 100%; }
-    .barra-selezione .chiudi { margin-left: auto; }
-    .con-barra { padding-bottom: 6rem; }
-}
