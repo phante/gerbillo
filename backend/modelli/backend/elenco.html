@@ -7,7 +7,7 @@
   </ul>
 </details>
 <details class="filtri riquadro"{{if .Attivi}} open{{end}}>
-  <summary class="b pointer">Filtri e ordine{{if .Attivi}} ({{.Attivi}} attivi){{end}}</summary>
+  <summary class="b pointer">Filtri e ordine{{if .Attivi}} ({{.Attivi}} {{if eq .Attivi 1}}attivo{{else}}attivi{{end}}){{end}}</summary>
   {{/* Ogni cambiamento rimanda il modulo: i filtri restano nell'URL. */}}
   <form class="filtri-modulo" action="foto/" method="get" x-data @change="$event.target.name && $el.requestSubmit()"
     @submit="$el.querySelectorAll('[name]').forEach(e => { if (!e.value || (e.name === 'o' && e.value === 'album')) e.disabled = true })">
@@ -16,7 +16,7 @@
       <input type="search" id="q" name="q" value="{{.Testo}}" enterkeyhint="search"></div>
     {{range .Faccette}}<div class="campo"><label for="filtro-{{.Param}}">{{.Nome}}</label>
       <select id="filtro-{{.Param}}" name="{{.Param}}" data-scelta>
-        <option value="">tutte</option>
+        <option value="">qualsiasi</option>
         {{$s := .Scelto}}{{range .Opzioni}}<option value="{{.Valore}}"{{if eq .Valore $s}} selected{{end}}>{{.Testo}} ({{.N}})</option>{{end}}
       </select></div>{{end}}
     <div class="campo"><label for="o">Ordine</label>
@@ -28,12 +28,17 @@
 {{template "freschezza" .}}
 <div x-data="selezione('{{.Filtro}}', {{.Totale}})" :class="modo && 'con-barra'">
 <div class="flex items-center gap2 mt2 mb2">
-  <p class="ma0 flex-auto"><b>{{.Totale}}</b> Foto{{if gt .Pagine 1}} · pagina {{.Pagina}} di {{.Pagine}}{{end}}</p>
+  <p class="ma0 flex-auto"><b>{{.Totale}}</b> Foto</p>
+  {{if gt .Pagine 1}}<nav class="pagine-su" aria-label="Pagina">
+    {{if .Indietro}}<a class="pulsante pulsante-secondario" href="{{.Indietro}}" rel="prev" aria-label="Pagina precedente">‹</a>{{else}}<span class="pulsante pulsante-secondario vuoto" aria-hidden="true">‹</span>{{end}}
+    <span class="dove">{{.Pagina}} di {{.Pagine}}</span>
+    {{if .Avanti}}<a class="pulsante pulsante-secondario" href="{{.Avanti}}" rel="next" aria-label="Pagina successiva">›</a>{{else}}<span class="pulsante pulsante-secondario vuoto" aria-hidden="true">›</span>{{end}}
+  </nav>{{end}}
   {{if .Totale}}<button type="button" class="pulsante pulsante-secondario" x-show="!modo" @click="apri()">Seleziona</button>{{end}}
 </div>
 <ul class="griglia" :class="modo && 'in-selezione'">{{range .Foto}}
   <li :class="scelta({{.Pid}}) && modo && 'scelta'"><a class="link black-80" href="{{.Link}}" @click="if (modo) { $event.preventDefault(); cambia({{.Pid}}) }">
-    <img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-50">{{.Album}}</span>{{end}}</span></a>
+    <img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-60">{{.Album}}</span>{{end}}</span></a>
     <input type="checkbox" class="casella" aria-label="Seleziona la Foto {{.Pid}}" x-show="modo" x-cloak :checked="scelta({{.Pid}})" :disabled="tutte" @change="cambia({{.Pid}})"></li>{{end}}
 </ul>
 {{template "paginazione" .}}

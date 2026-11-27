@@ -58,12 +58,15 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .scelta .numero { min-width: 0; margin-left: .25rem; color: #666; font-weight: 600; }
 .scelta.attiva { background: #333; color: #fff; border-color: #333; }
 .scelta.attiva .numero { color: #fe0; }
-.griglia { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .5rem; }
+/* 7rem sul telefono: tre colonne invece di due. */
+.griglia { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: .5rem; }
+@media (min-width: 30em) { .griglia { grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); } }
 .griglia li { position: relative; background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; overflow: hidden; }
 .griglia a { display: block; }
 .griglia img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ddd; }
 .griglia .pid { position: absolute; top: .25rem; left: .25rem; background: rgba(0,0,0,.7); color: #fff; font-size: .75rem; padding: 0 .3rem; border-radius: 3px; }
-.griglia .titolo { display: block; padding: .3rem .4rem; font-size: .8rem; line-height: 1.25; height: 2.5em; overflow: hidden; }
+/* Due righe al massimo, con i puntini: senza clamp la terza riga restava tagliata a metà. */
+.griglia .titolo { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; padding: .3rem .4rem; font-size: .8rem; line-height: 1.25; height: 2.5em; overflow: hidden; }
 .paginazione { display: flex; justify-content: space-between; gap: .5rem; margin-top: 1rem; }
 .naviga { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
 .flex-auto { flex: 1 1 auto; }
@@ -114,3 +117,26 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .campo-blocco legend { padding: 0 .25rem; }
 fieldset.riquadro { min-width: 0; }
 .con-barra { padding-bottom: 4rem; }
+/* Pagine anche sopra la griglia, compatte: sul telefono la paginazione in fondo è a 60 Foto di distanza. */
+.pagine-su { display: flex; align-items: center; gap: .25rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pagine-su .pulsante { display: inline-flex; align-items: center; justify-content: center; min-width: 2.25rem; min-height: 2.25rem; padding: 0; }
+.pagine-su .vuoto { visibility: hidden; }
+.pagine-su .dove { padding: 0 .25rem; color: rgba(0,0,0,.6); }
+/* Tocco: aree da almeno 44px per chip, frecce delle pagine e link della barra. */
+@media (pointer: coarse) {
+    .scelta { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 .8rem; }
+    .pagine-su .pulsante { min-width: 2.75rem; min-height: 2.75rem; }
+    .barra > a { padding: .75rem .25rem; margin: -.75rem 0; }
+}
+/* Telefono: prima il lavoro. La barra lascia solo ciò che chiede attenzione, «Da sistemare» sta
+   su una riga che scorre, i riquadri dei filtri sono più bassi. */
+@media (max-width: 29.99em) {
+    .voce-widget:not(.in-corso):not(.guasto) { display: none; }
+    .widget:not(:has(.in-corso, .guasto)) { display: none; }
+    .filtri.riquadro { padding: .6rem .75rem; margin-bottom: .5rem; }
+    .filtri summary { margin-bottom: 0; }
+    .filtri[open] summary { margin-bottom: .5rem; }
+    .scelte { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -.75rem; padding: 0 .75rem; }
+    .scelte::-webkit-scrollbar { display: none; }
+    .scelte li { flex: none; }
+}
