@@ -162,6 +162,26 @@ type miniaturaBackend struct {
 	Pid                 int
 	Titolo, Album, Mini string
 	Link                string
+	Segni               []segno
+}
+
+// segno è un «Da sistemare» di una Foto, mostrato sulla sua miniatura.
+type segno struct {
+	Nome    string
+	Interno bool // un tag interno, con il colore Interno di DESIGN.md
+}
+
+// segni sono i «Da sistemare» che valgono per x, tranne quelli del filtro: lì li hanno tutte.
+func (f filtro) segni(x *fotoIndice) []segno {
+	var out []segno
+	for _, d := range filtriDaSistemare() {
+		// «Datazione da sistemare» dice già che la Datazione manca.
+		if slices.Contains(f.sistemare, d.chiave) || !d.vale(x) || d.chiave == senzaDatazione && strings.TrimSpace(x.User3) != "" {
+			continue
+		}
+		out = append(out, segno{d.nome, tagInterni[d.chiave]})
+	}
+	return out
 }
 
 type corpoElencoBackend struct {
@@ -223,7 +243,7 @@ func (r *redazione) elencoFoto(w http.ResponseWriter, req *http.Request) {
 		c.Avanti = pagina(c.Pagina + 1)
 	}
 	for _, x := range trovate[min((c.Pagina-1)*fotoPerPaginaBackend, len(trovate)):min(c.Pagina*fotoPerPaginaBackend, len(trovate))] {
-		c.Foto = append(c.Foto, miniaturaBackend{Pid: x.Pid, Titolo: x.Titolo, Album: x.Album, Mini: x.Mini, Link: fmt.Sprintf("foto/%d%s", x.Pid, c.Query)})
+		c.Foto = append(c.Foto, miniaturaBackend{Pid: x.Pid, Titolo: x.Titolo, Album: x.Album, Mini: x.Mini, Link: fmt.Sprintf("foto/%d%s", x.Pid, c.Query), Segni: f.segni(x)})
 	}
 	c.Versione, c.Aggiornato, c.Avviso = versioneIndice(idx), aggiornatoAlle(idx), r.avvisoBuild()
 	mostraPagina(w, req, "elenco", "Foto", c)

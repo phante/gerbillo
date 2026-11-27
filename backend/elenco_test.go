@@ -229,3 +229,35 @@ func TestAvvisiNellaHome(t *testing.T) {
 		return nil
 	})
 }
+
+// Sulle miniature, i «Da sistemare» di ogni Foto tranne quelli del filtro.
+func TestSegniDelleMiniature(t *testing.T) {
+	idx := redazioneConIndice(t).indiceCorrente()
+	nomi := func(q string, pid int) []string {
+		v, _ := url.ParseQuery(q)
+		var n []string
+		for _, s := range leggiFiltro(v).segni(&idx.Foto[idx.perPid[pid]]) {
+			n = append(n, s.Nome)
+		}
+		return n
+	}
+	casi := []struct {
+		q      string
+		pid    int
+		attesi []string
+	}{
+		{"", 5, []string{"da-collegare", "Datazione da sistemare"}}, // non anche «senza Datazione»
+		{"s=da-collegare", 5, []string{"Datazione da sistemare"}},
+		{"s=datazione-da-sistemare", 5, []string{"da-collegare"}},
+		{"", 4, []string{"da-collegare", "senza Datazione"}},
+		{"", 1, nil},
+	}
+	for _, c := range casi {
+		if n := nomi(c.q, c.pid); !slices.Equal(n, c.attesi) {
+			t.Errorf("%q, pid %d: %v, attesi %v", c.q, c.pid, n, c.attesi)
+		}
+	}
+	if s := (filtro{}).segni(&idx.Foto[idx.perPid[4]]); !s[0].Interno || s[1].Interno {
+		t.Errorf("interno: %+v", s)
+	}
+}

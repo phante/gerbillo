@@ -38,7 +38,8 @@
 </div>
 <ul class="griglia" :class="modo && 'in-selezione'">{{range .Foto}}
   <li :class="scelta({{.Pid}}) && modo && 'scelta'"><a class="link black-80" href="{{.Link}}" @click="if (modo) { $event.preventDefault(); cambia({{.Pid}}) }">
-    <img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-60">{{.Album}}</span>{{end}}</span></a>
+    <img src="{{.Mini}}" alt="" loading="lazy"><span class="pid">{{.Pid}}</span><span class="titolo">{{if .Titolo}}{{.Titolo}}{{else}}<span class="black-60">{{.Album}}</span>{{end}}</span>
+    {{with .Segni}}<span class="segni">{{range .}}<span class="segno{{if .Interno}} interno{{end}}">{{.Nome}}</span>{{end}}</span>{{end}}</a>
     <input type="checkbox" class="casella" aria-label="Seleziona la Foto {{.Pid}}" x-show="modo" x-cloak :checked="scelta({{.Pid}})" :disabled="tutte" @change="cambia({{.Pid}})"></li>{{end}}
 </ul>
 {{template "paginazione" .}}
