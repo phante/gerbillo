@@ -2,7 +2,8 @@
 {{with .Corpo}}
 <details class="filtri riquadro" open>
   <summary class="b pointer">Da sistemare</summary>
-  <ul class="scelte">{{range .Filtri}}
+  {{/* Sul telefono la riga scorre: il «Da sistemare» attivo si porta in vista, senza cambiare l'ordine. */}}
+  <ul class="scelte" x-data x-init="$el.querySelector('.attiva')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })">{{range .Filtri}}
     <li>{{if or .Attivo .N}}<a class="scelta{{if .Attivo}} attiva{{end}}" href="{{.Link}}" {{if .Attivo}}aria-current="true"{{end}} title="{{.Aiuto}}">{{.Nome}} <span class="numero">{{.N}}</span></a>
       {{- else}}<span class="scelta vuota" aria-disabled="true" title="{{.Aiuto}}">{{.Nome}} <span class="numero">0</span></span>{{end}}</li>{{end}}
   </ul>
@@ -28,7 +29,7 @@
     <div class="campo"><label for="o">Ordine</label>
       <select id="o" name="o">{{$o := .Ordine}}{{range .Ordinamenti}}<option value="{{.Valore}}"{{if eq .Valore $o}} selected{{end}}>{{.Testo}}</option>{{end}}</select></div>
     <div class="azioni-filtri"><button class="pulsante">Applica</button>
-      {{if .Attivi}}<a class="black-80" href="foto/{{if .Sistemare}}?{{range $i, $s := .Sistemare}}{{if $i}}&amp;{{end}}s={{$s}}{{end}}{{end}}">Togli i filtri</a>{{end}}</div>
+      {{if .Attivi}}<a class="link black-80 underline" href="foto/{{if .Sistemare}}?{{range $i, $s := .Sistemare}}{{if $i}}&amp;{{end}}s={{$s}}{{end}}{{end}}">Togli i filtri</a>{{end}}</div>
   </form>
 </details>
 {{template "freschezza" .}}

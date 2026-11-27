@@ -144,9 +144,6 @@ fieldset.riquadro { min-width: 0; }
     .scelte { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -.75rem; padding: 0 .75rem; }
     .scelte::-webkit-scrollbar { display: none; }
     .scelte li { flex: none; }
-    /* Il «Da sistemare» attivo in testa alla riga, quelli a 0 in fondo: si vede su cosa si lavora. */
-    .scelte li:has(.attiva) { order: -1; }
-    .scelte li:has(.vuota) { order: 1; }
     /* La barra di selezione: il conteggio sopra, i pulsanti sotto. */
     .barra-selezione .conta { flex-basis: 100%; }
 }
