@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 // #48: il widget nella barra segue il build mentre gira, senza ricaricare la pagina.
+// Sul telefono la barra mostra solo build in corso e guasti: qui serve la larghezza del computer.
+test.use({ viewport: { width: 1280, height: 900 } });
 test('il widget di stato segue il build', async ({ page }) => {
   await page.goto('admin/foto/9');
   const widget = page.locator('#widget-stato');

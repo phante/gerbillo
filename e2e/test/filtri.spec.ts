@@ -39,7 +39,7 @@ test('filtri, ordinamento e successiva', async ({ page }) => {
   await expect(page).toHaveURL(/s=senza-datazione/);
   await expect(totale(page)).toHaveText(String(n));
   expect(n).toBeLessThan(tutte);
-  await expect(page.getByText('Filtri e ordine (1 attivi)')).toBeVisible();
+  await expect(page.getByText('Filtri e ordine (1 attivo)')).toBeVisible();
 
   // Ordine per pid: resta nell'URL, e la scheda passa alla successiva dello stesso ordine.
   await page.getByLabel('Ordine').selectOption('pid');
