@@ -151,14 +151,17 @@ func conDatazioneDaSistemare(f *fotoIndice) bool {
 	return f.Datazione == "" && strings.TrimSpace(f.User3) != ""
 }
 
-// filtriDaSistemare si calcola una volta: tagInterni e le descrizioni non cambiano.
+// filtriDaSistemare si calcola una volta: tagInterni e il vocabolario non cambiano.
+// Il nome è l'etichetta del vocabolario; la sigla resta nell'aiuto, perché è il Tag da togliere.
 var filtriDaSistemare = sync.OnceValue(func() []daSistemare {
 	var d []daSistemare
 	for _, t := range chiaviOrdinate(tagInterni) {
-		d = append(d, daSistemare{t, t, descrizioneTagInterno(t), func(f *fotoIndice) bool { return slices.Contains(f.Tag, t) }})
+		v := vociTagInterni[t]
+		aiuto := strings.TrimPrefix(v.Descrizione+" (tag "+t+")", " ")
+		d = append(d, daSistemare{t, cmp.Or(v.Etichetta, t), aiuto, func(f *fotoIndice) bool { return slices.Contains(f.Tag, t) }})
 	}
 	return append(d,
-		daSistemare{senzaDatazione, "senza Datazione", "", func(f *fotoIndice) bool { return f.Datazione == "" }},
+		daSistemare{senzaDatazione, "Senza Datazione", "nessuna Datazione", func(f *fotoIndice) bool { return f.Datazione == "" }},
 		daSistemare{datazioneDaSistemare, "Datazione da sistemare", "user3 di Coppermine c'è, ma non è diventato una Datazione",
 			conDatazioneDaSistemare})
 })
@@ -307,7 +310,5 @@ type corpoHome struct {
 
 func atoi(s string) int { n, _ := strconv.Atoi(s); return n }
 
-// descrizioniTagInterni sono gli aiuti dei tag interni, da tags_interni del vocabolario (#52).
-var descrizioniTagInterni = map[string]string{}
-
-func descrizioneTagInterno(t string) string { return descrizioniTagInterni[t] }
+// vociTagInterni sono etichette e aiuti dei tag interni, da tags_interni del vocabolario (#52).
+var vociTagInterni = map[string]tagInterno{}

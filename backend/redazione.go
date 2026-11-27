@@ -120,7 +120,7 @@ type esitoBuild struct {
 func (r *redazione) usaVocabolario(voc vocabolario) {
 	r.voc = &voc
 	for _, t := range voc.TagsInterni {
-		descrizioniTagInterni[t.Nome] = t.Descrizione
+		vociTagInterni[t.Nome] = t
 	}
 }
 

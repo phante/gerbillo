@@ -242,8 +242,8 @@ func TestVocabolarioDelRepo(t *testing.T) {
 	var nomi []string
 	for _, ti := range voc.TagsInterni {
 		nomi = append(nomi, ti.Nome)
-		if ti.Descrizione == "" {
-			t.Errorf("%s senza descrizione", ti.Nome)
+		if ti.Descrizione == "" || ti.Etichetta == "" {
+			t.Errorf("%s senza descrizione o etichetta", ti.Nome)
 		}
 	}
 	if !slices.Equal(nomi, chiaviOrdinate(tagInterni)) {
