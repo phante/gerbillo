@@ -42,6 +42,11 @@ typography:
     fontWeight: 400
     lineHeight: 1.25
     letterSpacing: "0.1em"
+  segno:
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'avenir next', avenir, 'helvetica neue', helvetica, ubuntu, roboto, noto, 'segoe ui', arial, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 400
+    lineHeight: 1.3
   mono:
     fontFamily: "monospace, monospace"
     fontSize: "0.8rem"
@@ -213,6 +218,7 @@ Sobri e decisi: pieni, scuri, testo bianco in maiuscolo spaziato.
 ### Chips
 - **Style:** pillola, fondo #f4f4f4, bordo #ddd, testo #666 0.7rem in grassetto, contatore in una piccola pillola rgba(0,0,0,.06).
 - **State:** attivo con fondo calcestruzzo, testo bianco e una × per togliere il filtro. Al passaggio del mouse il fondo passa a #e0e0e0.
+- **Segni (Backend):** sotto il titolo di una miniatura, cosa c'è da sistemare in quella Foto: testo 0.75rem, radius 0.25rem, fondo Esito avviso; i tag interni in arancio Interno. Vanno a capo, non si tagliano.
 - **Backend:** chip dei campi (Tom Select) con fondo #eee e bordo #ccc. Gli interni sono arancio Interno, i nuovi giallo avviso.
 
 ### Cards / Containers

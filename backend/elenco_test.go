@@ -229,3 +229,48 @@ func TestAvvisiNellaHome(t *testing.T) {
 		return nil
 	})
 }
+
+// Sulle miniature, i «Da sistemare» di ogni Foto tranne quelli del filtro.
+func TestSegniDelleMiniature(t *testing.T) {
+	r := redazioneConIndice(t)
+	idx := r.indiceCorrente()
+	// Dall'handler: i tag interni con il colore Interno, la Datazione senza.
+	w := httptest.NewRecorder()
+	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("elenco: %d", w.Code)
+	}
+	for _, atteso := range []string{`<span class="segno interno">da-collegare</span>`, `<span class="segno">Datazione da sistemare</span>`} {
+		if !strings.Contains(w.Body.String(), atteso) {
+			t.Errorf("elenco senza %q", atteso)
+		}
+	}
+	nomi := func(q string, pid int) []string {
+		v, _ := url.ParseQuery(q)
+		var n []string
+		for _, s := range leggiFiltro(v).segni(&idx.Foto[idx.perPid[pid]]) {
+			n = append(n, s.Nome)
+		}
+		return n
+	}
+	casi := []struct {
+		q      string
+		pid    int
+		attesi []string
+	}{
+		{"", 5, []string{"da-collegare", "Datazione da sistemare"}}, // non anche «senza Datazione»
+		{"s=da-collegare", 5, []string{"Datazione da sistemare"}},
+		{"s=datazione-da-sistemare", 5, []string{"da-collegare"}},
+		{"s=senza-datazione", 5, []string{"da-collegare", "Datazione da sistemare"}},
+		{"", 4, []string{"da-collegare", "senza Datazione"}},
+		{"", 1, nil},
+	}
+	for _, c := range casi {
+		if n := nomi(c.q, c.pid); !slices.Equal(n, c.attesi) {
+			t.Errorf("%q, pid %d: %v, attesi %v", c.q, c.pid, n, c.attesi)
+		}
+	}
+	if s := (filtro{}).segni(&idx.Foto[idx.perPid[4]]); len(s) != 2 || !s[0].Interno || s[1].Interno {
+		t.Errorf("interno: %+v", s)
+	}
+}

@@ -66,7 +66,7 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .griglia img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: #ddd; }
 .griglia .pid { position: absolute; top: .25rem; left: .25rem; background: rgba(0,0,0,.7); color: #fff; font-size: .75rem; padding: 0 .3rem; border-radius: 3px; }
 /* Due righe al massimo, con i puntini: senza clamp la terza riga restava tagliata a metà. */
-.griglia .titolo { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; padding: .3rem .4rem; font-size: .8rem; line-height: 1.25; height: 2.5em; overflow: hidden; }
+.griglia .titolo { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; padding: .3rem .4rem 0; margin-bottom: .3rem; font-size: .8rem; line-height: 1.25; height: 2.5em; overflow: hidden; }
 .paginazione { display: flex; justify-content: space-between; gap: .5rem; margin-top: 1rem; }
 .naviga { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; }
 .flex-auto { flex: 1 1 auto; }
@@ -140,3 +140,7 @@ fieldset.riquadro { min-width: 0; }
     .scelte::-webkit-scrollbar { display: none; }
     .scelte li { flex: none; }
 }
+/* Cosa c'è da sistemare in ogni Foto, sotto il titolo: i tag interni in arancio Interno. */
+.griglia .segni { display: flex; flex-wrap: wrap; gap: .2rem; padding: 0 .4rem .4rem; }
+.segno { font-size: .75rem; line-height: 1.3; padding: 0 .3rem; border-radius: .25rem; background: #fff6bf; color: rgba(0, 0, 0, 0.8); }
+.segno.interno { background: #ffe6cc; color: #8a4b00; }
