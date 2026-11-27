@@ -190,6 +190,7 @@ document.addEventListener("alpine:init", function () {
       },
       apri: function () { this.modo = true; this.salva(); },
       tutteLe: function () { this.tutte = true; this.salva(); },
+      soloScelte: function () { this.tutte = false; this.salva(); },
       annulla: function () { this.modo = false; this.tutte = false; this.scelte = []; this.salva(); },
     };
   });

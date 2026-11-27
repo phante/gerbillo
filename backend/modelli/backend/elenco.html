@@ -47,8 +47,10 @@
   <input type="hidden" name="filtro" :value="filtro">
   <input type="hidden" name="tutte" :value="tutte ? '1' : ''">
   <input type="hidden" name="pid" :value="scelte.join(',')">
-  <span class="conta"><b x-text="quante"></b> selezionate</span>
-  <button type="button" class="piccolo secondario" x-show="!tutte" @click="tutteLe()" aria-label="Seleziona tutte le {{.Totale}}">Tutte</button>
+  <span class="conta" aria-live="polite"><b x-text="quante"></b> selezionate<span x-show="tutte" x-cloak>, tutto il filtro</span></span>
+  <button type="button" class="piccolo secondario" x-show="!tutte" @click="tutteLe()" aria-label="Seleziona tutte le {{.Totale}}">Tutte le {{.Totale}}</button>
+  {{/* Da «tutte» si torna alle Foto scelte a mano, senza perderle (o a nessuna): × invece chiude la selezione. */}}
+  <button type="button" class="piccolo secondario" x-show="tutte" x-cloak @click="soloScelte()" x-text="scelte.length ? 'Solo le scelte' : 'Togli «tutte»'"></button>
   <button class="piccolo" :disabled="quante === 0" @click="salva()">Modifica…</button>
   <button type="button" class="piccolo secondario chiudi" @click="annulla()" aria-label="Annulla la selezione" title="Annulla la selezione">×</button>
 </form>
