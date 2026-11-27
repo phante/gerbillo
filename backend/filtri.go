@@ -228,6 +228,36 @@ func (f filtro) vociDaSistemare(idx *indiceRedazione) []voceFiltro {
 	return v
 }
 
+// togli sono i filtri attivi, ognuno con il link dell'elenco senza di lui: la via d'uscita
+// da un elenco vuoto.
+func (f filtro) togli(fc []faccetta) []voceFiltro {
+	var v []voceFiltro
+	for _, d := range filtriDaSistemare() {
+		if slices.Contains(f.sistemare, d.chiave) {
+			v = append(v, voceFiltro{Nome: d.nome, Link: "foto/" + f.conAltro(d.chiave).query()})
+		}
+	}
+	for _, c := range fc {
+		if c.Scelto == "" {
+			continue
+		}
+		g, testo := f.clona(), c.Scelto
+		delete(g.valori, c.Param)
+		for _, o := range c.Opzioni {
+			if o.Valore == c.Scelto {
+				testo = o.Testo
+			}
+		}
+		v = append(v, voceFiltro{Nome: c.Nome + ": " + testo, Link: "foto/" + g.query()})
+	}
+	if f.testo != "" {
+		g := f.clona()
+		g.testo = ""
+		v = append(v, voceFiltro{Nome: "Testo: «" + f.testo + "»", Link: "foto/" + g.query()})
+	}
+	return v
+}
+
 // faccetta è un filtro a valore singolo con le sue opzioni: i valori delle Foto che passano
 // tutti gli altri filtri, con quante sono.
 type faccetta struct {

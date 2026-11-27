@@ -274,3 +274,33 @@ func TestSegniDelleMiniature(t *testing.T) {
 		t.Errorf("interno: %+v", s)
 	}
 }
+
+// Un elenco vuoto offre di togliere i filtri attivi uno a uno; un «Da sistemare» che non
+// troverebbe niente non è un link.
+func TestElencoVuoto(t *testing.T) {
+	r := redazioneConIndice(t)
+	w := httptest.NewRecorder()
+	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/?s=senza-datazione&s=da-separare", nil))
+	b := w.Body.String()
+	for _, atteso := range []string{"<b>0</b> Foto", "Nessuna Foto con questi filtri", `href="foto/?s=senza-datazione" aria-label="Togli il filtro da-separare"`,
+		`href="foto/?s=da-separare" aria-label="Togli il filtro senza Datazione"`, `<span class="scelta vuota" title="user3 di Coppermine`} {
+		if !strings.Contains(b, atteso) {
+			t.Errorf("elenco vuoto senza %q", atteso)
+		}
+	}
+	// Faccette e testo, con il loro nome.
+	w = httptest.NewRecorder()
+	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/?f=immagine&q=nessunaparola", nil))
+	b = w.Body.String()
+	for _, atteso := range []string{`href="foto/?q=nessunaparola" aria-label="Togli il filtro Formato: immagine"`, `href="foto/?f=immagine" aria-label="Togli il filtro Testo: «nessunaparola»"`} {
+		if !strings.Contains(b, atteso) {
+			t.Errorf("elenco vuoto senza %q", atteso)
+		}
+	}
+	// Senza filtri, nessun invito a toglierli.
+	w = httptest.NewRecorder()
+	soloModeratore(&utenteFinto{u: &utente{ID: 2, Nome: "admin", Gruppi: []string{gruppoAdmin}}}, r.foto)(w, httptest.NewRequest("GET", "/admin/foto/", nil))
+	if strings.Contains(w.Body.String(), "Nessuna Foto con questi filtri") {
+		t.Error("invito a togliere i filtri senza filtri")
+	}
+}

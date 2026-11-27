@@ -3,9 +3,15 @@
 <details class="filtri riquadro" open>
   <summary class="b pointer">Da sistemare</summary>
   <ul class="scelte">{{range .Filtri}}
-    <li><a class="scelta{{if .Attivo}} attiva{{end}}" href="{{.Link}}" {{if .Attivo}}aria-current="true"{{end}} title="{{.Aiuto}}">{{.Nome}} <span class="numero">{{.N}}</span></a></li>{{end}}
+    <li>{{if or .Attivo .N}}<a class="scelta{{if .Attivo}} attiva{{end}}" href="{{.Link}}" {{if .Attivo}}aria-current="true"{{end}} title="{{.Aiuto}}">{{.Nome}} <span class="numero">{{.N}}</span></a>
+      {{- else}}<span class="scelta vuota" title="{{.Aiuto}}">{{.Nome}} <span class="numero">0</span></span>{{end}}</li>{{end}}
   </ul>
 </details>
+{{/* Sopra i filtri, che con filtri attivi sono aperti: sul telefono sotto non si vedrebbe. */}}
+{{with .Togli}}<div class="riquadro">
+  <p class="ma0">Nessuna Foto con questi filtri. Togline uno:</p>
+  <ul class="togli">{{range .}}<li><a class="scelta attiva" href="{{.Link}}" aria-label="Togli il filtro {{.Nome}}">{{.Nome}}<span class="ml2" aria-hidden="true">×</span></a></li>{{end}}</ul>
+</div>{{end}}
 <details class="filtri riquadro"{{if .Attivi}} open{{end}}>
   <summary class="b pointer">Filtri e ordine{{if .Attivi}} ({{.Attivi}} {{if eq .Attivi 1}}attivo{{else}}attivi{{end}}){{end}}</summary>
   {{/* Ogni cambiamento rimanda il modulo: i filtri restano nell'URL. */}}

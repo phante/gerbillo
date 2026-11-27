@@ -58,6 +58,9 @@ input[type=text], input[type=search], input:not([type]), textarea, select {
 .scelta .numero { min-width: 0; margin-left: .25rem; color: #666; font-weight: 600; }
 .scelta.attiva { background: #333; color: #fff; border-color: #333; }
 .scelta.attiva .numero { color: #fe0; }
+/* Un «Da sistemare» che con gli altri filtri non trova niente: non porta a un elenco vuoto. */
+.scelta.vuota { border-style: dashed; color: rgba(0,0,0,.6); }
+.togli { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-wrap: wrap; gap: .4rem; }
 /* 7rem sul telefono: tre colonne invece di due. */
 .griglia { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: .5rem; }
 @media (min-width: 30em) { .griglia { grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); } }
