@@ -52,12 +52,14 @@ test('tutte le N del filtro, con la conferma esplicita oltre 500', async ({ page
   await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole('button', { name: 'Seleziona', exact: true }).click();
-  // Da «tutte» si torna alle due scelte a mano, che restano.
   const conta = page.locator('.barra-selezione .conta b'), filtro = page.getByText(', tutto il filtro');
   // Senza scelte, da «tutte» si torna a zero restando in selezione.
   await page.getByRole('button', { name: `Seleziona tutte le ${n}` }).click();
-  await page.getByRole('button', { name: 'Annulla «tutte»' }).click();
+  await page.getByRole('button', { name: 'Togli «tutte»' }).click();
   await expect(conta).toHaveText('0');
+  await expect(filtro).toBeHidden();
+  await expect(page.locator('.barra-selezione')).toBeVisible();
+  // Con due scelte a mano, da «tutte» si torna a quelle, che restano.
   await page.locator('.griglia li a').nth(0).click();
   await page.locator('.griglia li a').nth(1).click();
   await expect(conta).toHaveText('2');
