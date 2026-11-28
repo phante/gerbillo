@@ -20,6 +20,6 @@ Il pid è **opaco**: non dice nulla sull'ordine delle Foto. Ogni ordinamento usa
 ## Consequences
 
 - Nel codice il pid diventa una stringa. Dove arriva dall'esterno (URL, moduli) si controlla la forma: solo cifre, oppure un ULID valido. Va fatto prima dell'Avvio e prima del caricamento dal Backend (#29): dopo, cambiarlo vorrebbe dire migrare i dati veri.
-- L'Importazione conserva nel YAML di ogni Foto il percorso Coppermine (`filepath` e `filename`). I redirect dei file e la ricerca degli Originali si ricavano da lì, senza una tabella separata da tenere allineata. Questo dato di provenienza resta anche dopo lo Switch.
+- L'Importazione scrive il percorso Coppermine (`filepath` + `filename`) in `originale.chiave` (ADR 0015), senza campi `coppermine.filepath`/`filename` separati (rivisto il 28/11/2026). Allo Switch, **prima** di riorganizzare gli Originali, un comando genera una volta sola dai YAML la mappa nginx dei redirect dei file `albums/…`. Da lì la mappa è congelata: gli URL di Coppermine non cambiano più, quindi non c'è niente da tenere allineato. Se l'ordine si inverte, i percorsi restano nella storia git e nel DB di Coppermine.
 - Gli Originali restano fuori da git. Le Varianti (WebP) sono generate da un comando idempotente che crea solo ciò che manca. Dal 15/10/2026 l'encoder è `github.com/gen2brain/webp` (libwebp compilato in WASM e tradotto in Go puro, senza cgo), al posto di libvips. AVIF è rimandato finché WebP non si dimostra insufficiente.
 - Nessuna garanzia per i siti esterni che fanno hotlink diretto.
