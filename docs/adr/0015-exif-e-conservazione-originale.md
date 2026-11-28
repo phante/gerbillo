@@ -1,10 +1,11 @@
-# EXIF filtrati, Originale su S3 e GPS solo con consenso
+# EXIF filtrati, Originale fuori dal server e GPS solo con consenso
 
 Deciso il 24/10/2026, nel grilling di #22. Vale per le Foto caricate nel Backend e, allo Switch, per quelle importate da Coppermine.
 
 Con il caricamento dal telefono arriveranno foto a piena risoluzione (3–15 MB l'una), e un Contributore può caricarne decine a escursione: con 6.000 Foto l'anno sarebbero circa 36 GB l'anno sul server. L'Originale quindi si riscrive comunque, e riscriverlo permette di tenere solo i metadati che servono.
 
-- **Originale su S3, non pubblico.** A piena risoluzione, in un bucket dedicato nello stesso account AWS del backup, con versioning. È la fonte delle Varianti; le Varianti si generano al caricamento dal file ricevuto, e da S3 si rilegge solo per rigenerarle. Il file caricato così com'è non si conserva.
+- **Originale fuori dal server, in almeno due posti, non pubblico.** A piena risoluzione, su più destinazioni configurabili con versioning: i candidati sono S3 e Backblaze B2, con API compatibile S3 (rivisto il 28/11/2026, prima era un solo bucket S3 nell'account del backup). Gli Originali escono dal server, quindi devono stare in almeno due posti; li scrive Gerbillo, man mano che arrivano Foto nuove. Il dettaglio (quando un caricamento è riuscito, cosa succede se una destinazione non risponde) è in #30. È la fonte delle Varianti; le Varianti si generano al caricamento dal file ricevuto, e l'Originale si rilegge solo per rigenerarle. Il file caricato così com'è non si conserva.
+- **Il YAML della Foto dice dove sta l'Originale**: il campo `original`, gli store e la verifica delle copie sono in ADR 0021.
 - **Sul server solo le Varianti.** La più grande, 2048 px sul lato lungo, è quella che si scarica dalla pagina della Foto. Nessun pulsante per scaricare l'Originale: il Sito principale prenderà le immagini per gli articoli con un meccanismo suo, nel processo editoriale.
 - **Documenti: la Variante documento è pubblica.** Per un PDF il file è il contenuto stesso, e non se ne ricava un'immagine. Una copia del file sta fra le Varianti, a `/gallery/f/<pid>/documento.pdf`, e la pagina della Foto la apre. Lo stesso file resta anche come Originale su S3. Aggiunto il 07/11/2026 (#90).
 - **Compressione.** Originale in JPEG con mozjpeg, qualità circa 85: abbastanza per reggere un'altra compressione quando se ne ricava qualcosa. Le Varianti restano WebP (ADR 0005), con una qualità da sito, circa 75–80. Un file che pesa già meno di quanto peserebbe ricompresso non si ricomprime: se ne filtrano solo gli EXIF, senza perdite. I valori esatti si fissano con una prova su un campione di foto da telefono.
@@ -17,7 +18,7 @@ Con il caricamento dal telefono arriveranno foto a piena risoluzione (3–15 MB 
 - **Dal GPS si suggerisce l'Entità** più vicina, entro 5 km, mostrando le 2–3 più vicine se le distanze sono simili.
 - **Ritiro del consenso con una mail.** Non c'è una funzione per l'utente nel Backend. L'avviso al caricamento e l'informativa hanno un link `mailto:` a info@progettodighe.it, con oggetto e pid già compilati. Si risponde entro un mese: un Moderatore toglie il punto pubblico, l'admin ripulisce l'Originale.
 - **Strumento admin sugli Originali.** Una pagina del Backend, solo per l'admin, mostra i metadati dell'Originale su S3 e permette di modificarli o toglierli, riscrivendo il file senza ricomprimere. La versione vecchia non si cancella dal Backend: una regola del bucket (S3 lifecycle) fa scadere le versioni precedenti dopo 30 giorni.
-- **Foto importate.** Allo Switch gli Originali di Coppermine vanno su S3 con gli EXIF filtrati senza ricomprimere. Il loro GPS (circa 90 Foto, tutte da telefono, vicino alla diga) diventa Punto geografico e si pubblica; si toglie su richiesta. Il link pubblico agli Originali su `albums/` sparisce allo Switch.
+- **Foto importate.** Durante la convivenza Gerbillo legge gli Originali di Coppermine da `albums/`, in sola lettura, senza copiarli: sul server non c'è spazio per due copie. Li coprono lo snapshot della VM e il backup notturno su S3 con versioning, che non propaga le cancellazioni. La Riorganizzazione li porta sugli store gestiti con gli EXIF filtrati, senza ricomprimere (ADR 0021). Il loro GPS (circa 90 Foto, tutte da telefono, vicino alla diga) diventa Punto geografico e si pubblica; si toglie su richiesta. Il link pubblico agli Originali su `albums/` sparisce allo Switch.
 
 ## Perché
 
@@ -46,6 +47,6 @@ Con il caricamento dal telefono arriveranno foto a piena risoluzione (3–15 MB 
 
 - Il Backend ha bisogno di credenziali S3 con scrittura sul bucket degli Originali, senza il permesso di cancellare versioni. Il bucket ha la regola che le fa scadere dopo 30 giorni.
 - Serve che le mail di ritiro abbiano una risposta entro un mese: l'informativa lo dice.
-- La #23 si riduce ai metadati: gli Originali, nuovi e importati, hanno già S3 con versioning.
+- Il backup del Repository dei contenuti è fuori da Gerbillo, negli script del server (ADR 0004).
 - L'informativa privacy del forum va aggiornata per la gallery; manca già oggi con Coppermine.
 - La Gallery pubblica oggi linka l'Originale su `albums/`: allo Switch il link passa alla Variante da 2048 px. Per i documenti passa alla Variante documento, che il comando `varianti` copia dall'Originale.

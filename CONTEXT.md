@@ -15,12 +15,19 @@ Il tipo di file di una Foto (immagine, PDF, …). Determina quali Varianti si po
 _Avoid_: tipo, estensione
 
 **pid**:
-Identificativo numerico stabile di una Foto, ereditato da Coppermine e proseguito per le foto nuove. Non cambia mai, qualunque sia la classificazione.
+Identificativo stabile e opaco di una Foto: per le Foto di Coppermine il suo pid numerico, per quelle caricate in Gerbillo un ULID in minuscolo (ADR 0005). Non cambia mai, qualunque sia la classificazione, e non dice nulla sull'ordine.
 _Avoid_: id, codice
 
 **Originale**:
-Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione, con gli EXIF ridotti a un elenco chiuso ed eventualmente ricompresso. È conservato su S3 e non è pubblico (ADR 0015).
+Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione, con gli EXIF ridotti a un elenco chiuso ed eventualmente ricompresso. Non è pubblico (ADR 0015). Ne esistono copie in più Store, che il campo `original` della Foto elenca con percorso e impronta di ciascuna (ADR 0021).
 _Avoid_: master, sorgente
+
+**Store**:
+Un posto dove sta una copia dell'Originale. Gestito se Gerbillo ci scrive (`gerbillo`, la cartella locale dell'istanza; `s3`; `b2`), Sorgente se Gerbillo lo legge soltanto (`coppermine`, domani `forum`). Il nome nel YAML è logico: dove sta lo dice l'ambiente (ADR 0021).
+_Avoid_: destinazione, bucket
+
+**Riorganizzazione**:
+Lo strumento che porta l'Originale di una Foto allo schema comune: EXIF filtrati, percorso `AAAA/MM/<pid>.<ext>`, copie sugli Store gestiti. Serve per qualsiasi Foto fuori schema; il primo uso grande sono gli Originali di Coppermine (ADR 0021).
 
 **Variante**:
 Una versione derivata dell'Originale (miniatura, versione a schermo, ecc.), servita a un URL legato al pid. La più grande (2048 px sul lato lungo) è quella che si scarica dalla pagina della Foto. Per un PDF la Variante documento è una copia del file stesso, pubblica (ADR 0015).
@@ -125,7 +132,7 @@ Il file (`cerca.json`) che la pagina di ricerca della Gallery pubblica (`/cerca/
 _Avoid_: indice (da solo), Indice delle Foto (che è per il Sito principale)
 
 **Repository dei contenuti**:
-Il repository git solo locale sul server, separato dal codice, che contiene i metadati pubblicati delle Foto (ADR 0004).
+Il repository git, separato dal codice, che contiene i metadati pubblicati delle Foto. Prima dell'Avvio si rigenera sul Mac ed è usa e getta; dall'Avvio è solo locale sul server ed è il database di Gerbillo (ADR 0004).
 
 ### Flusso editoriale
 
@@ -150,7 +157,7 @@ Il BBCode generato per una Foto: miniatura cliccabile verso la pagina della Foto
 ### Migrazione
 
 **Coppermine**:
-La gallery attuale, fonte primaria delle Foto finché resta attiva.
+La gallery attuale, fonte primaria delle Foto fino all'Avvio. Dall'Avvio allo Switch è un caricamento alternativo: le sue Foto nuove arrivano con la Sincronizzazione.
 
 **Album** / **Categoria Coppermine**:
 Contenitori di Coppermine. Esistono solo come input della Mappatura, non nel modello di Gerbillo. Da non confondere con la Categoria di Gerbillo.
@@ -169,8 +176,15 @@ La corrispondenza tra un Album (o una Categoria Coppermine) e gli Slug, i Tag e 
 Il lavoro editoriale fatto in Gerbillo (Mappature, correzioni, metadati aggiunti), applicato sopra ogni Importazione.
 _Avoid_: overlay, patch
 
+**Sincronizzazione**:
+Dopo l'Avvio, l'esecuzione periodica che porta in Gerbillo solo le Foto nuove di Coppermine. Una Foto sincronizzata entra in «Da sistemare», come un caricamento incompleto. Le modifiche fatte in Coppermine a Foto già presenti si ignorano, tranne un file cambiato, che va in «Da sistemare»; una Foto tolta da Coppermine va in «Da sistemare», senza cancellarla.
+_Avoid_: Importazione (che è di massa e finisce all'Avvio)
+
+**Avvio**:
+Il momento, deciso dall'admin, in cui la produzione va online su `/gerbillo/`: si congelano i valori risolti nei YAML (#40), si fa `git init` sul server e Gerbillo diventa la fonte primaria. Coppermine resta attivo accanto fino allo Switch.
+
 **Switch**:
-Il momento in cui Coppermine viene spento e Gerbillo diventa la fonte primaria.
+Il momento in cui Coppermine viene spento e Gerbillo passa da `/gerbillo/` a `/gallery/`.
 
 **Bonifica**:
 La riscrittura dei post del forum che puntano a URL di Coppermine.

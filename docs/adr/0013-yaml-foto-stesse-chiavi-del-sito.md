@@ -2,7 +2,13 @@
 
 Deciso il 23/10/2026, prima di G2 (#10); corretto il 30/10/2026 (ADR 0019).
 
-Dove un concetto esiste anche nel front matter del Sito principale, la Foto usa la stessa chiave e lo stesso significato. È una scelta di formato, non di dipendenza: la Gallery non chiede al sito cosa può esistere. Le chiavi proprie della gallery restano in italiano, come fa il sito con `corsoacqua` o `revisione`. Un solo modello mentale per un solo manutentore, e l'integrazione con il sito (Indice delle Foto, Foto usate nelle pagine) non richiede traduzioni.
+Dove un concetto esiste anche nel front matter del Sito principale, la Foto usa la stessa chiave e lo stesso significato. È una scelta di formato, non di dipendenza: la Gallery non chiede al sito cosa può esistere. Un solo modello mentale per un solo manutentore, e l'integrazione con il sito (Indice delle Foto, Foto usate nelle pagine) non richiede traduzioni.
+
+Rivisto il 28/11/2026: prima tutte le chiavi proprie della gallery erano in italiano, anche quelle tecniche. Ora le regole sono tre, in quest'ordine:
+
+1. **Concetto condiviso con il Sito principale**: la chiave del sito (`title`, `date`, `authors`, `slug`…).
+2. **Concetto di dominio**, cioè un termine di `CONTEXT.md`: il termine italiano del glossario (`datazione`, `contributore`, `formato`), come fa il sito con `corsoacqua` o `revisione`.
+3. **Attributo tecnico** senza un termine nel glossario: il nome tecnico usuale, in inglese (`path`, `sha256`, `width`, `height`, `original` per dove stanno i file, ADR 0021).
 
 ```yaml
 pid: 18
@@ -22,8 +28,8 @@ geolocation:
   coords: {latitudine: 46.2905, longitudine: 8.2987}
 contributore: {id: 25, nome: …}
 formato: immagine
-larghezza: 2048
-altezza: 1153
+width: 2048
+height: 1153
 ```
 
 - **`slug`**: le Entità che la Foto ritrae, come percorso `sezione/nome` (`dighe/agaro`, `centrali/goglio-baceno-vb`). Si valida contro le Entità della Gallery: i file di `entita/` più l'Indice delle Entità (ADR 0019). I campi `dighe:` e `centrali:` del sito restano suoi: sono gli archi del grafo da cui nasceranno gli Impianti.
@@ -44,5 +50,6 @@ altezza: 1153
 ## Consequences
 
 - I YAML di G1 rinominano `titolo`, `descrizione`, `caricata` e `autore` in `title`, `description`, `date` e `authors`.
+- Con la revisione del 28/11/2026 `larghezza` e `altezza` diventano `width` e `height`, prima dell'Avvio: i dati importati si rigenerano.
 - I valori dei tag del sito oggi sono pochi e disordinati: la gallery li eredita dove esistono e aiuta a sistemarli.
 - Lo spostamento di una pagina nel sito cambia uno Slug: il build lo rileva, e si risolve con un alias (ADR 0018).
