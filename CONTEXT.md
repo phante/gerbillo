@@ -19,7 +19,7 @@ Identificativo stabile e opaco di una Foto: per le Foto di Coppermine il suo pid
 _Avoid_: id, codice
 
 **Originale**:
-Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione, con gli EXIF ridotti a un elenco chiuso ed eventualmente ricompresso. È conservato su S3 e non è pubblico (ADR 0015).
+Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione, con gli EXIF ridotti a un elenco chiuso ed eventualmente ricompresso. È conservato su più destinazioni, che il campo `originale` della Foto elenca con il percorso di ciascuna, e non è pubblico (ADR 0015).
 _Avoid_: master, sorgente
 
 **Variante**:
