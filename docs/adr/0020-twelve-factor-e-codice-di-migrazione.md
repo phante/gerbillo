@@ -27,6 +27,17 @@ Sul server ci sono due istanze di Gerbillo:
 - **dev**, su `dev.progettodighe.it/gerbillo/`, solo con dati di test, accesa quando serve (ADR 0011);
 - **produzione**, su `progettodighe.it/gerbillo/` durante la convivenza e su `/gallery/` dallo Switch, con un'immagine con tag di rilascio, mai `:dev`, aggiornata a mano.
 
+I percorsi sul server seguono lo standard Linux (FHS), una cartella per istanza, e restano comunque nell'ambiente:
+
+| cosa | percorso | se si perde |
+|---|---|---|
+| Repository dei contenuti | `/var/lib/gerbillo/<istanza>/contenuti` | è il database: backup |
+| Originali locali (store `gerbillo`, ADR 0021) | `/var/lib/gerbillo/<istanza>/originali` | fino alla conferma remota sono l'unica copia |
+| Varianti, servite da nginx | `/var/lib/gerbillo/<istanza>/media` | si rigenerano, in ore |
+| Cache (esiti delle verifiche, analisi) | `/var/cache/gerbillo/<istanza>` | si ricostruisce da sola |
+
+L'istanza dev oggi sta in `/srv/gerbillo-dev`: si sposta insieme all'admin.
+
 Nessuna pipeline riceve `docker.sock` o volumi dell'host: il server scarica le immagini, come in ADR 0011. Dove si fanno test e build (GitHub Actions o Woodpecker) si decide in un'issue a parte.
 
 ## Considered Options

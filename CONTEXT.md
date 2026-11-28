@@ -19,8 +19,15 @@ Identificativo stabile e opaco di una Foto: per le Foto di Coppermine il suo pid
 _Avoid_: id, codice
 
 **Originale**:
-Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione, con gli EXIF ridotti a un elenco chiuso ed eventualmente ricompresso. È conservato su più destinazioni, che il campo `originale` della Foto elenca con il percorso di ciascuna, e non è pubblico (ADR 0015).
+Il file da cui derivano tutte le Varianti: quello caricato, a piena risoluzione, con gli EXIF ridotti a un elenco chiuso ed eventualmente ricompresso. Non è pubblico (ADR 0015). Ne esistono copie in più Store, che il campo `original` della Foto elenca con percorso e impronta di ciascuna (ADR 0021).
 _Avoid_: master, sorgente
+
+**Store**:
+Un posto dove sta una copia dell'Originale. Gestito se Gerbillo ci scrive (`gerbillo`, la cartella locale dell'istanza; `s3`; `b2`), Sorgente se Gerbillo lo legge soltanto (`coppermine`, domani `forum`). Il nome nel YAML è logico: dove sta lo dice l'ambiente (ADR 0021).
+_Avoid_: destinazione, bucket
+
+**Riorganizzazione**:
+Lo strumento che porta l'Originale di una Foto allo schema comune: EXIF filtrati, percorso `AAAA/MM/<pid>.<ext>`, copie sugli Store gestiti. Serve per qualsiasi Foto fuori schema; il primo uso grande sono gli Originali di Coppermine (ADR 0021).
 
 **Variante**:
 Una versione derivata dell'Originale (miniatura, versione a schermo, ecc.), servita a un URL legato al pid. La più grande (2048 px sul lato lungo) è quella che si scarica dalla pagina della Foto. Per un PDF la Variante documento è una copia del file stesso, pubblica (ADR 0015).
@@ -170,7 +177,7 @@ Il lavoro editoriale fatto in Gerbillo (Mappature, correzioni, metadati aggiunti
 _Avoid_: overlay, patch
 
 **Sincronizzazione**:
-Dopo l'Avvio, l'esecuzione periodica che porta in Gerbillo solo le Foto nuove di Coppermine. Una Foto sincronizzata entra in «Da sistemare», come un caricamento incompleto. Le modifiche fatte in Coppermine a Foto già presenti si ignorano; una Foto tolta da Coppermine va in «Da sistemare», senza cancellarla.
+Dopo l'Avvio, l'esecuzione periodica che porta in Gerbillo solo le Foto nuove di Coppermine. Una Foto sincronizzata entra in «Da sistemare», come un caricamento incompleto. Le modifiche fatte in Coppermine a Foto già presenti si ignorano, tranne un file cambiato, che va in «Da sistemare»; una Foto tolta da Coppermine va in «Da sistemare», senza cancellarla.
 _Avoid_: Importazione (che è di massa e finisce all'Avvio)
 
 **Avvio**:
