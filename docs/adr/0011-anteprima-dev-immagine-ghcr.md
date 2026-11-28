@@ -4,6 +4,8 @@ L'anteprima di Gerbillo su `dev.progettodighe.it/gerbillo/` è un'immagine Docke
 
 Il container ha limiti rigidi (`--memory 384m --memory-swap 384m --cpus 0.5`, sola lettura, upload su `tmpfs` da 200 MB), ascolta solo su `127.0.0.1:8090` dietro nginx e non è root. L'admin è protetto da una password usa e getta generata all'avvio, inviata via Telegram e valida 24 ore, dopo la quale si sceglie con quale utente entrare: è l'implementazione dev di "utente corrente" (ADR 0008). Ogni pagina mostra branch e commit.
 
+Rivisto il 28/11/2026 (ADR 0020): accanto all'anteprima ci sarà l'istanza di produzione, con un'immagine con tag di rilascio aggiornata a mano. L'anteprima usa solo dati di test e si accende solo quando serve. Senza sessioni cloud, l'anteprima automatica a ogni push si rivede con la CI (issue a parte).
+
 **Criterio:** ogni gate del pilota dichiara la RAM consumata, letta da `/gerbillo/admin/stato`. Se Gerbillo non sta nelle risorse del server accanto alla produzione, si cambia strada.
 
 ## Considered Options

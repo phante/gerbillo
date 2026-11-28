@@ -15,7 +15,7 @@ Il tipo di file di una Foto (immagine, PDF, …). Determina quali Varianti si po
 _Avoid_: tipo, estensione
 
 **pid**:
-Identificativo numerico stabile di una Foto, ereditato da Coppermine e proseguito per le foto nuove. Non cambia mai, qualunque sia la classificazione.
+Identificativo stabile e opaco di una Foto: per le Foto di Coppermine il suo pid numerico, per quelle caricate in Gerbillo un ULID in minuscolo (ADR 0005). Non cambia mai, qualunque sia la classificazione, e non dice nulla sull'ordine.
 _Avoid_: id, codice
 
 **Originale**:
@@ -125,7 +125,7 @@ Il file (`cerca.json`) che la pagina di ricerca della Gallery pubblica (`/cerca/
 _Avoid_: indice (da solo), Indice delle Foto (che è per il Sito principale)
 
 **Repository dei contenuti**:
-Il repository git solo locale sul server, separato dal codice, che contiene i metadati pubblicati delle Foto (ADR 0004).
+Il repository git, separato dal codice, che contiene i metadati pubblicati delle Foto. Prima dell'Avvio si rigenera sul Mac ed è usa e getta; dall'Avvio è solo locale sul server ed è il database di Gerbillo (ADR 0004).
 
 ### Flusso editoriale
 
@@ -150,7 +150,7 @@ Il BBCode generato per una Foto: miniatura cliccabile verso la pagina della Foto
 ### Migrazione
 
 **Coppermine**:
-La gallery attuale, fonte primaria delle Foto finché resta attiva.
+La gallery attuale, fonte primaria delle Foto fino all'Avvio. Dall'Avvio allo Switch è un caricamento alternativo: le sue Foto nuove arrivano con la Sincronizzazione.
 
 **Album** / **Categoria Coppermine**:
 Contenitori di Coppermine. Esistono solo come input della Mappatura, non nel modello di Gerbillo. Da non confondere con la Categoria di Gerbillo.
@@ -169,8 +169,15 @@ La corrispondenza tra un Album (o una Categoria Coppermine) e gli Slug, i Tag e 
 Il lavoro editoriale fatto in Gerbillo (Mappature, correzioni, metadati aggiunti), applicato sopra ogni Importazione.
 _Avoid_: overlay, patch
 
+**Sincronizzazione**:
+Dopo l'Avvio, l'esecuzione periodica che porta in Gerbillo solo le Foto nuove di Coppermine. Una Foto sincronizzata entra in «Da sistemare», come un caricamento incompleto. Le modifiche fatte in Coppermine a Foto già presenti si ignorano; una Foto tolta da Coppermine va in «Da sistemare», senza cancellarla.
+_Avoid_: Importazione (che è di massa e finisce all'Avvio)
+
+**Avvio**:
+Il momento, deciso dall'admin, in cui la produzione va online su `/gerbillo/`: si congelano i valori risolti nei YAML (#40), si fa `git init` sul server e Gerbillo diventa la fonte primaria. Coppermine resta attivo accanto fino allo Switch.
+
 **Switch**:
-Il momento in cui Coppermine viene spento e Gerbillo diventa la fonte primaria.
+Il momento in cui Coppermine viene spento e Gerbillo passa da `/gerbillo/` a `/gallery/`.
 
 **Bonifica**:
 La riscrittura dei post del forum che puntano a URL di Coppermine.
